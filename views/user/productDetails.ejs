@@ -1,0 +1,433 @@
+<%-include('partials/header.ejs')%>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-3 col-md-3">
+            <div class="header__logo">
+                <a href="/user/"><img style="height: 30px;width: 140px;" src="/image/Shoppycartfinel.png" alt=""></a>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6">
+            <nav class="header__menu mobile-menu">
+                <ul>
+                    <li><a href="/user/">Home</a></li>
+                    <li class="active"><a href="/user/productList">Shop</a></li>
+                    <li><a href="#">Pages</a>
+                        <ul class="dropdown">
+                            <li><a href="#">About Us</a></li>
+                            <li><a href="#">Shop Details</a></li>
+                            <li><a href="#">Shopping Cart</a></li>
+                            <li><a href="#">Check Out</a></li>
+                            <li><a href="#">Blog Details</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#">Account</a></li>
+                    <li><a href="#">Contacts</a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="col-lg-3 col-md-3">
+            <div class="header__nav__option">
+                <a href="#" class="search-switch"><img src="/img/icon/search.png" alt=""></a>
+                <a href="#"><img src="/img/icon/heart.png" alt=""></a>
+                <a href="#"><img src="/img/icon/cart.png" alt=""> <span>0</span></a>
+                <div class="price">$0.00</div>
+            </div>
+        </div>
+    </div>
+    <div class="canvas__open"><i class="fa fa-bars"></i></div>
+</div>
+</header>
+<!-- Header Section End -->
+
+<!-- breadcrumb -->
+<div class="container" style="margin-top: 50px;">
+    <div class="bread-crumb flex-w p-l-25 p-r-15 p-t-30 p-lr-0-lg">
+        <a href="/user/home" class="stext-109 cl8 hov-cl1 trans-04">
+            Home
+            <i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
+        </a>
+
+        <a href="/user/productList" class="stext-109 cl8 hov-cl1 trans-04">
+                Shoe
+            <i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
+        </a>
+
+        <span class="stext-109 cl4">
+            <%= product.name %>			</span>
+    </div>
+</div>
+    
+
+<!-- Product Detail -->
+<section class="sec-product-detail bg0 p-t-65 p-b-60">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-lg-7 p-b-30">
+                <div class="p-l-25 p-r-30 p-lr-0-lg">
+                    <div class="wrap-slick3 flex-sb flex-w">
+                        <div class="wrap-slick3-dots">
+                            
+                        </div>
+                        <section class="sec-product-detail bg0 p-t-65 p-b-60">
+                            <div class="container">
+                                <div class="row">
+                                    <!-- Left Side with Small Images -->
+                                    <div class="col-md-6 col-lg-3 p-b-30">
+                                        <div class="wrap-slick3 flex-sb flex-w">
+                                            <div class="gallery-thumbnails">
+                                                <% product.images.forEach((image, index) => { %>
+                                                    <div class="thumbnail-item" style="cursor: pointer;">
+                                                        <img src="/uploads/<%= image %>" alt="Thumbnail Image" class="thumbnail-image" style="width: 100px; height: auto;" onclick="changeMainImage('<%= image %>')">
+                                                    </div>
+                                                    <br><br>
+                                                <% }); %>
+                                            </div>
+                                        </div>
+                                    </div>
+                        
+                                    <!-- Right Side with Main Image -->
+                                    <div class="col-md-6 col-lg-9 p-b-30">
+                                        <div class="wrap-pic-w pos-relative zoom-container">
+                                            <!-- Main Image -->
+                                            <img id="mainImage" src="/uploads/<%= product.images[0] %>" alt="Main Product Image" class="zoom-image" style="width: 400px; height: auto;">
+                                            <a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="/<%= product.images[0] %>" style="right: 10px; top: 31px;">
+                                                <i class="fa fa-expand"></i>
+                                            </a>
+                                            <!-- Zoom Lens -->
+                                            <div class="zoom-lens"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        
+                            <script>
+                                // Function to change the main image when a thumbnail is clicked
+                                function changeMainImage(image) {
+                                    // Change the source of the main image
+                                    document.getElementById('mainImage').src = "/uploads/" + image;
+                                }
+                            
+                                </script>
+                        
+                        <style>
+                        .zoom-container {
+position: relative; /* Positioning context for the lens */
+display: inline-block; /* Keep it inline with other elements */
+}
+
+.zoom-image {
+transition: transform 0.5s ease; /* Smooth transition for the zoom effect */
+}
+
+.zoom-lens {
+position: absolute;
+border: 2px solid #fff; /* Border color of the lens */
+border-radius: 50%; /* Make it round */
+cursor: crosshair; /* Change cursor to crosshair when hovering */
+width: 300px; /* Size of the lens */
+height: 300px; /* Size of the lens */
+opacity: 0; /* Start with it hidden */
+pointer-events: none; /* Make it non-interactive */
+transition: opacity 0.2s; /* Smooth opacity transition */
+background: rgba(255, 255, 255, 0.5); /* Optional: semi-transparent background */
+}
+
+.zoom-container:hover .zoom-lens {
+opacity: 1; /* Show the lens on hover */
+}
+.star-rating {
+font-size: 24px;
+color: gold;
+}
+
+.star-rating i {
+margin-right: 5px;
+}
+.review-row {
+display: flex;
+justify-content: start; /* Ensures equal space between star rating and text */
+align-items: center; /* Aligns star rating and text vertically in the center */
+gap: 10px; /* Adds space between the star rating and the text */
+}
+
+.star-rating {
+font-size: 24px;
+color: gold;
+}
+
+.star-rating i {
+margin-right: 5px;
+}
+
+p {
+margin: 0; /* Removes extra margin from the paragraph */
+font-size: 16px;
+color: #555;
+}
+.pincode-box {
+display: flex;
+justify-content: space-between;
+align-items: center;
+width: 359px;
+height: 64px;
+border: 2px solid grey;
+background-color: white;
+padding: 0 10px;
+box-sizing: border-box; /* Ensure padding doesn't affect width */
+border-radius: 8px; /* Optional for rounded corners */
+margin-top: 20px;
+}
+
+.pincode-box label {
+font-size: 14px;
+color: #ffffff; /* Dark grey for label text */
+}
+
+.pincode-box input {
+flex: 1; /* Take up the available space */
+height: 40px;
+padding: 5px 10px;
+border: 0px solid #ccc;
+border-radius: 4px;
+font-size: 16px;
+margin-right: 10px;
+}
+
+.pincode-box button {
+padding: 10px 15px;
+background-color: #4CAF50; /* Green background */
+color: white;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+}
+
+.pincode-box button:hover {
+background-color: #45a049; /* Darker green on hover */
+}
+                       </style>
+                        <script>
+                            document.querySelectorAll('.zoom-container').forEach(container => {
+const img = container.querySelector('.zoom-image');
+const lens = container.querySelector('.zoom-lens');
+
+container.addEventListener('mousemove', (e) => {
+    const { left, top, width, height } = container.getBoundingClientRect();
+
+    const posX = e.clientX - left;
+    const posY = e.clientY - top;
+
+    // Calculate lens position
+    const lensX = posX - (lens.offsetWidth / 2);
+    const lensY = posY - (lens.offsetHeight / 2);
+    lens.style.left = `${lensX}px`;
+    lens.style.top = `${lensY}px`;
+
+    // Calculate zoomed image position
+    const zoomedImgUrl = img.src;
+    lens.style.backgroundImage = `url(${zoomedImgUrl})`;
+    lens.style.backgroundSize = `${img.width * 2}px ${img.height * 2}px`; // Adjust zoom level
+    lens.style.backgroundPosition = `-${posX * 2}px -${posY * 2}px`; // Center the zoomed area
+});
+});
+                        </script>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="col-md-6 col-lg-5 p-b-30" style="position: absolute; right: 25px">
+                <div class="p-r-50 p-t-5 p-lr-0-lg" style="right: 146px; position: absolute;">
+                    <h4 class="mtext-105 cl2 js-name-detail p-b-14">
+                        <%= product.product %>
+                    </h4>
+                    
+                    <span class="mtext-106 cl2" style="font-size: x-large;">
+                        <% if (product.discountPercentage > 0) { %>
+                            <span style="text-decoration: line-through; color: red;">
+                                ₹<%= product.price.toFixed(2) %>
+                            </span>
+                            <span style="color: green; font-weight: bold;">
+                                ₹<%= product.discountedPrice.toFixed(2) %>
+                            </span>
+                            <small>(<%= product.discountPercentage %>% off)</small>
+                        <% } else { %>
+                            ₹<%= product.price.toFixed(2) %>
+                        <% } %>
+                    </span>
+                    
+                
+                    <p class="stext-102 cl3 p-t-23">
+                        <%= product.description %> <!-- Display product description -->
+                    </p>
+                    <div class="custom-div">
+                        <p class="small-text"><%= product.categoryId.name ? product.categoryId.name : 'No category' %></p>
+                    </div>
+                    <style>
+                        .stock-status {
+                            padding: 10px;
+                            border-radius: 5px;
+                            font-weight: bold;
+                            text-align: center;
+                            margin: 10px 0;
+                        }
+                        .in-stock {
+                            color: green;
+                            background-color: #d4edda; /* Light green background */
+                        }
+                        .low-stock {
+                            color: orange;
+                            background-color: #fff3cd; /* Light orange background */
+                        }
+                        .sold-out {
+                            color: red;
+                            background-color: #f8d7da; /* Light red background */
+                        }
+                        .unavailable {
+                            color: gray;
+                            background-color: #e2e3e5; /* Light gray background */
+                        }
+                    </style>
+                    
+                    <div class="custom-div1">
+                        <p class="stock-status 
+    <% if (product.stock === 0) { %> sold-out <% } 
+       else if (product.stock === 1) { %> low-stock <% } 
+       else { %> in-stock <% } %>">
+    <% if (product.stock === 0) { %> Sold Out <% } 
+       else if (product.stock === 1) { %> Only 1 left in stock! <% } 
+       else { %> <%= product.stock %> left in stock <% } %>
+</p>
+
+                    </div>
+                
+                    <!-- Add to Cart Form -->
+                    <form id="add-to-cart-form-<%= product._id %>">
+                        <input type="hidden" name="productId" value="<%= product._id %>">
+                        <% if (product.stock > 0) { %>
+                            <button type="submit" class="btn btn-primary py-2 px-3">
+                                <i class="bi bi-cart-check"></i> Add to Cart
+                            </button>
+                        <% } else { %>
+                            <button type="button" class="btn btn-danger" disabled>Sold Out</button>
+                        <% } %>
+                    </form>
+                    
+                    <script>
+                        document.querySelectorAll('form[id^="add-to-cart-form-"]').forEach(form => {
+form.addEventListener('submit', async (e) => {
+    e.preventDefault(); // Prevent the form from submitting normally
+
+    const form = e.target;
+
+    console.log(form);
+
+    let productId = form.id.split('-')[4];
+
+    const formData = new FormData(form);
+    formData.append('productId', productId);
+
+    try {
+        console.log("Submitting form...");
+
+        const response = await fetch(`/cart/addProducts/${productId}`, {
+            method: 'POST',
+        });
+
+        const data = await response.json(); // Parse the JSON response
+
+        console.log("Response data:", data); // Debugging message to check the response
+
+        if (data.success) {
+            Swal.fire({
+                title: 'Success',
+                text: data.message, // Success message from the server
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: data.message, // Error message from the server
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Error',
+            text: 'An error occurred while adding the item to the cart.',
+            icon: 'error',
+            confirmButtonText: 'Try Again'
+        });
+    }
+});
+});
+
+                    </script>
+                    
+                    <!-- Additional Elements -->
+                    
+                
+                    
+                </div>
+                
+            </div>
+            
+        </div>
+    </section>
+
+<!-- Related Products -->
+<section class="sec-relate-product bg0 p-t-45 p-b-105">
+    <div class="container">
+        <div class="p-b-45">
+            <h3 class="ltext-106 cl5 txt-center">
+                Related Products
+            </h3>
+        </div>
+        <div class="row isotope-grid">
+            <%  relatedProducts.forEach(function(item) { %> 
+            <div class="col-sm-6 col-md-4 col-lg-4 p-b-35 isotope-item"> <!-- Use col-lg-4 to ensure 3 products per row on large screens -->
+                <!-- Block2 -->
+                <div class="block2">
+                    <div class="block2-pic hov-img0">
+                        <!-- Display the first image of the product -->
+                        <img src="/uploads/<%= item.images[0] %>" alt="IMG-PRODUCT">
+        
+                        <a href="/user/productDetails/<%= item._id %>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15">
+                            Quick View
+                        </a>
+                    </div>
+        
+                    <div class="block2-txt flex-w flex-t p-t-14">
+                        <div class="block2-txt-child1 flex-col-l">
+                            <!-- Display the product title -->
+                            <a href="/user/productDetails/<%= item._id %>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
+                                <%= item.product %>
+                            </a>
+        
+                            <!-- Display the product price -->
+                            <span class="stext-105 cl3">
+                                ₹<%= item.price %>
+                            </span>
+                        </div>
+                        <div>
+                            <br>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <% }); %> <!-- End of loop -->
+        </div>
+        
+                
+            </div>
+        </div>
+    </div>
+</section>
+
+<%-include('partials/footer.ejs')%>
+</body>
+</html>

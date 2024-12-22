@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Admin Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- MATERIAL DESIGN ICONIC FONT -->
+    <link rel="stylesheet" href="fonts/material-design-iconic-font/css/material-design-iconic-font.min.css">
+    <!-- STYLE CSS -->
+    <link rel="stylesheet" href="/stylesheet/login.css">
+</head>
+<body>
+
+<div class="wrapper" style="background-image: url('/image/bg-registration-form-2.jpg');">
+    <div class="inner">
+        <form action="/admin/login" method="post">
+            <h1>Admin Login</h1>
+            <div class="form-wrapper">
+                <label for="email">Email</label>
+                <input type="text" id="email" name="email" class="form-control" required>
+            </div>
+            <div class="form-wrapper">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+            <button type="submit" class="login-btn">Log In</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

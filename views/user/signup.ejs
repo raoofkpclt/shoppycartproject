@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+
+    <!-- MATERIAL DESIGN ICONIC FONT -->
+    <link rel="stylesheet" href="/fonts/material-design-iconic-font/css/material-design-iconic-font.min.css">
+
+    <!-- STYLE CSS -->
+    <link rel="stylesheet" href="/stylesheet/signup.css">
+    <style>
+
+    /* Hide the default checkbox */
+input[type="checkbox"] {
+    display: none;
+}
+
+/* Style the checkmark */
+label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkmark {
+    width: 18px;
+    height: 18px;
+    background-color: #f1f1f1;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    margin-right: 10px;
+   
+}
+
+/* When the checkbox is checked, show the tick mark */
+input[type="checkbox"]:checked + .checkmark::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 6px;
+    height: 12px;
+    border: solid #4CAF50;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+</style>
+
+</head>
+<body>
+    <div class="wrapper" style="background-image: url('/image/bg-registration-form-2.jpg');">
+        <div class="inner">
+
+            <% if (message) { %>
+                <h4 style="color: rgb(21, 181, 66);"><%=message %></h4>
+                <% } %>
+                <% if (error) { %>
+                    <h4 style="color: rgb(181, 21, 21);"><%=error%></h4>
+                    <% } %>
+                    <br>
+
+            <form action="/user/signup" method="POST">
+                <h3>Now let's make you a Shoppycart Member</h3>
+
+                <div class="form-wrapper">
+                    <label for="text">Username</label>
+                    <input id="username" name="name" type="text" class="form-control" placeholder="Enter your username" required>
+                </div>
+                <div class="form-wrapper">
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" class="form-control" placeholder="Enter your email" required>
+                </div>
+                <div class="form-wrapper">
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" class="form-control" placeholder="At least 8 characters" required>
+                </div>
+                <div class="form-wrapper">
+                    <label for="cpassword">Confirm Password</label>
+                    <input id="cpassword" name="cpassword" type="password" class="form-control" required>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" required> I accept the Terms of Use & Privacy Policy.
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                  <div style="padding: 20px;padding-top: 10px; padding-bottom: 10px; " class="d-flex justify-content-center links">
+                        Do You have an account?<a href="/user/login"> Sign In</a>
+                      </div>
+                <button  type="submit">Signup</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

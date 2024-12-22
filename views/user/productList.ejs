@@ -1,0 +1,370 @@
+
+<%-include('partials/header.ejs')%>
+
+
+<body>
+    <!-- Header Section Begin -->
+    
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-3">
+                    <div class="header__logo">
+                        <a href="/user/"><img style="height: 30px;width: 140px;" src="/image/Shoppycartfinel.png" alt=""></a>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <nav class="header__menu mobile-menu">
+                        <ul>
+                            <li><a href="/user/">Home</a></li>
+                            <li class="active"><a href="/user/productList">Shop</a></li>
+                            <li><a href="#">Pages</a>
+                                <ul class="dropdown">
+                                    <li><a href="./">About Us</a></li>
+                                    <li><a href="./shop-details.html">Shop Details</a></li>
+                                    <li><a href="./shopping-cart.html">Shopping Cart</a></li>
+                                    <li><a href="./checkout.html">Check Out</a></li>
+                                    <li><a href="./blog-details.html">Blog Details</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="/user/login">Account</a></li>
+                            <li><a href="#">Contacts</a></li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="col-lg-3 col-md-3">
+                    <div class="header__nav__option">
+                        <a href="#" class="search-switch"><img src="/img/icon/search.png" alt=""></a>
+                        <a href="#"><img src="/img/icon/heart.png" alt=""></a>
+                        <a href="#"><img src="/img/icon/cart.png" alt=""> <span>0</span></a>
+                        <div class="price">$0.00</div>
+                    </div>
+                </div>
+            </div>
+            <div class="canvas__open"><i class="fa fa-bars"></i></div>
+        </div>
+    </header>
+    <!-- Header Section End -->
+
+ <!-- Breadcrumb Section Begin -->
+ <section class="breadcrumb-option">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb__text">
+                    <h4>Shop</h4>
+                    <div class="breadcrumb__links">
+                        <a href="home">Home</a>
+                        <span>Shop</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Breadcrumb Section End -->
+
+<!-- Shop Section Begin -->
+<section class="shop spad">
+    <div class="container">
+        <div class="row">
+
+<!-- Product -->
+<div class="bg0 m-t-23 p-b-140">
+    <div class="container">
+        <div class="row">
+            <!-- Filter Sidebar (25% width) -->
+            <div class="col-lg-3 p-b-35">
+                <div class="filter-box p-lr-15 p-t-20">
+                    <h5>Filter Products</h5>
+                    <form id="filter-form">
+                        <!-- Search Bar -->
+                        <div class="filter-group">
+                            <label for="search">Search:</label>
+                            <input type="text" id="search" class="form-control" placeholder="Search products...">
+                        </div>
+                        <div class="filter-group">
+                            <label for="sort">Sort By:</label>
+                            <select id="sort" class="form-control">
+                                <option value="price-low-high">Price: Low to High</option>
+                                <option value="price-high-low">Price: High to Low</option>
+                                <option value="average-ratings">Average Ratings</option>
+                                <option value="new-arrivals">New Arrivals</option>
+                                <option value="a-z">A-Z</option>
+                                <option value="z-a">Z-A</option>
+                                <option value="in-stock">In Stock</option>
+                            </select>
+                            <label for="category">Categories:</label>
+                            <select id="category" class="form-control">
+                                <option value="all">All</option>
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category._id %>"><%= category.name %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+
+            <!-- Product Grid (75% width) -->
+            <div class="col-lg-9">
+                <div id="product-grid" class="row isotope-grid">
+                    <% products.forEach(function(item) { %> 
+                    <div class="col-sm-6 col-md-4 col-lg-4 p-b-35 isotope-item">
+                        <div class="block2">
+                            <div class="block2-pic hov-img0">
+                                <img src="/uploads/<%= item.images[0] %>" alt="IMG-PRODUCT">
+                                <a href="/user/productDetails/<%= item._id %>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15">
+                                    Quick View
+                                </a>
+                            </div>
+                            <div class="block2-txt flex-w flex-t p-t-14">
+                                <div class="block2-txt-child1 flex-col-l">
+                                    <a href="/user/productDetails/<%= item._id %>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
+                                        <%= item.product %>
+                                    </a>
+                                    <br>
+                                    <span class="stext-105 cl3">
+                                        <% if (item.hasDiscount) { %>
+                                            <span style="text-decoration: line-through; color: red;">
+                                                ₹<%= item.price.toFixed(2) %>
+                                            </span>
+                                            <span style="color: green; font-weight: bold;">
+                                                ₹<%= item.discountedPrice.toFixed(2) %>
+                                            </span>
+                                        <% } else { %>
+                                            ₹<%= item.price.toFixed(2) %>
+                                        <% } %>
+                                    </span>
+                                    
+                                    
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center mt-2"> <!-- Flex container for buttons -->
+                            
+                                <!-- Add to Cart Button -->
+                                <form id="add-to-cart-form-<%= item._id %>">
+                                    <input type="hidden" name="productId" value="<%= item._id %>">
+                                    
+                                    <% if (item.stock > 0) { %>
+                                        <button type="submit" class="btn btn-outline-primary py-2 px-4 rounded"><i class="bi bi-cart-check me-1"></i> Add Cart</button>
+                                    <% } else { %>
+                                        <button type="button" class="btn btn-outline-danger py-2 px-4 rounded opacity-70 cursor-not-allowed" disabled>Sold Out</button>
+                                    <% } %>
+                                    <br><br>
+                                </form>
+                                
+                            </div>
+                            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                            
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+                
+            
+                <!-- Include SweetAlert script -->
+            
+                <script>
+                    // Handle Add to Cart with SweetAlert
+                    document.querySelectorAll('form[id^="add-to-cart-form-"]').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Prevent the form from submitting normally
+
+        const form = e.target;
+
+        console.log();
+        console.log(form);
+
+        let productId = form.id.split('-')[4] 
+        
+        const formData = new FormData(form);
+        formData.append('productId',form.id.split('-')[4])
+        
+        try {
+            console.log("Submitting form..."); 
+
+            const response = await fetch(`/cart/add/${productId}`, {
+                method: 'POST',
+            });
+
+            // Ensure response is in JSON format
+            const data = await response.json(); // Parse the JSON response
+
+            console.log("Response data:", data); // Debugging message to check the response
+
+            // Handle success or failure based on the response
+            if (data.success) {
+                // If successful, show a success alert with SweetAlert
+                Swal.fire({
+                    title: 'Success',
+                    text: data.message, // Success message from the server
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                // If unsuccessful, show an error alert
+                Swal.fire({
+                    title: 'Error',
+                    text: data.message, // Error message from the server
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                });
+            }
+        } catch (error) {
+            // Handle any errors that occur during the fetch request
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while adding the item to the cart.',
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        }
+    });
+});
+
+                </script>
+                
+            </div>
+            <style>
+                .pagination-container {
+display: flex;
+justify-content: center;
+margin-top: 20px;
+
+}
+.row{
+justify-content: center;
+}
+.pagination {
+display: flex;
+list-style: none;
+padding: 0;
+gap: 8px;
+}
+
+.page-item {
+display: inline-block;
+}
+
+.page-item .page-link {
+display: inline-block;
+padding: 8px 12px;
+color: #007bff;
+text-decoration: none;
+border: 1px solid #ddd;
+border-radius: 5px;
+transition: all 0.3s ease;
+}
+
+.page-item .page-link:hover {
+background-color: #007bff;
+color: #fff;
+border-color: #007bff;
+}
+
+.page-item.active .page-link {
+background-color: #007bff;
+color: #fff;
+border-color: #007bff;
+}
+
+            </style>
+            <div class="pagination-container d-flex justify-content-center my-4">
+                <ul class="pagination">
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <%= currentPage == i ? 'active' : '' %>">
+                            <!--  -->
+                                <%= i %>
+                            </a>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
+            
+            
+            
+            
+                </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+    // Trigger fetchProducts on change of search, sort, or category fields
+    $('#search, #sort, #category').on('change keyup', function () {
+        fetchProducts(1); // Fetch products starting from page 1 with each change
+    });
+
+    // Pagination click handler
+    $('#pagination').on('click', 'a', function (event) {
+        event.preventDefault();
+        const page = $(this).data('page');
+        fetchProducts(page);
+    });
+});
+
+function fetchProducts(page = 1) {
+    const sort = $('#sort').val();
+    const category = $('#category').val();
+    const search = $('#search').val();
+
+    $.ajax({
+        url: '/products',
+        type: 'GET',
+        data: { sort, category, search, page },
+        success: function (data) {
+            $('#product-grid').empty();
+            data.products.forEach(function (item) {
+                const productHtml = `
+                    <div class="col-sm-6 col-md-4 col-lg-4 p-b-35 isotope-item">
+                        <div class="block2">
+                            <div class="block2-pic hov-img0">
+                                <img src="${item.images[0]}" alt="IMG-PRODUCT">
+                                <a href="product-detail/${item._id}" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15">Quick View</a>
+                            </div>
+                            <div class="block2-txt flex-w flex-t p-t-14">
+                                <div class="block2-txt-child1 flex-col-l">
+                                    <a href="/product-detail/${item._id}" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">${item.title}</a>
+                                    <span class="stext-105 cl3">
+                                        ${item.hasDiscount 
+                                            ? `<span style="text-decoration: line-through; color: red;">$${item.price.toFixed(2)}</span>
+                                               <span style="color: green; font-weight: bold;">$${item.discountedPrice.toFixed(2)}</span>`
+                                            : `$${item.price.toFixed(2)}`}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                $('#product-grid').append(productHtml);
+            });
+
+            // Update pagination
+            $('#pagination').empty();
+            for (let i = 1; i <= data.totalPages; i++) {
+                $('#pagination').append(`
+                    <li class="page-item ${data.currentPage === i ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                `);
+            }
+
+        
+        },
+        error: function (err) {
+            console.error('Error fetching products:', err);
+        }
+    });
+}
+</script>
+
+</div>
+</div>
+<%-include('./partials/footer.ejs')%>
+
+

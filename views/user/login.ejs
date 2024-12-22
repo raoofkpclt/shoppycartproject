@@ -1,0 +1,68 @@
+
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>login</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+		<!-- MATERIAL DESIGN ICONIC FONT -->
+		<link rel="stylesheet" href="fonts/material-design-iconic-font/css/material-design-iconic-font.min.css">
+		
+		<!-- STYLE CSS -->
+		<link rel="stylesheet" href="/stylesheet/login.css">
+	</head>
+	<body>
+		<div class="wrapper" style="background-image: url('/image/bg-registration-form-2.jpg');">
+			<div class="inner">
+
+				<% if (message) { %>
+					<h4 style="color: rgb(21, 181, 66);"><%=message %></h4>
+					<% } %>
+					<% if (error) { %>
+						<h4 style="color: rgb(181, 21, 21);"><%=error%></h4>
+						<% } %>
+						<br>
+
+				<form action="/user/login" method="post" >
+					<h1>login</h1>
+					<div class="form-wrapper">
+						<label for="">Email</label>
+						<input name="email" id="email" type="text" class="form-control">
+					</div>
+					<div class="form-wrapper">
+						<label for="">Password</label>
+						<input name="password" id="password" type="password" class="form-control">
+					</div>
+					<button type="submit" class="login-btn">logIn</button>
+					<div  style="padding: 10px; padding-top: 10px;" class="d-flex justify-content-center links">
+                        New to Shoppycart ? <a href="/user/signup">Create an account</a><br>
+						<a href="/user/forgotPassword">Forgot Password</a>
+                    </div>
+					<div class="d-flex justify-content-center links ">
+						<div class="button-group">
+							<button class="google-btn" onclick="handleSignInGoogle()">
+								<img src="/image/Google__G__logo.svg.webp" alt="Google Sign-In">
+								Sign in with Google
+							</button>
+							
+							<button class="google-btn"  onclick="handleSignInGoogle()">
+								<img src="/image/facebook.png" alt="Facebook Sign-In">
+								Sign in with Facebook
+							</button>
+						</div>	
+					</div>
+				</form>
+			</div>
+		</div>
+		<script>
+			const handleSignInGoogle = () => {
+    			window.open("http://localhost:3002/user/auth/google", "_id");
+			};
+
+
+		</script>
+		
+	</body>
+</html>

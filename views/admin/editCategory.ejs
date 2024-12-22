@@ -1,0 +1,62 @@
+<%-include('partials/header.ejs')%>
+    <!-- Main content -->
+    <div class="h-screen flex-grow-1 overflow-y-lg-auto">
+        <!-- Header -->
+        <header class="bg-surface-primary border-bottom pt-6">
+            <div class="container-fluid">
+                <div class="mb-npx">
+                    <div class="row align-items-center">
+                        <div class="col-sm-6 col-12 mb-4 mb-sm-0">
+                            <!-- Title -->
+                            <h1 class="h2 mb-0 ls-tight">Category Management</h1>
+                        </div>
+
+                        <% if (message) { %>
+                            <h4 style="color: rgb(21, 181, 66);"><%=message %></h4>
+                            <% } %>
+                            <% if (error) { %>
+                                <h4 style="color: rgb(181, 21, 21);"><%=error%></h4>
+                                <% } %>
+
+                        <div class="col-sm-6 col-12 text-sm-end">
+                            <div class="mx-n1">
+                               
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
+        </header>
+        <!-- Main -->
+        <main class="py-6 bg-surface-secondary">
+            <div class="container-fluid">
+                <!-- Card stats -->
+                <div class="card shadow border-0 mb-7">
+                    <div class="card-header">
+                        <h5 class="mb-0">Edit Category</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <form action="/admin/editCategory/<%= category._id %>" method="POST">
+                            <div class="form mb-3">
+                                <label for="categoryName" class="form-label">Category Name</label>
+                                <input type="text" class="form-control" id="categoryName" name="name" value="<%= category.name %>" required>
+                            </div>
+                            <button type="submit" class=" btn-primary">Edit Category</button>
+                            <a type="button" href="/admin/categoryManagement" class="btn-secondary">Back to Categories</a>
+                        </form>
+                    </div>
+                    <div class="card-footer border-0 py-5">
+                        <span class="text-muted text-sm"></span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

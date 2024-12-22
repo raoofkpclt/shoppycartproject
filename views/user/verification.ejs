@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Verify OTP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- MATERIAL DESIGN ICONIC FONT -->
+    <link rel="stylesheet" href="fonts/material-design-iconic-font/css/material-design-iconic-font.min.css">
+    <!-- STYLE CSS -->
+    <link rel="stylesheet" href="/stylesheet/verification.css">
+</head>
+<body>
+
+<div class="wrapper container-fluid" style="background-image: url('/image/bg-registration-form-2.jpg');">
+    <div class="inner">
+
+
+        <form action="/user/verification" method="POST">
+            <h1>Verify OTP</h1>
+            <div class="form-wrapper">
+                <label for="">Enter the OTP sent to your email</label>
+                <input type="hidden" id="email" name="email" value="<%= email %>">
+
+                <input name="otp" id="otp" type="text" class="form-control" required>
+            </div>
+            <button type="submit" class="login-btn">Verify OTP</button>
+
+            <div class="col text-center align-items-center">
+                <button type="button" id="resendOTPBtn" class="btn btn-link" disabled>Resend OTP</button>
+                <div id="timerDisplay"></div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+   document.addEventListener('DOMContentLoaded', () => {
+    let countDown = parseInt(localStorage.getItem('otpCountDown')) || 60;
+    const timerDisplay = document.getElementById('timerDisplay');
+    const resendButton = document.getElementById('resendOTPBtn');
+    const email = document.getElementById('email').value;
+
+    if (countDown > 0) {
+        startTimer();
+    } else {
+        countDown = 60;
+        updateTimerDisplay();
+        startTimer();
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(countDown / 60);
+        const seconds = countDown % 60;
+        timerDisplay.textContent = `Time remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds} seconds`;
+    }
+
+    function startTimer() {
+        resendButton.disabled = true;
+        const timer = setInterval(() => {
+            countDown--;
+            updateTimerDisplay();
+            localStorage.setItem('otpCountDown', countDown);
+
+            if (countDown <= 0) {
+                clearInterval(timer);
+                localStorage.removeItem('otpCountDown');
+                resendButton.disabled = false;
+            }
+        }, 1000);
+    }
+
+    resendButton.addEventListener('click', () => {
+        fetch('/user/resendOtp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),  // Send correct email value
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                countDown = 60;
+                localStorage.setItem('otpCountDown', countDown);
+                startTimer();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to resend OTP.');
+        });
+    });
+});
+
+</script>
+
+</body>
+</html>

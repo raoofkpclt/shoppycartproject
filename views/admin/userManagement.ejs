@@ -1,0 +1,145 @@
+
+<%- include('partials/header.ejs')%>
+
+
+    <!-- Main content -->
+    <div class="h-screen flex-grow-1 overflow-y-lg-auto">
+        <!-- Header -->
+        <header class="bg-surface-primary border-bottom pt-6">
+            <div class="container-fluid">
+                <div class="mb-npx">
+                    <div class="row align-items-center">
+                        <div class="col-sm-6 col-12 mb-4 mb-sm-0">
+                            <!-- Title -->
+                            <h1 class="h2 mb-0 ls-tight">User Management</h1>
+                        </div>
+                    </div>
+                   <br>
+                </div>
+            </div>
+        </header>
+        <!-- Main -->
+        <main class="py-6 bg-surface-secondary">
+            <div class="container-fluid">
+                <!-- Card stats -->
+                <div class="card shadow border-0 mb-7">
+                    <div class="card-header">
+                        <h5 class="mb-0">Users</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-nowrap  table-bordered">
+                            <thead class="thead-light text-center">
+                                <tr>
+                                    <th scope="col">User Name</th>
+                                    <th scope="col">Email Id</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if(users.length>0){%>
+                                    <%users.forEach(user=>{%>
+                                        <tr>
+                                            <td><%= user.name %></td>
+                                            <td><%= user.email %></td>
+                                            <td>
+                                                <div class="btn badge-<%= user.isBlocked ? 'danger' : 'success' %>">
+                                                    <%= user.isBlocked ? 'Inactive' : 'Active' %>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <% if(user.isBlocked){%>
+                                                    <form  id="unblockForm-<%= user._id %>" action="/admin/unblockUser" method="POST" style="display:inline;" onsubmit="return confirmAction(event, 'Are you sure you want to unblock this user?', this)">
+                                                        <input type="hidden" name="userId" value="<%= user._id %>">
+                                                        <button type="submit" class="btn btn-success">Unblock</button>
+                                                    </form>
+                                                    <%}else{%>
+                                                        <form id="blockForm-<%= user._id %>" action="/admin/blockUser" method="POST" style="display:inline;" onsubmit="return confirmAction(event, 'Are you sure you want to block this user?', this)">
+                                                            <input type="hidden" name="userId" value="<%= user._id %>">
+                                                            <button type="submit" class="btn btn-danger">Block</button>
+                                                        </form>
+                                                    <% } %>
+                                            </td>
+                                        </tr>
+                                        <%})%>
+                                    <%} else {%>
+                                        <tr>
+                                            <td colspan="4" class="text-center">No users found.</td>
+                                        </tr>
+                                        <%}%>
+                            </tbody>
+
+                            <!-- SweetAlert2 -->
+                            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+                            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+                            <script>
+
+                                 function confirmAction(event, message, form) {
+                                            event.preventDefault(); // Prevent the form from submitting immediately
+                                        
+                                            // Show SweetAlert confirmation dialog
+                                            Swal.fire({
+                                                title: message,
+                                                icon: 'warning',
+                                                showCancelButton: true,
+                                                confirmButtonColor: 'green',
+                                                cancelButtonColor: 'red',
+                                                confirmButtonText: 'Yes',
+                                                cancelButtonText: 'No',
+                                                background: '#ffff',  // Black theme background
+                                                color: 'black'           // Text color white
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    // Change button color if confirmed
+                                                    const button = form.querySelector('button');
+                                                    button.classList.remove('btn-success', 'btn-danger');
+                                                    button.classList.add('btn-secondary'); // You can adjust this color as needed
+                                        
+                                                    // Submit the form if the user confirms
+                                                    form.submit();
+                                                }
+                                            });
+                                        
+                                            return false; // Always prevent default form submission
+                                        }
+
+                            </script>
+                        </table>
+
+                        <!-- Pagination Controls -->
+                    <nav aria-label="User pagination">
+                        <ul class="pagination justify-content-center">
+                            <% if (currentPage > 1) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
+                                </li>
+                            <% } %>
+                            <% for (let i = 1; i <= totalPages; i++) { %>
+                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                                </li>
+                            <% } %>
+                            <% if (currentPage < totalPages) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </nav>
+                    </div>
+                    <div class="card-footer border-0 py-5">
+                        <span class="text-muted text-sm"></span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
