@@ -1,0 +1,184 @@
+<%-include('partials/header.ejs')%>
+<link rel="stylesheet" href="/stylesheet/orderSuccess.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+<style>
+    .header {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 10;
+    }
+    
+  
+.header {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 10;
+}
+/* General Styling */
+.header {
+    position: relative;
+    z-index: 10;
+    background: #fff;
+    padding: 10px 0;
+}
+
+/* Flexbox Alignment for Header Content */
+.header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap; /* Ensure everything stays on one line */
+}
+
+/* Logo Styling */
+.header__logo img {
+    max-height: 40px;
+    max-width: 150px;
+}
+
+/* Navigation Menu Styling */
+.header__menu ul {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+.header__menu ul li {
+    position: relative;
+}
+
+.header__menu ul li a {
+    text-decoration: none;
+    color: #333;
+    padding: 5px 10px;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.header__menu ul li a:hover {
+    color: #007bff; /* Highlight on hover */
+}
+
+/* Dropdown Styling */
+.header__menu ul li .dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    list-style: none;
+}
+
+.header__menu ul li:hover .dropdown {
+    display: block;
+}
+
+/* Right Options Styling */
+.header__nav__option {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header__nav__option .search-bar {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 150px;
+}
+
+.header__nav__option a img {
+    height: 20px;
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+    .header__content {
+        flex-wrap: wrap; /* Stack items on smaller screens */
+    }
+
+    .header__menu ul {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .header__nav__option {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .header__nav__option .search-bar {
+        flex-grow: 1;
+    }
+}
+
+</style>
+<header class="header" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <div class="container">
+        <div class="header__content">
+            <!-- Logo Section -->
+            <div class="header__logo">
+                <a href="/user/">
+                    <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+<!-- Header Section End -->
+
+
+
+
+
+
+  
+  
+  
+  <!-- start of main -->
+  <div >
+  <div class="container">
+  
+    <div class="row">
+      <div class="col-12 ">
+        <div class="message-box">
+        <div class="success-container">
+          
+          <br>
+          <img src="https://scontent-lcy1-1.xx.fbcdn.net/v/t1.6435-9/31301640_2114242505489348_3921532491046846464_n.png?_nc_cat=104&ccb=1-3&_nc_sid=973b4a&_nc_ohc=pfOalMq8BzUAX-k-rhY&_nc_ht=scontent-lcy1-1.xx&oh=3af014dd12fa6e3d1816a3425a80e516&oe=609BE04A" alt="" style="height: 100px;">
+          <br>
+          <div style="padding-left: 5%; padding-right: 5%">
+          <hr
+          </div>
+          <br>
+          <h1 class="monserrat-font" style="color: Grey">Thank you for your order</h1>
+          <br>
+            
+            <div class="confirm-green-box">
+              <br>
+              <h5>ORDER CONFIRMATION</h5>
+              <p>Your order `<%=orderId%>` has been sucessful!</p>
+              <p>Thank you for choosing ShoppyCart. You will shortly receive a confirmation email.</p>
+            </div>
+  
+            <br>
+            <button onclick="window.location.href = '/user/home'" id="create-btn" class="btn btn-ouioui-secondary margin-left-5px">Back to shop</button>
+            </div>
+            
+          </div>
+      </div>
+    </div>
+  
+  </div>
+  </div>
+  <!-- end of main -->
+    
+

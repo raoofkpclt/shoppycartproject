@@ -50,25 +50,44 @@
                                 <tr>
                                     <th scope="col">Id</th>
                                     <th scope="col">Category</th>
+                                    <th scope="col">Status</th>
                                     <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <% categories.forEach((category, index) => { %>
-                                    <% if (category.isActive) { %> <!-- Only render if isActive is true -->
+                
                                         <tr>
                                             <td>C<%= Math.floor(Math.random() * 900) + 100 %></td>
                                             <td><%= category.name %></td>
-                                            <td>
+                                            <td> <div class="btn badge-<%= category.isActive ?   'success':'danger' %>">
+                                                <%= category.isActive ? 'Active':'Inactive' %>
+                                            </div></td>
+                                            <!-- <td>
                                                 <form id="deleteCategoryForm-<%= category._id %>" action="/admin/deleteCategory/<%= category._id %>" method="POST" style="display:inline;" onsubmit="return confirmDeleteCategory(event, this)">
                                                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                                 </form>
                                                 
-                                                <a href="/admin/editCategory/<%= category._id %>" class="btn btn-primary btn-sm">Edit</a>
+                                              
                                             
+                                            </td> -->
+                                            <td>
+                                                <% if(category.isActive){%>
+                                                    <form  id="unlistForm-<%= category._id %>" action="/admin/deleteCategory" method="POST" style="display:inline;" onsubmit="return confirmDeleteCategory(event, 'Are you sure you want to unlist this category?', this)">
+                                                        <input type="hidden" name="categoryId" value="<%= category._id %>">
+                                                        <button type="submit" class="btn btn-success">Unlist</button>
+                                                    </form>
+                                                    <%}else{%>
+                                                        <form id="listForm-<%= category._id %>" action="/admin/activeCategory" method="POST" style="display:inline;" onsubmit="return confirmDeleteCategory(event, 'Are you sure you want to List this category?', this)">
+                                                            <input type="hidden" name="categoryId" value="<%= category._id %>">
+                                                            <button type="submit" class="btn btn-danger">List</button>
+                                                        </form>
+                                                       
+                                                    <% } %>
+
+                                                    <a href="/admin/editCategory/<%= category._id %>" class="btn btn-primary btn">Edit</a>
                                             </td>
                                         </tr>
-                                    <% } %>
                                 <% }) %>
                                
                             </tbody>
@@ -77,31 +96,41 @@
                             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
                             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-                            <script>
-                    function confirmDeleteCategory(event, form) {
-                                event.preventDefault(); // Prevent immediate form submission
-        
-                                // Show SweetAlert confirmation dialog
-                                Swal.fire({
-                                    title: 'Are you sure you want to delete this category?',
-                                    icon: 'warning',
-                                    showCancelButton: true,
-                                    confirmButtonColor: '#3085d6',
-                                    cancelButtonColor: '#d33',
-                                    confirmButtonText: 'Yes, delete it!',
-                                    cancelButtonText: 'No, cancel',
-                                    background: '#fff',  // Black theme background
-                                    color: 'black'           // Text color white
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        // Submit the form if confirmed
-                                        form.submit();
-                                    }
-                                });
-        
-                                return false;  // Always prevent default form submission
-                            }
-                            </script>
+
+                             
+                               <script>
+   
+                                    function  confirmDeleteCategory(event, message, form) {
+                                               event.preventDefault(); // Prevent the form from submitting immediately
+                                           
+                                               // Show SweetAlert confirmation dialog
+                                               Swal.fire({
+                                                   title: message,
+                                                   icon: 'warning',
+                                                   showCancelButton: true,
+                                                   confirmButtonColor: 'green',
+                                                   cancelButtonColor: 'red',
+                                                   confirmButtonText: 'Yes',
+                                                   cancelButtonText: 'No',
+                                                   background: '#ffff',  // Black theme background
+                                                   color: 'black'           // Text color white
+                                               }).then((result) => {
+                                                   if (result.isConfirmed) {
+                                                       // Change button color if confirmed
+                                                       const button = form.querySelector('button');
+                                                       button.classList.remove('btn-success', 'btn-danger');
+                                                       button.classList.add('btn-secondary'); // You can adjust this color as needed
+                                           
+                                                       // Submit the form if the user confirms
+                                                       form.submit();
+                                                   }
+                                               });
+                                           
+                                               return false; // Always prevent default form submission
+                                           }
+   
+                             </script>
+
                         </table>
                     </div>
                     <div class="card-footer border-0 py-5">

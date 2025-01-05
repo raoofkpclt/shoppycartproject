@@ -60,9 +60,32 @@
 			const handleSignInGoogle = () => {
     			window.open("http://localhost:3002/user/auth/google", "_id");
 			};
-
-
 		</script>
+		
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+		<% if (message) { %>
+			<script>
+				Swal.fire({
+					icon: 'success',
+					title: '<%=message %>',
+					showConfirmButton: false,
+					timer: 1500
+				})
+			</script>
+
+
+		<% } %>
+		<% if (error) { %>
+			<script>
+				Swal.fire({
+					icon: 'error',
+					title: '<%=error%>',
+					showConfirmButton: false,
+					timer: 1500
+				})
+			</script>
+		<% } %>
+		
 		
 	</body>
 </html>

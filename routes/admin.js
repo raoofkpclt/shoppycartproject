@@ -21,7 +21,8 @@ router.post('/unblockUser',adminController.unblockUser);
 router.get('/categoryManagement',adminAuth.checkSession,adminController.categoryManagement);
 router.get('/addCategory',adminAuth.checkSession,adminController.createCategory)
 router.post('/addCategory',adminController.addCategory)
-router.post('/deleteCategory/:id',adminController.deleteCategory)
+router.post('/deleteCategory',adminController.deleteCategory)
+router.post('/activeCategory',adminController.activeCategory)
 router.get('/editCategory/:id',adminAuth.checkSession,adminController.loadEditCategory)
 router.post('/editCategory/:id',adminController.editCategory)
 
@@ -31,6 +32,9 @@ router.post('/addProduct',upload.array('images', 3),adminController.addProduct);
 router.post('/editProduct',upload.array('images', 12),adminController.editProduct);
 router.post('/deleteProduct/:id', adminController.deleteProduct);
 
+//order management
+router.get('/orderManagement',adminAuth.checkSession,adminController.orderManagement);
+router.post('/changeOrderStatus/:id',adminAuth.checkSession,adminController.orderStatus);
 
 //logout router
 router.get('/logout',adminAuth.checkSession,adminController.logout)

@@ -1,46 +1,63 @@
 <%-include('partials/header.ejs')%>
+<link rel="stylesheet" href="/stylesheet/productDetails.css">
 
-<div class="container">
-    <div class="row">
-        <div class="col-lg-3 col-md-3">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<header class="header" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <div class="container">
+        <div class="header__content">
+            <!-- Logo Section -->
             <div class="header__logo">
-                <a href="/user/"><img style="height: 30px;width: 140px;" src="/image/Shoppycartfinel.png" alt=""></a>
+                <a href="/user/">
+                    <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
+                </a>
             </div>
-        </div>
-        <div class="col-lg-6 col-md-6">
-            <nav class="header__menu mobile-menu">
+            <!-- Navigation Menu -->
+            <nav class="header__menu">
                 <ul>
-                    <li><a href="/user/">Home</a></li>
-                    <li class="active"><a href="/user/productList">Shop</a></li>
+                    <li ><a href="/user/">Home</a></li>
+                    <li class="active" ><a href="/user/productList">Shop</a></li>
                     <li><a href="#">Pages</a>
                         <ul class="dropdown">
-                            <li><a href="#">About Us</a></li>
-                            <li><a href="#">Shop Details</a></li>
-                            <li><a href="#">Shopping Cart</a></li>
-                            <li><a href="#">Check Out</a></li>
-                            <li><a href="#">Blog Details</a></li>
+                            <li><a style="color: black;" href="./about.html">About Us</a></li>
+                            <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
+                            <li><a style="color: black;" href="./shopping-cart.html">Shopping Cart</a></li>
+                            <li><a style="color: black;" href="./checkout.html">Check Out</a></li>
+                            <li><a style="color: black;" href="./blog-details.html">Blog Details</a></li>
                         </ul>
                     </li>
-                    <li><a href="#">Account</a></li>
-                    <li><a href="#">Contacts</a></li>
+                    <li><a href="#">Contact</a> </li>
+                  
+                    <li><a href="#">Blog</a></li>
                 </ul>
             </nav>
-        </div>
-        <div class="col-lg-3 col-md-3">
+            <!-- Right Options -->
+
             <div class="header__nav__option">
-                <a href="#" class="search-switch"><img src="/img/icon/search.png" alt=""></a>
-                <a href="#"><img src="/img/icon/heart.png" alt=""></a>
-                <a href="#"><img src="/img/icon/cart.png" alt=""> <span>0</span></a>
-                <div class="price">$0.00</div>
+                <a href="/user/profile">
+                    <i class="fas fa-user" style="font-size: 24px; color: black;"></i> 
+                </a>
+                
+                <a href="/user/wishlist">
+                    <i class="fas fa-heart" style="font-size: 24px; color: black;"></i> 
+                </a>
+                
+                <a href="/user/cart">
+                    <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
+                </a>
+                <a href="/user/logout">
+                    <i class="fas fa-sign-out-alt" style="font-size: 24px; color: black;"></i> 
+                </a>
             </div>
+            
         </div>
     </div>
-    <div class="canvas__open"><i class="fa fa-bars"></i></div>
-</div>
 </header>
 <!-- Header Section End -->
 
 <!-- breadcrumb -->
+
+
+
 <div class="container" style="margin-top: 50px;">
     <div class="bread-crumb flex-w p-l-25 p-r-15 p-t-30 p-lr-0-lg">
         <a href="/user/home" class="stext-109 cl8 hov-cl1 trans-04">
@@ -110,103 +127,7 @@
                             
                                 </script>
                         
-                        <style>
-                        .zoom-container {
-position: relative; /* Positioning context for the lens */
-display: inline-block; /* Keep it inline with other elements */
-}
-
-.zoom-image {
-transition: transform 0.5s ease; /* Smooth transition for the zoom effect */
-}
-
-.zoom-lens {
-position: absolute;
-border: 2px solid #fff; /* Border color of the lens */
-border-radius: 50%; /* Make it round */
-cursor: crosshair; /* Change cursor to crosshair when hovering */
-width: 300px; /* Size of the lens */
-height: 300px; /* Size of the lens */
-opacity: 0; /* Start with it hidden */
-pointer-events: none; /* Make it non-interactive */
-transition: opacity 0.2s; /* Smooth opacity transition */
-background: rgba(255, 255, 255, 0.5); /* Optional: semi-transparent background */
-}
-
-.zoom-container:hover .zoom-lens {
-opacity: 1; /* Show the lens on hover */
-}
-.star-rating {
-font-size: 24px;
-color: gold;
-}
-
-.star-rating i {
-margin-right: 5px;
-}
-.review-row {
-display: flex;
-justify-content: start; /* Ensures equal space between star rating and text */
-align-items: center; /* Aligns star rating and text vertically in the center */
-gap: 10px; /* Adds space between the star rating and the text */
-}
-
-.star-rating {
-font-size: 24px;
-color: gold;
-}
-
-.star-rating i {
-margin-right: 5px;
-}
-
-p {
-margin: 0; /* Removes extra margin from the paragraph */
-font-size: 16px;
-color: #555;
-}
-.pincode-box {
-display: flex;
-justify-content: space-between;
-align-items: center;
-width: 359px;
-height: 64px;
-border: 2px solid grey;
-background-color: white;
-padding: 0 10px;
-box-sizing: border-box; /* Ensure padding doesn't affect width */
-border-radius: 8px; /* Optional for rounded corners */
-margin-top: 20px;
-}
-
-.pincode-box label {
-font-size: 14px;
-color: #ffffff; /* Dark grey for label text */
-}
-
-.pincode-box input {
-flex: 1; /* Take up the available space */
-height: 40px;
-padding: 5px 10px;
-border: 0px solid #ccc;
-border-radius: 4px;
-font-size: 16px;
-margin-right: 10px;
-}
-
-.pincode-box button {
-padding: 10px 15px;
-background-color: #4CAF50; /* Green background */
-color: white;
-border: none;
-border-radius: 4px;
-cursor: pointer;
-}
-
-.pincode-box button:hover {
-background-color: #45a049; /* Darker green on hover */
-}
-                       </style>
+                     
                         <script>
                             document.querySelectorAll('.zoom-container').forEach(container => {
 const img = container.querySelector('.zoom-image');
@@ -257,36 +178,12 @@ container.addEventListener('mousemove', (e) => {
                     </span>
                     
                 
-                    <p class="stext-102 cl3 p-t-23">
-                        <%= product.description %> <!-- Display product description -->
-                    </p>
+                  
                     <div class="custom-div">
                         <p class="small-text"><%= product.categoryId.name ? product.categoryId.name : 'No category' %></p>
                     </div>
                     <style>
-                        .stock-status {
-                            padding: 10px;
-                            border-radius: 5px;
-                            font-weight: bold;
-                            text-align: center;
-                            margin: 10px 0;
-                        }
-                        .in-stock {
-                            color: green;
-                            background-color: #d4edda; /* Light green background */
-                        }
-                        .low-stock {
-                            color: orange;
-                            background-color: #fff3cd; /* Light orange background */
-                        }
-                        .sold-out {
-                            color: red;
-                            background-color: #f8d7da; /* Light red background */
-                        }
-                        .unavailable {
-                            color: gray;
-                            background-color: #e2e3e5; /* Light gray background */
-                        }
+                     
                     </style>
                     
                     <div class="custom-div1">
@@ -300,82 +197,210 @@ container.addEventListener('mousemove', (e) => {
 </p>
 
                     </div>
-                
-                    <!-- Add to Cart Form -->
-                    <form id="add-to-cart-form-<%= product._id %>">
-                        <input type="hidden" name="productId" value="<%= product._id %>">
-                        <% if (product.stock > 0) { %>
-                            <button type="submit" class="btn btn-primary py-2 px-3">
-                                <i class="bi bi-cart-check"></i> Add to Cart
-                            </button>
-                        <% } else { %>
-                            <button type="button" class="btn btn-danger" disabled>Sold Out</button>
-                        <% } %>
-                    </form>
+
+                    <!-- Rating Section -->
+					<div class="rating-container mb-4">
+						<div class="stars">
+							<i class="fa fa-star filled"></i>
+							<i class="fa fa-star filled"></i>
+							<i class="fa fa-star filled"></i>
+							<i class="fa fa-star-half-o"></i>
+							
+						</div>
+						<span class="rating-text">(4.3/5)</span>
+					</div>
+
+
+                    <div>
+                        <p> 
+                            Lorem ipsum dolor sit amet, consectetur adipisicing elPellentesque vehicula augue eget nisl ullamcorper, molestie
+                            blandit ipsum auctor Lorem ipsum dolor sit amet, consectetur adipisicing elPellentesque vehicula
+                        </p>
+                            <br>
+                    </div>
+
+                    <!-- <div class="product__details__option">
+                        <div class="product__details__option__size">
+                            <span>Size:</span>
+                            <label for="xxl">xxl
+                                <input type="radio" id="xxl">
+                            </label>
+                            <label class="active" for="xl">xl
+                                <input type="radio" id="xl">
+                            </label>
+                            <label for="l">l
+                                <input type="radio" id="l">
+                            </label>
+                            <label for="sm">s
+                                <input type="radio" id="sm">
+                            </label>
+                        </div>
+                        <div class="product__details__option__color">
+                            <span>Color:</span>
+                            <label class="c-1" for="sp-1">
+                                <input type="radio" id="sp-1">
+                            </label>
+                            <label class="c-2" for="sp-2">
+                                <input type="radio" id="sp-2">
+                            </label>
+                            <label class="c-3" for="sp-3">
+                                <input type="radio" id="sp-3">
+                            </label>
+                            <label class="c-4" for="sp-4">
+                                <input type="radio" id="sp-4">
+                            </label>
+                            <label class="c-9" for="sp-9">
+                                <input type="radio" id="sp-9">
+                            </label>
+                        </div>
+                    </div> 
+                     -->
+        
                     
-                    <script>
-                        document.querySelectorAll('form[id^="add-to-cart-form-"]').forEach(form => {
-form.addEventListener('submit', async (e) => {
-    e.preventDefault(); // Prevent the form from submitting normally
+                  <!-- Add to Cart Form -->
+<div style="display: flex; gap: 10px; align-items: center;">
+   
+        <% if (product.stock > 0) { %>
+            <form onsubmit="return addToCart(event, '<%= product._id %>')" class="cart-form">
+                <input type="hidden" name="product_id" value="<%= product._id %>">
+                <button type="submit" class="btn btn-warning py-2 px-3">
+                    <i class="fa fa-shopping-cart"></i> Add to Cart
+                </button>
+            </form>
+        <% } else { %>
+            <button type="button" class="btn btn-danger fa fa-times-circle " disabled>  Sold Out</button>
+        <% } %>
+    </form>
 
-    const form = e.target;
-
-    console.log(form);
-
-    let productId = form.id.split('-')[4];
-
-    const formData = new FormData(form);
-    formData.append('productId', productId);
-
-    try {
-        console.log("Submitting form...");
-
-        const response = await fetch(`/cart/addProducts/${productId}`, {
+   
+    <button type="submit"  onclick="addToWishlist('<%= product._id %>')"  class="btn btn-warning py-2 px-3">
+        <i class="fa fa-heart"></i>  Add to Wishlist
+    </button>
+   
+    
+   
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function addToCart(event, productId) {
+        event.preventDefault();
+        
+        fetch(`/user/cart/addProducts/${productId}`, {
             method: 'POST',
-        });
-
-        const data = await response.json(); // Parse the JSON response
-
-        console.log("Response data:", data); // Debugging message to check the response
-
-        if (data.success) {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Failed to add product to cart'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
             Swal.fire({
-                title: 'Success',
-                text: data.message, // Success message from the server
-                icon: 'success',
-                confirmButtonText: 'OK'
-            });
-        } else {
-            Swal.fire({
-                title: 'Error',
-                text: data.message, // Error message from the server
                 icon: 'error',
-                confirmButtonText: 'Try Again'
+                title: 'Error',
+                text: 'Something went wrong while adding to cart!'
             });
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        Swal.fire({
-            title: 'Error',
-            text: 'An error occurred while adding the item to the cart.',
-            icon: 'error',
-            confirmButtonText: 'Try Again'
         });
+    
+        return false;
     }
-});
-});
+</script>
+<script>
+    function addToWishlist(productId) {
+        $.ajax({
+            url: '/user/addToWishlist',
+            method: 'POST',
+            data: {
+                productId: productId
+            },
+            success: (response) => {
+                if (response.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Wishlist',
+                        text: "The product has been added to your wishlist",
+                        showConfirmButton: false,
+                        timer: 1500
+                    })
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Already in Wishlist',
+                        text: response.message,
+                        timer: 1500
+                    })
+                }
+            },
+            error: (error) => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong while adding to wishlist!',
+                    timer: 1500
+                })
+            }
+        })
+    }
+</script>
 
-                    </script>
-                    
+    
                     <!-- Additional Elements -->
-                    
-                
-                    
                 </div>
                 
             </div>
             
         </div>
+        <div style="padding: 10px;">
+            <p class="stext-102 cl3 p-t-23">
+                <%= product.description %> <!-- Display product description -->
+            </p>
+        </div>
+        
+
+
+<div class="add-review" >
+    <h4>Add a review</h4>
+    <form action="#" method="post">
+       <textarea  type="text name="Message" required="" placeholder="Write Something........" style="background-color: rgb(237, 237, 237);" class="rounded"></textarea>
+        <button type="submit" class="btn btn-primary" style="height: 33px; width: 90px; display: flex; justify-content: center; align-items: center; text-align: center;">SEND</button>
+
+    </form>
+</div>
+
+<div class="tab3">
+
+    <div class="single_page">
+        <h6><%= product.productName %></h6>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elPellentesque vehicula augue eget nisl ullamcorper, molestie
+            blandit ipsum auctor. Mauris volutpat augue dolor.Consectetur adipisicing elit, sed do eiusmod tempor incididunt
+            ut lab ore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco. labore et dolore
+            magna aliqua.</p>
+        <p class="para">Lorem ipsum dolor sit amet, consectetur adipisicing elPellentesque vehicula augue eget nisl ullamcorper, molestie
+            blandit ipsum auctor. Mauris volutpat augue dolor.Consectetur adipisicing elit, sed do eiusmod tempor incididunt
+            ut lab ore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco. labore et dolore
+            magna aliqua.</p>
+    </div>
+</div>
+     
+    </div>
+
     </section>
 
 <!-- Related Products -->
@@ -422,10 +447,12 @@ form.addEventListener('submit', async (e) => {
             <% }); %> <!-- End of loop -->
         </div>
         
+        
                 
             </div>
         </div>
     </div>
+
 </section>
 
 <%-include('partials/footer.ejs')%>

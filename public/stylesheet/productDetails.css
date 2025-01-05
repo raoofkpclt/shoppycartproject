@@ -1,0 +1,315 @@
+.header {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 10;
+}
+
+
+.header {
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+position: relative;
+z-index: 10;
+}
+/* General Styling */
+.header {
+position: relative;
+z-index: 10;
+background: #fff;
+padding: 10px 0;
+}
+
+/* Flexbox Alignment for Header Content */
+.header__content {
+display: flex;
+align-items: center;
+justify-content: space-between;
+flex-wrap: nowrap; /* Ensure everything stays on one line */
+}
+
+/* Logo Styling */
+.header__logo img {
+max-height: 40px;
+max-width: 150px;
+}
+
+/* Navigation Menu Styling */
+.header__menu ul {
+display: flex;
+list-style: none;
+gap: 20px;
+margin: 0;
+padding: 0;
+}
+
+.header__menu ul li {
+position: relative;
+}
+
+.header__menu ul li a {
+text-decoration: none;
+color: #333;
+padding: 5px 10px;
+font-weight: 600;
+transition: color 0.3s;
+}
+
+.header__menu ul li a:hover {
+color: #007bff; /* Highlight on hover */
+}
+
+/* Dropdown Styling */
+.header__menu ul li .dropdown {
+display: none;
+position: absolute;
+top: 100%;
+left: 0;
+background: #fff;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+padding: 10px;
+list-style: none;
+}
+
+.header__menu ul li:hover .dropdown {
+display: block;
+}
+
+/* Right Options Styling */
+.header__nav__option {
+display: flex;
+align-items: center;
+gap: 15px;
+}
+
+.header__nav__option .search-bar {
+padding: 5px;
+border: 1px solid #ddd;
+border-radius: 4px;
+width: 150px;
+}
+
+.header__nav__option a img {
+height: 20px;
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+.header__content {
+    flex-wrap: wrap; /* Stack items on smaller screens */
+}
+
+.header__menu ul {
+    flex-direction: column;
+    gap: 10px;
+}
+
+.header__nav__option {
+    justify-content: space-between;
+    width: 100%;
+}
+
+.header__nav__option .search-bar {
+    flex-grow: 1;
+}
+}
+
+/* zoom*/
+
+.zoom-container {
+    position: relative; /* Positioning context for the lens */
+    display: inline-block; /* Keep it inline with other elements */
+    }
+    
+    .zoom-image {
+    transition: transform 0.5s ease; /* Smooth transition for the zoom effect */
+    }
+    
+    .zoom-lens {
+    position: absolute;
+    border: 2px solid #fff; /* Border color of the lens */
+    border-radius: 50%; /* Make it round */
+    cursor: crosshair; /* Change cursor to crosshair when hovering */
+    width: 300px; /* Size of the lens */
+    height: 300px; /* Size of the lens */
+    opacity: 0; /* Start with it hidden */
+    pointer-events: none; /* Make it non-interactive */
+    transition: opacity 0.2s; /* Smooth opacity transition */
+    background: rgba(255, 255, 255, 0.5); /* Optional: semi-transparent background */
+    }
+    
+    .zoom-container:hover .zoom-lens {
+    opacity: 1; /* Show the lens on hover */
+    }
+    .star-rating {
+    font-size: 24px;
+    color: gold;
+    }
+    
+    .star-rating i {
+    margin-right: 5px;
+    }
+    .review-row {
+    display: flex;
+    justify-content: start; /* Ensures equal space between star rating and text */
+    align-items: center; /* Aligns star rating and text vertically in the center */
+    gap: 10px; /* Adds space between the star rating and the text */
+    }
+    
+    .star-rating {
+    font-size: 24px;
+    color: gold;
+    }
+    
+    .star-rating i {
+    margin-right: 5px;
+    }
+    
+    p {
+    margin: 0; /* Removes extra margin from the paragraph */
+    font-size: 16px;
+    color: #555;
+    }
+    .pincode-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 359px;
+    height: 64px;
+    border: 2px solid grey;
+    background-color: white;
+    padding: 0 10px;
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+    border-radius: 8px; /* Optional for rounded corners */
+    margin-top: 20px;
+    }
+    
+    .pincode-box label {
+    font-size: 14px;
+    color: #ffffff; /* Dark grey for label text */
+    }
+    
+    .pincode-box input {
+    flex: 1; /* Take up the available space */
+    height: 40px;
+    padding: 5px 10px;
+    border: 0px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-right: 10px;
+    }
+    
+    .pincode-box button {
+    padding: 10px 15px;
+    background-color: #4CAF50; /* Green background */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    }
+    
+    .pincode-box button:hover {
+    background-color: #45a049; /* Darker green on hover */
+    
+    
+    }
+    
+    /*  */
+    /* Add space between the Add to Cart button and variants */
+    .cart-btn {
+        margin-bottom: 15px; /* Adds spacing below the button */
+    }
+    
+    /* Styling the size options */
+    .product__details__option__size {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .product__details__option__size span {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    
+    .product__details__option__size label {
+        margin-right: 10px;
+        cursor: pointer;
+    }
+    
+    /* Styling the color options */
+    .product__details__option__color {
+        margin-bottom: 10px;
+    }
+    
+    .product__details__option__color span {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    
+    
+    /* Add background colors to the color labels for visual distinction */
+    .c-1 {
+        background-color: #ff0000;
+    }
+    
+    .c-2 {
+        background-color: #00ff00;
+    }
+    
+    .c-3 {
+        background-color: #0000ff;
+    }
+    
+    .c-4 {
+        background-color: #ffff00;
+    }
+    
+    .c-9 {
+        background-color: #ff00ff;
+    }
+    
+    .btn-1{
+        background-color: #ff7715;
+        color: rgb(0, 0, 0);
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+    .btn{
+        background-color: #ffc415;
+        color: rgb(0, 0, 0);
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+    
+    
+.btn-1:hover{
+    background-color: #ff7715;
+}
+
+.stock-status {
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+}
+.in-stock {
+    color: green;
+    background-color: #d4edda; /* Light green background */
+}
+.low-stock {
+    color: orange;
+    background-color: #fff3cd; /* Light orange background */
+}
+.sold-out {
+    color: red;
+    background-color: #f8d7da; /* Light red background */
+}
+.unavailable {
+    color: gray;
+    background-color: #e2e3e5; /* Light gray background */
+}

@@ -1,45 +1,61 @@
 
 <%- include('./partials/header') %>
+<link rel="stylesheet" href="/stylesheet/home.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-<body>
+
+<header class="header" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-3 col-md-3 " style="position: sticky;">
-                <div class="header__logo ">
-                    <a href="/user/"><img style="height: 30px;width: 140px;" src="/image/Shoppycartfinel.png" alt=""></a>
-                </div>
+        <div class="header__content">
+            <!-- Logo Section -->
+            <div class="header__logo">
+                <a href="/user/">
+                    <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
+                </a>
             </div>
-            <div class="col-lg-6 col-md-6">
-                <nav class="header__menu mobile-menu">
-                    <ul>
-                        <li class="active"><a href="/user/">Home</a></li>
-                        <li><a href="/user/productList">Shop</a></li>
-                        <li><a href="#">Pages</a>
-                            <ul class="dropdown">
-                                <li><a href="#">About Us</a></li>
-                                <li><a href="#">Shop Details</a></li>
-                                <li><a href="#">Shopping Cart</a></li>
-                                <li><a href="#">Check Out</a></li>
-                                <li><a href="#">Blog Details</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="/user/login">Account</a></li>
-                        <li><a href="#">Contacts</a></li>
-                    </ul>
-                </nav>
+            <!-- Navigation Menu -->
+            <nav class="header__menu">
+                <ul>
+                    <li class="active"><a href="/user/">Home</a></li>
+                    <li ><a href="/user/productList">Shop</a></li>
+                    <li><a href="#">Pages</a>
+                        <ul class="dropdown">
+                            <li><a style="color: black;" href="./about.html">About Us</a></li>
+                            <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
+                            <li><a style="color: black;" href="./shopping-cart.html">Shopping Cart</a></li>
+                            <li><a style="color: black;" href="./checkout.html">Check Out</a></li>
+                            <li><a style="color: black;" href="./blog-details.html">Blog Details</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#">Contact</a> </li>
+                  
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </nav>
+            <!-- Right Options -->
+
+            <div class="header__nav__option">
+                <a href="/user/profile">
+                    <i class="fas fa-user" style="font-size: 24px; color: black;"></i> 
+                </a>
+                
+                <a href="/user/wishlist">
+                    <i class="fas fa-heart" style="font-size: 24px; color: black;"></i> 
+                </a>
+                
+                <a href="/user/cart">
+                    <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
+                </a>
+                <a href="/user/logout">
+                    <i class="fas fa-sign-out-alt" style="font-size: 24px;color: black;"></i> 
+                </a>
             </div>
-            <div class="col-lg-3 col-md-3">
-                <div class="header__nav__option">
-                    <a href="#" class="search-switch"><img src="/img/icon/search.png" alt=""></a>
-                    <a href="#"><img src="/img/icon/heart.png" alt=""></a>
-                    <a href="#"><img src="/img/icon/cart.png" alt=""> <span>0</span></a>
-                    <div class="price">$0.00</div>
-                </div>
-            </div>
+            
         </div>
-        <div class="canvas__open"><i class="fa fa-bars"></i></div>
     </div>
 </header>
+
+
 <!-- Header Section End -->
 
 <!-- Hero Section Begin -->

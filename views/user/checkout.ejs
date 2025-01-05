@@ -1,0 +1,337 @@
+<%-include('partials/header.ejs')%>
+<link rel="stylesheet" href="/stylesheet/checkout.css">
+<header class="header" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <div class="container">
+       
+            <!-- Logo Section -->
+            <div class="header__logo">
+                <a href="/user/">
+                    <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
+                </a>
+            </div>
+          
+          
+     
+    </div>
+</header>
+
+
+<!-- Header Section End -->
+
+<div class="modal fade" id="addAddressModal" tabindex="-1" role="dialog" aria-labelledby="addAddressModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAddressModalLabel">Add New Address</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="newAddressForm">
+                    <div class="form-group">
+                        <label for="newName">Full Name</label>
+                        <input type="text" class="form-control" id="newName"  required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newAddress">Address</label>
+                        <input type="text" class="form-control" id="newAddress"required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newLocality">locality</label>
+                        <input type="text" class="form-control" id="newLocality"required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newCity">City</label>
+                        <input type="text" class="form-control" id="newCity"  required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newState">State</label>
+                        <input type="text" class="form-control" id="newState"  required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPhone">Mobile</label>
+                        <input type="text" class="form-control" id="newPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPincode">Postal Code</label>
+                        <input type="text" class="form-control" id="newPincode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newAlternatePhone">alternate Number</label>
+                        <input type="text" class="form-control" id="newAlternatePhone" >
+                    </div>
+                    <div class="form-group">
+                        <label for="newLandmark">Landmark</label>
+                        <input type="text" class="form-control" id="newLandmark" >
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveNewAddress()">Save Address</button>
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="container" style="margin-top: 80px;">
+        <h2>Checkout</h2>
+        
+        <div class="row">
+            <!-- Left Column: Cart Items and Total -->
+            <div>
+                <div class="cart-items mb-4">
+                    <h4>Your Cart Items</h4>
+                    <% if (items.length > 0) { %>
+                        <ul class="list-group">
+                            <% items.forEach(item => { %>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div class="flex-col d-flex align-items-center">
+                                        <img src="/uploads/<%= item.imageUrl %>" alt="<%= item.name %>" width="50" height="70" class="me-2">
+                                        <strong class="me-2"><%= item.name %></strong> (x<%= item.quantity %>)
+                                    </div>
+                                    <span>₹<%= item.price * item.quantity %></span>
+                                </li>
+                            <% }) %>
+                        </ul>
+                    <% } else { %>
+                        <p>Your cart is empty.</p>
+                    <% } %>
+                </div>
+
+                <div class="border">
+                    <div class="d-flex">
+                        <span>Subtotal:</span>
+                        <span>₹<%=cartTotal%></span>
+                    </div>
+                    <div class="d-flex">
+                        <span>Discount:</span>
+                        <span id="discountAmount">- ₹0</span>
+                    </div>
+                    <div class="d-flex">
+                        <span>Offer Applied:</span>
+                        <span id="discountAmount">₹0</span>
+                    </div>
+                    <div class="d-flex font-weight-bold">
+                        <span>Total:</span>
+                        <span id="totalAmount">₹<%=cartTotal%></span>
+                    </div>
+                </div>
+            </div>
+                
+           <!-- Right Column: Address Selection -->
+<div>
+    <h4>Select Saved Address</h4>
+    <form id="checkoutForm" method="post" action="/user/order"> 
+        <div class="form-group">
+            <label for="addressSelect">Saved Addresses</label>
+            <% if (addresses.length > 0) { %>
+                <select id="addressSelect" class="form-control" onchange="selectAddressFromDropdown()" required>
+                    <option value="">-- Select Address --</option>
+                    <% addresses.forEach(address => { %>
+                        <option value="<%= address._id %>" 
+                                data-name="<%= address.name %>" 
+                                data-address="<%= address.address %>" 
+                                data-locality="<%= address.locality %>" 
+                                data-city="<%= address.city %>" 
+                                data-state="<%= address.state %>" 
+                                data-phone="<%= address.phone %>" 
+                                data-pincode="<%= address.pincode %>" 
+                                data-alternatePhone="<%= address.alternatePhone %>" 
+                                data-landmark="<%= address.landmark %>">
+                            <%= address.name %>: <%= address.address %>, <%= address.locality %>, 
+                            <%= address.city %>, <%= address.state %>, <%= address.phone %>, 
+                            <%= address.pincode %>, <%= address.alternatePhone %>, 
+                            <%= address.landmark %>
+                        </option>
+                    <% }) %>
+                </select>
+            <% } else { %>
+                <p class="text-danger">No saved addresses found. Please add a new address.</p>
+                <!-- <button type="button" class="btn btn-primary" onclick="window.location.href='/user/check'">
+                    Add Address
+                </button> -->
+            <% } %>
+            
+        </div>
+        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#addAddressModal">
+            Add New Address
+        </button>
+        <!-- Hidden Inputs for Address Details -->
+        <input type="hidden" id="selectedAddress" name="addressId" required>
+        <input type="hidden" id="name" name="name" required>
+        <input type="hidden" id="address" name="address" required>
+        <input type="hidden" id="locality" name="locality" required>
+        <input type="hidden" id="city" name="city" required>
+        <input type="hidden" id="state" name="state" required>
+        <input type="hidden" id="phone" name="phone" required>
+        <input type="hidden" id="pincode" name="pincode" required>
+        <input type="hidden" id="alternatePhone" name="alternatePhone">
+        <input type="hidden" id="landmark" name="landmark">
+
+    
+        <!-- Payment Method -->
+        <h4 class="mt-4">Payment Method</h4>
+        <div class="form-group">
+            <div class="form-check">
+                <input
+                    class="form-check-input"
+                    type="radio"
+                    name="paymentMethod"
+                    id="cashOnDelivery"
+                    value="cod"
+                    required
+                />
+                <label class="form-check-label" for="cashOnDelivery">Cash on Delivery</label>
+            </div>
+            <!-- Add other payment methods here if necessary -->
+        </div>
+
+        <button type="submit" class="btn btn-success" id="payment-button">Place Order</button>
+    </form>
+</div>
+
+<script>
+    function selectAddressFromDropdown() {
+        const selectedOption = document.getElementById('addressSelect').selectedOptions[0];
+        document.getElementById('selectedAddress').value = selectedOption.value;
+        document.getElementById('name').value = selectedOption.getAttribute('data-name');
+        document.getElementById('address').value = selectedOption.getAttribute('data-address');
+        document.getElementById('locality').value = selectedOption.getAttribute('data-locality');
+        document.getElementById('city').value = selectedOption.getAttribute('data-city');
+        document.getElementById('state').value = selectedOption.getAttribute('data-state');
+        document.getElementById('phone').value = selectedOption.getAttribute('data-phone');
+        document.getElementById('pincode').value = selectedOption.getAttribute('data-pincode');
+        document.getElementById('alternatePhone').value = selectedOption.getAttribute('data-alternatePhone');
+        document.getElementById('landmark').value = selectedOption.getAttribute('data-landmark');
+    }
+</script>
+
+
+                       
+<!-- Modal to Add New Address -->
+
+<script>
+    // Function to handle saving the new address and adding it to the form
+       
+    async function saveNewAddress() {
+        const name = document.getElementById('newName').value;
+        const address = document.getElementById('newAddress').value;
+        const locality = document.getElementById('newLocality').value;
+        const city = document.getElementById('newCity').value;
+        const state = document.getElementById('newState').value;
+        const pincode = document.getElementById('newPincode').value;
+        const phone = document.getElementById('newPhone').value;
+        const alternatePhone = document.getElementById('newAlternatePhone').value;
+        const landmark = document.getElementById('newLandmark').value;
+
+
+       
+    
+
+    const userId = '<%= userId %>';  // Assume user ID is available on the server-side.
+
+    try {
+        const response = await fetch('/user/addNewAddress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId,name, address, locality, city, state, phone, pincode, alternatePhone, landmark,
+            }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Address saved successfully!',
+                timer: 2000,
+                showConfirmButton: false,
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: result.message || 'Failed to save the address.',
+            });
+        }
+    } catch (error) {
+        console.error('Error saving address:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while saving the address.',
+        });
+    }
+}
+
+</script>
+
+
+                        
+                      
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+                        
+                  
+
+                            
+                            
+                             
+<!--                         
+                        <div class="form-group mt-3">
+                            <label for="couponCode">Available Coupons</label>
+                            <select id="couponCode" name="couponCode" class="form-control" style="height: calc(2.25rem + 8px)">
+                                <option value="" disabled selected>Select a coupon</option>
+                            </select>
+                            <button type="button" id="couponButton" class="btn btn-secondary mt-2" onclick="toggleCoupon()">Apply Coupon</button>
+                        </div> -->
+                        
+                
+    
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+   
+
+
+       
+<script>
+    function showAddAddressForm() {
+        document.getElementById('newAddressForm').style.display = 'block';
+        // Clear selected address if adding a new one
+        document.getElementById('addressSelect').value = '';
+        clearSelectedAddressInputs();
+    }
+
+
+       
+function clearSelectedAddressInputs() {
+    document.getElementById('selectedAddress').value = '';
+    document.getElementById('name').value = '';
+    document.getElementById('address').value = '';
+    document.getElementById('locality').value = '';
+    document.getElementById('city').value = '';
+    document.getElementById('state').value = '';
+    document.getElementById('phone').value = '';
+    document.getElementById('pincode').value = '';
+    document.getElementById('alternatePhone').value = '';
+    document.getElementById('landmark').value = '';
+}
+
+
+        
+
+        
+    </script>
+   
+<%-include('./partials/footer.ejs')%>
