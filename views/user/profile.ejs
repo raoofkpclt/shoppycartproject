@@ -1,0 +1,648 @@
+<%-include('partials/header.ejs')%>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+<link rel="stylesheet" href="/stylesheet/profile.css" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<header class="header" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <div class="container">
+        <div class="header__content">
+            <!-- Logo Section -->
+            <div class="header__logo">
+                <a href="/user/">
+                    <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
+                </a>
+            </div>
+            <!-- Navigation Menu -->
+            <nav class="header__menu">
+                <ul>
+                    <li ><a href="/user/">Home</a></li>
+                    <li ><a href="/user/productList">Shop</a></li>
+                    <li><a href="#">Pages</a>
+                        <ul class="dropdown">
+                            <li><a style="color: black;" href="./about.html">About Us</a></li>
+                            <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
+                            <li><a style="color: black;" href="./shopping-cart.html">Shopping Cart</a></li>
+                            <li><a style="color: black;" href="./checkout.html">Check Out</a></li>
+                            <li><a style="color: black;" href="./blog-details.html">Blog Details</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#">Contact</a> </li>
+                  
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </nav>
+            <!-- Right Options -->
+
+            <div class="header__nav__option">
+                <a href="/user/profile">
+                    <i class="fas fa-user" style="font-size: 24px; color: black;"></i> 
+                </a>
+                
+                <a href="/user/wishlist">
+                    <i class="fas fa-heart" style="font-size: 24px; color: black;"></i> 
+                </a>
+                
+                <a href="/user/cart">
+                    <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
+                </a>
+                <a href="/user/logout">
+                    <i class="fas fa-sign-out-alt" style="font-size: 24px; color: black;"></i> 
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</header>
+<!-- Header Section End -->
+
+
+
+<!-- profile -->
+
+
+
+<body>
+    <section class="my-5">
+        <div class="container">
+            <div class="main-body">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex flex-column align-items-center text-center">
+                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtbEsykx-0fhTred6UwHDYtMFd2UgTJCG4gaklT1dx4suRO4_n5LJr4Gg28kquSX5fpNo&usqp=CAU" alt="Admin"
+                                        class="rounded-circle p-1 bg-warning" width="110">
+                                    <div class="mt-3">
+
+                                        <h4><%=user.name%></h4>
+                                        <p class="text-secondary mb-1"><%=user.email%> </p>
+                                        
+                                    </div>
+                                </div>
+                                <div class="list-group list-group-flush text-center mt-4">
+                                    <a href="#" class="list-group-item list-group-item-action border-0 " onclick="showProfileDetails()">
+                                        Profile Informaton
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action border-0" onclick="showOrderDetails()">Orders</a>
+                                    
+                                    <a href="#" class="list-group-item list-group-item-action border-0 active"
+                                        onclick="showAddressBook()">
+                                        Address
+                                    </a>
+                                    <a href="/user/logout" class="list-group-item list-group-item-action border-0">Logout</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- order session -->
+                  <div class="col-lg-8">
+                        <div id="orderDetails" class="order_card">
+                            <h2 class="mb-4">Your Orders</h2>
+                    
+                            <% if (orders.length > 0) { %>
+                                <% orders.forEach(order => { %>
+                                    <div class="card shadow-sm mb-4">
+                                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">Order ID: <%= order._id %></h5>
+                                            <span class="badge bg-<%= order.status === 'pending' ? 'warning' : order.status === 'paid' ? 'success' : 'danger' %>">
+                                                <%= order.status %>
+                                            </span>
+                                        </div>
+                                        <div class="card-body">
+                                            <p><strong>Payment Status:</strong> <%= order.paymentStatus %></p>
+                                            <p><strong>Total Amount:</strong> ₹<%= order.totalAmount %></p>
+                    
+                                            <h6 class="mt-3">Products:</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-hover align-middle">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Image</th>
+                                                            <th>Name</th>
+                                                            <th>Quantity</th>
+                                                            <th>Price</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <% order.products.forEach(product => { %>
+                                                            <tr>
+                                                                <td>
+                                                                    <img src="/uploads/<%= product.productId.images[0] %>" 
+                                                                         alt="<%= product.productId.product %>" 
+                                                                         class="img-thumbnail" 
+                                                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                                                </td>
+                                                                <td><%= product.productId.product %></td>
+                                                                <td><%= product.quantity %></td>
+                                                                <td>₹<%= product.total %></td>
+                                                            </tr>
+                                                        <% }) %>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <% if (order.status === 'pending') { %>
+                                                <!-- Cancel Button -->
+                                                <button class="btn btn-danger mt-3" onclick="showCancelForm('<%= order._id %>')">
+                                                    Cancel Order
+                                                </button>
+                                            
+                                                <!-- Hidden Cancel Form -->
+                                                <div id="cancel-form-<%= order._id %>" class="cancel-form mt-3" style="display: none;">
+                                                    <textarea class="form-control mb-2" id="cancel-reason-<%= order._id %>" rows="3" placeholder="Enter cancellation reason"></textarea>
+                                                    <button class="btn btn-primary btn-sm" onclick="submitCancelOrder('<%= order._id %>')">Confirm Cancellation</button>
+                                                    <button class="btn btn-secondary btn-sm" onclick="hideCancelForm('<%= order._id %>')">Close</button>
+                                                </div>
+                                            <% } %>
+                                            
+                                        </div>
+                                        <div class="card-footer text-muted text-end">
+                                            <small>Ordered on <%= new Date(order.createdAt).toLocaleDateString() %></small>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <p class="text-muted">No orders found.</p>
+                            <% } %>
+                        </div>
+                   
+              
+
+
+                        <div id="profileDetails" class="card">
+                            <div class="card-body">
+                                <div class="profile-info">
+                                    <h5>Profile Information</h5>
+                                    <p><strong>Name: </strong><%= user.name %></p>
+                                    <p><strong>Email Address: </strong><%= user.email %></p>
+                                    <p><strong>Contact: </strong><%= firstAddress.phone || 'Not provided' %></p>
+                                    <p><strong>City: </strong><%= firstAddress.city || 'Not provided' %></p>
+                                    <p><strong>State: </strong><%= firstAddress.state%></p>
+                                    <p><strong>Role: </strong>User</p>
+                                    <button 
+                                        class="btn btn-primary btn-sm mt-3" 
+                                        onclick="toggleEditForm()">
+                                        Edit Profile
+                                    </button>
+                                </div>
+                         <!-- Hidden Form for Editing Profile -->
+                         <form 
+                         id="editProfileForm" 
+                         action="/user/editProfile" 
+                         method="POST" 
+                         style="display: none;" 
+                         class="mt-4">
+                         <div class="form-group">
+                             <label for="name">Name</label>
+                             <input 
+                                 type="text" 
+                                 id="name" 
+                                 name="name" 
+                                 class="form-control" 
+                                 value="<%= user.name %>" 
+                                 required>
+                         </div>
+                         <div class="form-group">
+                             <label for="email">Email</label>
+                             <input 
+                                 type="email" 
+                                 id="email" 
+                                 name="email" 
+                                 class="form-control" 
+                                 value="<%= user.email %>" 
+                                 required>
+                         </div>
+                         <div class="form-group">
+                             <label for="password">New Password</label>
+                             <input 
+                                 type="password" 
+                                 id="password" 
+                                 name="password" 
+                                 class="form-control" 
+                                 placeholder="Leave blank to keep the same">
+                         </div>
+                         <div class="form-group">
+                             <label for="confirmPassword">Confirm Password</label>
+                             <input 
+                                 type="password" 
+                                 id="confirmPassword" 
+                                 name="confirmPassword" 
+                                 class="form-control" 
+                                 placeholder="Leave blank to keep the same">
+                         </div>
+                         <br>
+                         <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
+                         <button 
+                             type="button" 
+                             class="btn btn-secondary btn-sm ml-2" 
+                             onclick="toggleEditForm()">
+                             Cancel
+                         </button>
+                     </form>
+                    </div>
+                    </div>
+                   
+                           
+                        
+                        
+
+
+                    <!-- add adress -->
+                    <div id="addressBook" class="card" style="display: block;" >
+                        <div class="card-body">
+                            <div style="justify-content: center; align-items: center;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+                                    <h5 style="margin: 0;">Address Book</h5>
+                                    <button class="add_address_button btn btn-success" onclick="showAddAddressModal()">Add Address</button>
+                                </div>
+                    
+                                <div id="addressList">
+                                    <% if (addresses && addresses.length > 0) { %>
+                                        <% addresses.forEach((address,index) => { %>
+                                            <div class="address border p-3 my-2 rounded">
+                                                <p><strong>Name:</strong> <%= address.name %></p>
+                                                <p><strong>Address:</strong> <%= address.address %></p>
+                                                <p><strong>Locality:</strong> <%= address.locality %></p>
+                                                <p><strong>City:</strong> <%= address.city %></p>
+                                                <p><strong>State:</strong> <%= address.state %></p>
+                                                <p><strong>Pincode:</strong> <%= address.pincode %></p>
+                                                <p><strong>Mobile:</strong> <%= address.phone %></p>
+                                                <p><strong>Alternate Mobile:</strong> <%= address.alternatePhone || 'N/A' %></p>
+                                                <p><strong>Landmark:</strong> <%= address.landmark || 'N/A' %></p>
+                    
+                                                <!-- Action Buttons -->
+                                                <div class="mt-3">
+                                                    <!-- Edit Button -->
+                                                    <button 
+                                                    onclick="toggleEditAddress('<%= index %>')" 
+                                                    class="btn btn-primary btn-sm"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <!-- Delete Button -->
+                                                    <form 
+                                                    action="/user/deleteAddress/<%= address._id %>" 
+                                                    method="POST" 
+                                                    class="d-inline" 
+                                                    id="deleteForm<%= address._id %>"
+                                                >
+                                                    <button 
+                                                        type="button" 
+                                                        class="btn btn-danger btn-sm ml-2" 
+                                                        onclick="confirmDelete('<%= address._id %>')"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                                
+                                                <script>
+                                                    function confirmDelete(id) {
+                                                        Swal.fire({
+                                                            title: 'Are you sure?',
+                                                            text: "You won't be able to revert this!",
+                                                            icon: 'warning',
+                                                            showCancelButton: true,
+                                                            confirmButtonColor: '#3085d6',
+                                                            cancelButtonColor: '#d33',
+                                                            confirmButtonText: 'Yes, delete it!'
+                                                        }).then((result) => {
+                                                            if (result.isConfirmed) {
+                                                                // Submit the form programmatically
+                                                                document.getElementById(`deleteForm${id}`).submit();
+                                                            }
+                                                        });
+                                                    }
+                                                
+                                                    // Handle success alert (optional)
+                                                    if (window.location.search.includes('deleteSuccess=true')) {
+                                                        Swal.fire(
+                                                            'Deleted!',
+                                                            'Your address has been deleted.',
+                                                            'success'
+                                                        );
+                                                    }
+                                                </script>
+                                                
+
+                                                    
+                                                        
+                            <!-- Edit mode -->
+                            <form id="edit-address-form-<%= index %>" action="/user/editAddress/<%= address._id %>" method="POST" style="display: none;">
+                                <input type="text" name="name" value="<%= address.name %>" placeholder="name" required>
+                                <input type="text" name="address" value="<%= address.address %>" placeholder="Address" required>
+                                <input type="text" name="locality" value="<%= address.locality %>" placeholder="Locality" required>
+                                <input type="text" name="city" value="<%= address.city %>" placeholder="City" required>
+                                <input type="text" name="state" value="<%= address.state %>" placeholder="State" required>
+                                <input type="text" name="pincode" value="<%= address.pincode %>" placeholder="Pin Code" required>
+                                <input type="text" name="phone" value="<%= address.phone %>" placeholder="Mobile" required>
+                                <input type="text" name="alternatePhone" value="<%= address.alternatePhone %>" placeholder="Alternate Mobile">
+                                <input type="text" name="landmark" value="<%= address.landmark %>" placeholder="Landmark">
+                                <button type="submit" class="btn btn-success btn-sm">Save</button>
+                            </form>
+                            
+                                                </div>
+                                            </div>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <p>No addresses added yet. Click "Add Address" to add one!</p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                           
+                    
+                    <div id="addAddressModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeAddAddressModal()">&times;</span>
+        <h2>Add Address</h2>
+        <form id="addAddressForm"  method="post" action="/user/addAddress">
+            
+            <div class="col-12 d-flex main_flex_div">
+            <div class="col-4 d-flex flex-column inner_flex_div">
+                <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required><br>
+            </div>
+            <div class="col-4 d-flex flex-column inner_flex_div">
+                <label for="mobile">Mobile No.:</label>
+            <input type="tel" id="mobile" name="phone" required pattern="[0-9]{10}">
+            </div>
+            <div class="col-4 d-flex flex-column inner_flex_div">
+                 <label for="pincode">Pin code:</label>
+            <input type="text" id="pincode" name="pincode" required><br>
+
+            </div>
+            </div>
+             <div class="col-12 d-flex main_flex_div">
+            
+            <div class="col-4 d-flex flex-column inner_flex_div">
+                <label for="locality">Locality:</label>
+            <input type="text" id="locality" name="locality" required><br>
+            </div>
+
+            <div class="col-4 d-flex flex-column inner_flex_div">
+               <label for="city">City/District/Town:</label>
+            <input type="text" id="city" name="city" required><br>
+
+            </div>
+            <div class="col-4 d-flex flex-column inner_flex_div">
+                <label for="state">State</label>
+             <input type="text" id="state" name="state" required><br>
+ 
+             </div>
+             
+         
+            
+            </div>
+            
+             <div class="col-12 d-flex main_flex_div">
+            <div class="col-12 d-flex flex-column inner_flex_div">
+                <label for="address">Address:</label>
+             <textarea id="address" name="address" required></textarea><br>
+            </div>
+           
+            </div>
+            
+            
+             <div class="col-12 d-flex main_flex_div">
+            <div class="col-6 d-flex flex-column inner_flex_div">
+                  <label for="landmark">Landmark (Optional):</label>
+            <input type="text" id="landmark" name="landmark" ><br>
+
+            </div>
+            <div class="col-6 d-flex flex-column inner_flex_div">
+               <label for="alternatePhone">Alternate Phone (Optional):</label>
+            <input type="tel" id="alternatePhone" name="alternatePhone" pattern="[0-9]{10}"><br>
+            </div>
+
+            
+            </div>
+            
+            <style>
+                .button_spacing {
+                    margin-right: 10px; /* Adjust as needed */
+                }
+            </style>
+            
+            <div class="col-12 d-flex button_div">
+                <button class="add_address_button button_spacing" type="submit">Save</button>
+                <button class=" btn btn-danger"  type="button" onclick="closeAddAddressModal()">Cancel</button>
+            </div>
+            
+            
+            
+        </form>
+    </div>
+</div>
+
+            </div>
+        </div>
+        
+    </section>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+<script>
+    function toggleEditAddress(index) {
+        const form = document.getElementById(`edit-address-form-${index}`);
+        // Toggle display property between none and block
+        form.style.display = (form.style.display === "none" || form.style.display === "") ? "block" : "none";
+    }
+
+
+    function toggleEditForm() {
+        const profileDetails = document.getElementById('profileDetails');
+        const editProfileForm = document.getElementById('editProfileForm');
+        // Toggle display between profile info and form
+        const isFormVisible = editProfileForm.style.display === 'block';
+        editProfileForm.style.display = isFormVisible ? 'none' : 'block';
+    }
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Show the cancel form
+    function showCancelForm(orderId) {
+        const form = document.getElementById(`cancel-form-${orderId}`);
+        form.style.display = 'block';
+    }
+
+    // Hide the cancel form
+    function hideCancelForm(orderId) {
+        const form = document.getElementById(`cancel-form-${orderId}`);
+        form.style.display = 'none';
+    }
+
+    // Submit the cancellation
+    function submitCancelOrder(orderId) {
+        const reason = document.getElementById(`cancel-reason-${orderId}`).value.trim();
+        if (!reason) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Oops!',
+                text: 'Please provide a cancellation reason.',
+            });
+            return;
+        }
+
+        // Show confirmation alert
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Do you really want to cancel this order?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, cancel it!",
+            cancelButtonText: "No, keep it",
+            dangerMode: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Proceed with cancellation
+                fetch(`/user/ordersCancel/${orderId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ reason }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Cancelled!',
+                                text: 'Your order has been cancelled successfully.',
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: data.message || 'Failed to cancel the order. Please try again.',
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error cancelling order:', err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred. Please try again.',
+                        });
+                    });
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Cancelled!',
+                    text: 'Your order was not cancelled.',
+                });
+            }
+        });
+    }
+
+
+    //        function showAddAddressModal() {
+    //     const modal = document.getElementById('addAddressModal');
+    //     modal.style.display = 'block';
+    //     isFormVisible = true;
+       
+    // }
+    function showAddAddressModal() {
+    const modal = document.getElementById('addAddressModal');
+    modal.style.display = 'block';
+    isFormVisible = true;
+
+    // Remove the "active" state from the Address link
+    const activeLink = document.querySelector('.list-group-item.active');
+    if (activeLink) {
+        activeLink.classList.remove('active');
+    }
+
+}
+
+
+    function closeAddAddressModal() {
+        const modal = document.getElementById('addAddressModal');
+        modal.style.display = 'none';
+        isFormVisible = false;
+    }
+          
+        function showProfileDetails() {
+            hideAllSections();
+            document.getElementById('profileDetails').style.display = 'block';
+            setActiveLink(0);
+        }
+
+        function showOrderDetails() {
+            hideAllSections();
+            document.getElementById('orderDetails').style.display = 'block';
+            setActiveLink(1);
+        }
+
+        function showAddressBook() {
+            hideAllSections();
+            document.getElementById('addressBook').style.display = 'block';
+            setActiveLink(2);
+        }
+    
+
+        function hideAllSections() {
+            document.getElementById('orderDetails').style.display = 'none';
+            document.getElementById('profileDetails').style.display = 'none';
+            document.getElementById('addressBook').style.display = 'none';
+        }
+
+        function setActiveLink(index) {
+            document.querySelector('.list-group-item.active').classList.remove('active');
+            document.querySelectorAll('.list-group-item')[index].classList.add('active');
+        }
+
+        showProfileDetails();
+
+        document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const section = urlParams.get('section');
+    const addressId = urlParams.get('addressId'); // Optional, for highlighting a specific address
+
+    if (section === 'addressBook') {
+        showAddressBook2();
+        showAddressBook();
+        if (addressId) {
+            const selectedAddress = document.querySelector(`#address-${addressId}`);
+            if (selectedAddress) {
+                selectedAddress.classList.add('highlight'); // Add a CSS class for highlighting
+                selectedAddress.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }
+});
+
+function showAddressBook2() {
+    document.getElementById('addressBook').style.display = 'block';
+    document.getElementById('profileDetails').style.display = 'none';
+    // Hide other sections if necessary
+}
+
+// Optional: CSS for highlighting
+
+
+
+    </script>
+        
+</body>
+
+<%-include('./partials/footer.ejs')%>

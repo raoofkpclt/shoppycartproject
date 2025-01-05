@@ -60,25 +60,25 @@ input[type="checkbox"]:checked + .checkmark::after {
                     <h4 style="color: rgb(181, 21, 21);"><%=error%></h4>
                     <% } %>
                     <br>
-
+                    
             <form action="/user/signup" method="POST">
                 <h3>Now let's make you a Shoppycart Member</h3>
 
                 <div class="form-wrapper">
                     <label for="text">Username</label>
-                    <input id="username" name="name" type="text" class="form-control" placeholder="Enter your username" required>
+                    <input id="username" name="name" type="text" class="form-control" placeholder="Enter your username" >
                 </div>
                 <div class="form-wrapper">
                     <label for="email">Email</label>
-                    <input id="email" name="email" type="email" class="form-control" placeholder="Enter your email" required>
+                    <input id="email" name="email" type="email" class="form-control" placeholder="Enter your email" >
                 </div>
                 <div class="form-wrapper">
                     <label for="password">Password</label>
-                    <input id="password" name="password" type="password" class="form-control" placeholder="At least 8 characters" required>
+                    <input id="password" name="password" type="password" class="form-control" placeholder="At least 8 characters">
                 </div>
                 <div class="form-wrapper">
                     <label for="cpassword">Confirm Password</label>
-                    <input id="cpassword" name="cpassword" type="password" class="form-control" required>
+                    <input id="cpassword" name="cpassword" type="password" class="form-control" >
                 </div>
                 <div class="checkbox">
                     <label>
@@ -93,5 +93,30 @@ input[type="checkbox"]:checked + .checkmark::after {
             </form>
         </div>
     </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <% if (message) { %>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: '<%=message %>',
+                showConfirmButton: false,
+                timer: 1500
+            })
+        </script>
+    <% } %>
+    <% if (error) { %>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: '<%=error %>',
+                showConfirmButton: false,
+                timer: 1500
+            })
+        </script>
+    <% } %>
+
+
 </body>
 </html>

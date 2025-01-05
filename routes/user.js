@@ -38,9 +38,31 @@ router.post('/resendOtp',userController.resendOtp);
 //product
 router.get('/productList',userController.getProducts);
 router.get('/productDetails/:id',userController.productDetails);
+router.post('/cart/addProducts/:product_id', auth.checkSession, userController.addToCart);
 
+//cart
+router.get('/cart',auth.checkSession,userController.loadCart);
+router.post('/removeCart',auth.checkSession,userController.removeFromCart);
+router.post('/updateCart/:productId',auth.checkSession,userController.updateCart);
+
+//checkout
+router.post('/checkout',auth.checkSession,userController.checkout);
+router.post('/addNewAddress',auth.checkSession,userController.addNewAddress);
+
+//order
+router.post('/order',auth.checkSession,userController.checkoutCOD);
+router.post('/ordersCancel/:orderId', auth.checkSession, userController.cancelOrder);
+
+//user profile
+router.get('/profile',auth.checkSession,userController.loadProfile);
+router.post('/editProfile',auth.checkSession,userController.editProfile);
+router.post('/addAddress',auth.checkSession,userController.addAddress);
+router.post('/editAddress/:addressId',auth.checkSession,userController.editAddress);
+router.post('/deleteAddress/:addressId',auth.checkSession,userController.deleteAddress);
 
 //distroy
 router.get('/logout',auth.checkSession,userController.logout);
+
+router.get('/checking',userController.checking);
 
 module.exports=router;

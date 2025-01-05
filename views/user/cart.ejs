@@ -1,0 +1,668 @@
+<%-include('partials/header.ejs')%>
+
+
+<style>
+    .header {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 10;
+    }
+
+    /*  */
+    /* General Table Styling */
+
+
+
+
+/* Row hover effect */
+.cart-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Empty cart row */
+.cart-table .text-center {
+    text-align: center;
+    font-style: italic;
+    color: #666;
+}
+
+/* Product Image */
+.product-image img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 5px;
+    background-color: #fff;
+}
+
+/* Quantity Controls */
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quantity-controls button {
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    color: #555;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.quantity-controls button:hover {
+    background-color: #ddd;
+}
+
+.quantity-controls .num-product {
+    text-align: center;
+    width: 60px;
+    height: 30px;
+    border: 1px solid #ddd;
+    margin: 0 5px;
+}
+
+/* Remove Button */
+.btn-danger {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.btn-danger:hover {
+    background-color: #e60000;
+}
+
+
+    .header {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 10;
+    }
+    
+  
+.header {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 10;
+}
+/* General Styling */
+.header {
+    position: relative;
+    z-index: 10;
+    background: #fff;
+    padding: 10px 0;
+}
+
+/* Flexbox Alignment for Header Content */
+.header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap; /* Ensure everything stays on one line */
+}
+
+/* Logo Styling */
+.header__logo img {
+    max-height: 40px;
+    max-width: 150px;
+}
+
+/* Navigation Menu Styling */
+.header__menu ul {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+}
+
+.header__menu ul li {
+    position: relative;
+}
+
+.header__menu ul li a {
+    text-decoration: none;
+    color: #333;
+    padding: 5px 10px;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.header__menu ul li a:hover {
+    color: #007bff; /* Highlight on hover */
+}
+
+/* Dropdown Styling */
+.header__menu ul li .dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    list-style: none;
+}
+
+.header__menu ul li:hover .dropdown {
+    display: block;
+}
+
+/* Right Options Styling */
+.header__nav__option {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header__nav__option .search-bar {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 150px;
+}
+
+.header__nav__option a img {
+    height: 20px;
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+    .header__content {
+        flex-wrap: wrap; /* Stack items on smaller screens */
+    }
+
+    .header__menu ul {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .header__nav__option {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .header__nav__option .search-bar {
+        flex-grow: 1;
+    }
+}
+
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<header class="header" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <div class="container">
+        <div class="header__content">
+            <!-- Logo Section -->
+            <div class="header__logo">
+                <a href="/user/">
+                    <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
+                </a>
+            </div>
+            <!-- Navigation Menu -->
+            <nav class="header__menu">
+                <ul>
+                    <li ><a href="/user/">Home</a></li>
+                    <li ><a href="/user/productList">Shop</a></li>
+                    <li><a href="#">Pages</a>
+                        <ul class="dropdown">
+                            <li><a style="color: black;" href="./about.html">About Us</a></li>
+                            <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
+                            <li><a style="color: black;" href="./shopping-cart.html">Shopping Cart</a></li>
+                            <li><a style="color: black;" href="./checkout.html">Check Out</a></li>
+                            <li><a style="color: black;" href="./blog-details.html">Blog Details</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#">Contact</a> </li>
+                  
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </nav>
+            <!-- Right Options -->
+
+            <div class="header__nav__option">
+                <a href="/user/profile">
+                    <i class="fas fa-user" style="font-size: 24px; color: black;"></i> 
+                </a>
+                
+                <a href="/user/wishlist">
+                    <i class="fas fa-heart" style="font-size: 24px; color: black;"></i> 
+                </a>
+                
+                <a href="/user/cart">
+                    <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
+                </a>
+                <a href="/user/logout">
+                    <i class="fas fa-sign-out-alt" style="font-size: 24px; color: black;"></i> 
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</header>
+<!-- Header Section End -->
+
+    <!-- Shopping Cart Section Begin -->
+    <form action="/user/checkout" method="post" class="bg0 p-t-75 p-b-85" id="checkoutForm">
+    <section class="shopping-cart spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="shopping__cart__table">
+                        <table class="cart-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% let subtotal = 0; %>
+                                <% if (typeof items !== 'undefined' && items.length > 0) { %>
+                                    <% items.forEach((item) => { %>
+                                        <% subtotal += item.price * item.quantity; %>
+                                        <tr class="table-row" id="product-row-<%= item.productId._id %>">
+                                            <td class="column-1">
+                                                <div class="product-image">
+                                                    <img src="/uploads/<%= item.imageUrl %>" alt="<%= item.name %>">
+                                                </div>
+                                            </td>
+                                            <td class="column-2"><%= item.name %></td>
+                                            <td class="column-3" id="price-<%= item.productId._id %>"><%= item.price.toFixed(2) %></td>
+                                            <td class="column-4">
+                                                <div class="quantity-controls">
+
+                                                      <!-- Decrease Button -->
+                                                      <button 
+                                                      class="btn-num-product-down" 
+                                                      data-action="decrease" 
+                                                      data-product-id="<%= item.productId._id %>">
+                                                      <i class="fa fa-minus"></i> <!-- Font Awesome icon -->
+                                                  </button>
+                                                    <!-- Quantity Input -->
+                                                    <input 
+                                                    class="num-product" 
+                                                    type="number" 
+                                                    name="quantity[<%= item.productId._id %>]" 
+                                                    value="<%= item.quantity %>" 
+                                                    adonly 
+                                                    id="quantity-<%= item.productId._id %>">
+                                                    <button 
+                                                        class="btn-num-product-up" 
+                                                        data-action="increase" 
+                                                        data-product-id="<%= item.productId._id %>" 
+                                                        <%= item.quantity >= 5 ? 'disabled' : '' %>>
+                                                        <i class="fa fa-plus"></i> <!-- Font Awesome icon -->
+                                                        </button>
+
+                                              
+
+                                              
+                                                </div>
+                                            </td>
+                                            <td class="column-5" id="total-price-<%= item.productId._id %>"><%= (item.price * item.quantity).toFixed(2) %></td>
+                                            <td>
+                                                <button type="button" class="btn btn-danger remove-item" data-product-id="<%= item.productId._id %>">
+                                                    <i class="fs-16 zmdi zmdi-delete"></i> Remove
+                                                </button>
+                                                
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="6" class="text-center">Your cart is empty.</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                        
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6 col-md-6 col-sm-6">
+                            <div class="continue__btn">
+                                <a href="/user/productList">Continue Shopping</a>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-sm-6">
+                            <div class="continue__btn update__btn">
+                                <a href=""><i class="fa fa-spinner"></i> Update cart</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-lg-4">
+                    <!-- <div class="cart__discount">
+                        <h6>Discount codes</h6>
+                        <form action="#">
+                            <input type="text" placeholder="Coupon code">
+                            <button type="submit">Apply</button>
+                        </form>
+                    </div> -->
+                    <div class="cart__total">
+
+
+
+                        <% if (items.length > 0) { %>
+                            <h6>Cart Total</h6>
+                            <ul>
+                                <% items.forEach(item => { %>
+                                    <li>Subtotal <span><%= item.name %> (x<%= item.quantity %>): ₹ <%= (item.price * item.quantity).toFixed(2) %></span></li>
+                                <% }); %>
+                        
+                              
+                        
+                                <!-- Shipping Cost and Status -->
+                                <li>Shipping 
+                                    <span>
+                                        <%= subtotal > 25 ? 'Free Shipping!' : '₹ 5.00 (Standard Shipping)' %>
+                                    </span>
+                                </li>
+                        
+                                <!-- Total -->
+                                <li>Total 
+                                    <span>₹ <%= (subtotal + (subtotal > 25 ? 0 : 5)).toFixed(2) %></span>
+                                </li>
+                        
+                                <p>If Any Offer Available Applied On Checkout</p>
+                            </ul>
+                            <button type="submit" class="btn btn-dark">
+                                Proceed to checkout
+                            </button>
+                           
+                      
+                        
+                    </div>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </section>
+    </form>
+    <!-- Shopping Cart Section End -->
+     
+	
+	<!-- <script>
+checkoutForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    try {
+        const response = await fetch('/user/checkout', { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+
+        if (!response.ok) {
+            throw new Error(`Server responded with status ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.redirect) {
+            // Handle redirection for authentication or empty cart
+            window.location.href = data.redirect;
+        } else if (data.stockError) {
+            // Show stock errors
+            const items = data.outOfStockItems
+                .map((item) => `${item.name} (Available: ${item.availableStock}, Requested: ${item.requestedQuantity})`)
+                .join('\n');
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Stock Issues',
+                text: `The following items have stock issues:\n\n${items}`,
+            });
+        } else {
+            // Validation passed, navigate to the checkout page
+            window.location.href = '/user/checkout';
+        }
+    } catch (error) {
+        console.error('Error during checkout validation:', error);
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred. Please try again later.',
+        });
+    }
+}); -->
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+ 
+
+ document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const productId = e.target.getAttribute('data-product-id');
+
+            // Show confirmation alert
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to remove this product from your cart?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove it!',
+                cancelButtonText: 'No, keep it',
+                dangerMode: true,
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const response = await fetch('/user/removeCart', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ productId }),
+                        });
+
+                        const resultData = await response.json();
+
+                        if (response.ok) {
+                            // Remove the product row from the DOM
+                            document.getElementById(`product-row-${productId}`).remove();
+
+                            // Show success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Removed!',
+                                text: resultData.message,
+                            });
+                        } else {
+                            // Handle errors (e.g., product not found)
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: resultData.message,
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error removing item:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred. Please try again.',
+                        });
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelled!',
+                        text: 'The product was not removed.',
+                    });
+                }
+            });
+        });
+    });
+
+
+
+
+    document.querySelectorAll('.btn-num-product-up, .btn-num-product-down').forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const productId = this.getAttribute('data-product-id');
+            const action = this.getAttribute('data-action');
+
+            fetch(`/user/updateCart/${productId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("Response data:", data);
+
+                        const quantityInput = document.getElementById(`quantity-${productId}`);
+                        if (quantityInput) {
+                            quantityInput.value = data.quantity;
+                        }
+
+                        const productPriceElement = document.getElementById(`price-${productId}`);
+                        const productTotalElement = document.getElementById(`total-price-${productId}`);
+                        if (productPriceElement && productTotalElement) {
+                            const productPrice = parseFloat(productPriceElement.innerText.replace('$', ''));
+                            const productTotalPrice = data.quantity * productPrice;
+                            productTotalElement.innerText = `$${productTotalPrice.toFixed(2)}`;
+                        }
+
+                        updateCartTotal();
+
+                        if (data.quantity === 0) {
+                            const productRow = document.getElementById(`product-row-${productId}`);
+                            if (productRow) {
+                                productRow.remove();
+                            }
+                        }
+
+                        const increaseButton = document.querySelector(`button[data-product-id="${productId}"][data-action="increase"]`);
+                        if (increaseButton) {
+                            increaseButton.disabled = data.quantity >= 5;
+                        }
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'An error occurred while updating the quantity.', 'error');
+                });
+        });
+    });
+
+    function updateCartTotal() {
+        let total = 0;
+        let subtotalDetails = '';
+
+        document.querySelectorAll('.table_row').forEach(row => {
+            const productTotalElement = row.querySelector('.column-5');
+            const productNameElement = row.querySelector('.column-2');
+            const productQuantityElement = row.querySelector('.num-product');
+
+            if (productTotalElement && productNameElement && productQuantityElement) {
+                const productTotal = parseFloat(productTotalElement.innerText.replace('$', ''));
+                const productName = productNameElement.innerText;
+                const productQuantity = parseInt(productQuantityElement.value);
+                total += productTotal;
+
+                subtotalDetails += `<li><span>${productName} (x${productQuantity}): $${productTotal.toFixed(2)}</span></li>`;
+            }
+        });
+
+        const subtotalElement = document.getElementById('subtotal');
+        if (subtotalElement) {
+            subtotalElement.innerText = `$${total.toFixed(2)}`;
+        }
+
+        const subtotalDetailsElement = document.getElementById('subtotal-details');
+        if (subtotalDetailsElement) {
+            subtotalDetailsElement.innerHTML = subtotalDetails;
+        }
+
+        const shippingCharge = total > 25 ? 0 : 5;
+        const cartTotalElement = document.getElementById('cart-total');
+        if (cartTotalElement) {
+            cartTotalElement.innerText = `$${(total + shippingCharge).toFixed(2)}`;
+        }
+
+        const shippingInfoElement = document.getElementById('shipping');
+        if (shippingInfoElement) {
+            shippingInfoElement.innerText = total > 25 ? 'Free Shipping!' : 'Standard $5 shipping charge will apply.';
+        }
+    }
+</script>
+
+    
+    
+		
+
+	
+
+
+	<!-- Back to top -->
+	<div class="btn-back-to-top" id="myBtn">
+		<span class="symbol-btn-back-to-top">
+			<i class="zmdi zmdi-chevron-up"></i>
+		</span>
+	</div>
+
+<!--===============================================================================================-->	
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+	<script>
+		$(".js-select2").each(function(){
+			$(this).select2({
+				minimumResultsForSearch: 20,
+				dropdownParent: $(this).next('.dropDownSelect2')
+			});
+		})
+	</script>
+<!--===============================================================================================-->
+	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+	<script>
+		$('.js-pscroll').each(function(){
+			$(this).css('position','relative');
+			$(this).css('overflow','hidden');
+			var ps = new PerfectScrollbar(this, {
+				wheelSpeed: 1,
+				scrollingThreshold: 1000,
+				wheelPropagation: false,
+			});
+
+			$(window).on('resize', function(){
+				ps.update();
+			})
+		});
+	</script>
+    <!-- Shopping Cart Section End -->
+
+    <script src="js/main.js"></script>

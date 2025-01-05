@@ -1,11 +1,12 @@
 const adminSchema = require("../model/adminModel");
 const bcrypt = require("bcrypt");
 const userSchema = require("../model/userModel");
-const mongoose= require('mongoose')
+const mongoose= require('mongoose');
 const Category=require('../model/categoryModel');
 const Product=require('../model/productModel');
-const path=require('path')
+const path=require('path');
 const fs=require('fs');
+const Order=require('../model/orderModel');
 
 // Load Admin Login Page
 const loadlogin = async (req, res) => {
@@ -92,6 +93,7 @@ const blockUser=async(req,res)=>{
     }
 }
 
+// Unblock user
 const unblockUser = async (req, res) => {
     try {
         const { userId } = req.body; 
@@ -132,7 +134,7 @@ const createCategory=async (req,res) => {
     } catch (error) {
         console.log(error);
     }
-}
+};
 
 //add category page 
 const addCategory = async (req, res) => {
@@ -233,7 +235,7 @@ const editCategory = async (req, res) => {
             return res.redirect(`/admin/editCategory/${id}?error=Category with this name already exists.`);
         }
 
-        // Update the category
+       
         await Category.findByIdAndUpdate(id, { name: trimmedName }, { new: true });
 
         res.redirect('/admin/categoryManagement?message=Category updated successfully.');
@@ -243,22 +245,35 @@ const editCategory = async (req, res) => {
     }
 };
 
-const deleteCategory=async (req,res) => {
+//delete category
+const deleteCategory=async(req,res)=>{
     try {
-        const categoryId = req.params.id;
-        
-        if (!categoryId) {
-            console.error('Category ID is missing!');
-            return res.status(400).json({ message: 'Category ID is required' });
+        const {categoryId}=req.body;
+        if(!categoryId){
+            return res.render('admin/categoryManagement?error=Category ID is required');
         }
-
-        // await Category.findByIdAndUpdate(categoryId, { isActive: false });
-        await Category.findByIdAndDelete(categoryId);
-        
-        res.redirect('/admin/categoryManagement?message=Category+Deleted');
+        await Category.findByIdAndUpdate(categoryId,{isActive:false});
+        res.redirect('/admin/categoryManagement?message=Category deleted successfully');
     } catch (error) {
         console.error('Error deleting category:', error);
-        res.status(500).json({ message: 'Error deleting category' });
+        res.render('admin/categoryManagement?error=Error deleting category');
+    }
+};
+
+//active category
+const activeCategory=async(req,res)=>{
+    try {
+        const {categoryId}=req.body;
+        if(!categoryId){
+            return res.status(400).send('Category ID is required');
+        }
+        await Category.findByIdAndUpdate(categoryId,{isActive:true});
+        res.redirect('/admin/categoryManagement?message=Category activated successfully');
+
+    } catch (error) {
+        console.error('Error activating category:', error);
+        res.status(500).send('Server Error');
+
     }
 };
 
@@ -295,88 +310,164 @@ const productManagement = async (req, res) => {
     }
 };
 
-//product page
+// Add product
 const addProduct = async (req, res) => {
     try {
-        const { product, brand, categoryId, price, stock, description } = req.body;
-        const images = req.files; 
-        const getproduct=req.body
-        console.log(getproduct);
-        if (!product || !brand || !categoryId || !price || !stock || !description) {
-            return res.redirect('/admin/productManagement?error=All fields are required');
+        console.log('1');
+        const { product, brand, categoryId, price, stock, description,discount } = req.body;
+        const images = req.files;
+        console.log(req.body);
+     
+        if (!product || !brand || !categoryId || !price || !stock || !description ||!discount|| images.length < 3) {
+            console.log('checking');
+            return res.redirect('/admin/productManagement?error=All fields and at least 3 images are required');
         }
-
-        if (isNaN(price) || price <= 0) {
-            return res.redirect('/admin/productManagement?error=Price must be a positive number');
-        }
-
-        if (isNaN(stock) || stock < 0) {
-            return res.redirect('/admin/productManagement?error=Stock must be a non-negative number');
-        }
-
-        if (!images || images.length === 0) {
-            return res.redirect('/admin/productManagement?error=At least one image is required');
-        }
-
-        const existingProduct = await Product.findOne({ product});
-        if (existingProduct) {
-            return res.redirect('/admin/productManagement?error=Product with this name already exists');
-        }
-        console.log('get offer something');
-
+        console.log('2');
         const newProduct = new Product({
-            product: product,
-            brand: brand,
-            categoryId: categoryId,
-            price: price,
-            stock: stock,
-            description: description,
-            images: images.map((img) => img.filename), // Store image filenames
+            product,
+            brand,
+            categoryId,
+            price: parseFloat(price),
+            stock: parseInt(stock),
+            description,
+            discount: parseFloat(discount),
+            images: images.map(img => img.filename),
         });
+        console.log('3');
 
         await newProduct.save();
+        console.log('4');
         res.redirect('/admin/productManagement?message=Product added successfully');
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        console.log('5');
+        console.error(err);
         res.redirect('/admin/productManagement?error=Error adding product');
     }
 };
 
+/*
+// const addProduct = async (req, res) => {
+//     try {
+//         const { product, brand, categoryId, price, stock, description,size,color } = req.body;
+//         const images = req.files; 
+//         const getproduct=req.body
+//         console.log(getproduct);
+//         if (!product || !brand || !categoryId || !price || !stock || !description|| !size|| !color) {
+//             return res.redirect('/admin/productManagement?error=All fields are required');
+//         }
+
+//         if (isNaN(price) || price <= 0) {
+//             return res.redirect('/admin/productManagement?error=Price must be a positive number');
+//         }
+
+//         if (isNaN(stock) || stock < 0) {
+//             return res.redirect('/admin/productManagement?error=Stock must be a non-negative number');
+//         }
+
+//         if (!images || images.length === 0) {
+//             return res.redirect('/admin/productManagement?error=At least one image is required');
+//         }
+
+//         const existingProduct = await Product.findOne({ product});
+//         if (existingProduct) {
+//             return res.redirect('/admin/productManagement?error=Product with this name already exists');
+//         }
+//         console.log('get offer something');
+
+//         const newProduct = new Product({
+//             product: product,
+//             brand: brand,
+//             categoryId: categoryId,
+//             price: price,
+//             stock: stock,
+//             description: description,
+//             size:size,
+//             color:color,
+//             images: images.map((img) => img.filename), // Store image filenames
+//         });
+
+//         await newProduct.save();
+//         res.redirect('/admin/productManagement?message=Product added successfully');
+//     } catch (error) {
+//         console.error(error);
+//         res.redirect('/admin/productManagement?error=Error adding product');
+//     }
+// };
+*/
+
+
+/*
+// const editProduct = async (req, res) => {
+//     try {
+//         const { id, product, brand, categoryId, price, stock, description, size, color } = req.body;
+//         const images = req.files;
+
+//         const existingProduct = await Product.findById(id);
+//         if (!existingProduct) {
+//             return res.redirect('/admin/productManagement?error=Product not found');
+//         }
+
+//         existingProduct.product = product || existingProduct.product;
+//         existingProduct.brand = brand || existingProduct.brand;
+//         existingProduct.categoryId = categoryId || existingProduct.categoryId;
+//         existingProduct.price = price || existingProduct.price;
+//         existingProduct.stock = stock || existingProduct.stock;
+//         existingProduct.description = description || existingProduct.description;
+
+       
+//         if (images && images.length > 0) {
+//             existingProduct.images.forEach(image => {
+//                 const imagePath = path.join(__dirname, '../uploads', image);
+//                 if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+//             });
+//             existingProduct.images = images.map(img => img.filename);
+//         }
+
+//         await existingProduct.save();
+//         res.redirect('/admin/productManagement?message=Product updated successfully');
+//     } catch (err) {
+//         console.error(err);
+//         res.redirect('/admin/productManagement?error=Error updating product');
+//     }
+// };
+*/
+
 // Edit product
 const editProduct = async (req, res) => {
     try {
-        const { id, name, brand, categoryId, price, stock, description } = req.body;
+        const { id, product, brand, categoryId, price, stock, description } = req.body;
         const images = req.files;
 
-        const product = await Product.findById(id);
-        if (!product) {
+        const existingProduct = await Product.findById(id);
+        if (!existingProduct) {
             return res.redirect('/admin/productManagement?error=Product not found');
         }
 
-        product.name = name || product.name;
-        product.brand = brand || product.brand;
-        product.categoryId = categoryId || product.categoryId;
-        product.price = price || product.price;
-        product.stock = stock || product.stock;
-        product.description = description || product.description;
+        existingProduct.product = product || existingProduct.product;
+        existingProduct.brand = brand || existingProduct.brand;
+        existingProduct.categoryId = categoryId || existingProduct.categoryId;
+        existingProduct.price = price || existingProduct.price;
+        existingProduct.stock = stock || existingProduct.stock;
+        existingProduct.description = description || existingProduct.description;
 
+     
         if (images && images.length > 0) {
-            // Remove old images
-            product.images.forEach((image) => {
-                const imagePath = path.join(__dirname, '../uploads', image);
-                fs.unlink(imagePath, (err) => {
-                    if (err) {
-                        console.error(`Error deleting image: ${imagePath}`, err);
+            images.forEach((image, index) => {
+                if (image) {
+                   
+                    const imagePath = path.join(__dirname, '../uploads', existingProduct.images[index]);
+                    if (fs.existsSync(imagePath)) {
+                        fs.unlinkSync(imagePath); 
                     }
-                });
+                    existingProduct.images[index] = image.filename; 
+                }
             });
-            product.images = images.map((img) => img.filename);
         }
 
-        await product.save();
+        await existingProduct.save();
         res.redirect('/admin/productManagement?message=Product updated successfully');
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        console.error(err);
         res.redirect('/admin/productManagement?error=Error updating product');
     }
 };
@@ -400,6 +491,68 @@ const deleteProduct = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.redirect('/admin/productManagement?error=Error deleting product');
+    }
+};
+
+//order management
+const orderManagement = async (req, res) => {
+    try {
+        const page=parseInt(req.query.page)||1
+        const limit=20;
+        const skip=(page-1)*limit;
+
+        const totalOrder=await Order.countDocuments({});
+        const orders = await Order.find({})
+            .populate('user', 'name email')
+            .populate('products.productId', 'product price').skip(skip).limit(limit);
+
+            const totalPage=Math.ceil(totalOrder/limit);
+        res.render('admin/orderManagement', { orders , currentPage:page,
+            totalPages:totalPage});
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.render('admin/orderManagement', { orders: [], error: 'Failed to fetch orders' });
+    }
+};
+
+// Update order status
+const orderStatus = async (req, res) => {
+    try {
+        const { id } = req.params; 
+        const { status } = req.body; 
+
+        // Validate the input status
+        const validStatuses = ['pending', 'shipped', 'delivered', 'cancelled'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).send('Invalid status provided');
+        }
+
+        // Update the order in the database
+        const updatedOrder = await Order.findById(id);
+
+        if (!updatedOrder) {
+            return res.status(404).send('Order not found');
+        }
+
+        //  all products have a valid name
+        updatedOrder.products.forEach(product => {
+            if (!product.name) {
+                product.name = product.productId ? product.productId.name : 'Unknown Product';
+            }
+        });
+
+       
+        if (status === 'delivered') {
+            updatedOrder.paymentStatus = 'paid';
+        }
+
+        updatedOrder.status = status;
+        await updatedOrder.save();
+
+        res.redirect('/admin/orderManagement');
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        res.status(500).send('Internal Server Error');
     }
 };
 
@@ -427,6 +580,9 @@ module.exports = {
     productManagement,
     addProduct,
     editProduct,
-    deleteProduct
+    deleteProduct,
+    orderManagement,
+    activeCategory,
+    orderStatus,
 
 };

@@ -1,4 +1,9 @@
 <%- include('./partials/header.ejs') %>
+
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <!-- Main content -->
 <div class="h-screen flex-grow-1 overflow-y-lg-auto">
     <!-- Header -->
@@ -25,17 +30,28 @@
                     <h5 class="mb-0">Products</h5>
                 </div>
                 <% if (message) { %>
-                    <div class="alert alert-success" role="alert">
-                        <%= message %>
-                    </div>
+                    <script>
+                        Swal.fire({
+                            title: 'Success!',
+                            text: '<%= message %>',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                    </script>
                 <% } %>
+                
                 <% if (error) { %>
-                    <div class="alert alert-danger" role="alert">
-                        <%= error %>
-                    </div>
+                    <script>
+                        Swal.fire({
+                            title: 'Error!',
+                            text: '<%= error %>',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    </script>
                 <% } %>
+                
 
-        
         <!-- Create Product Modal -->
         <div class="modal fade" id="createProductModal" tabindex="-1" aria-labelledby="createProductModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -67,6 +83,11 @@
                     <label for="Stock" class="form-label">Stock</label>
                     <input type="number" class="form-control" id="stock" name="stock">
                     <small id="stockError" class="text-danger"></small>
+                </div>
+                <div class="mb-3">
+                    <label for="Discount" class="form-label">Discount % </label>
+                    <input type="number" class="form-control" id="discount" name="discount" required>
+                    <small id="discountError" class="text-danger"></small>
                 </div>
                 <div class="mb-3">
                     <label for="Category" class="form-label">Category</label>
@@ -112,7 +133,7 @@
 
         fileInputs.forEach((input, index) => {
             input.addEventListener('change', function (event) {
-                const file = event.target.files[0]; // Get the first file selected
+                const file = event.target.files[0]; 
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
@@ -120,7 +141,7 @@
                         img.src = e.target.result;
                         img.style.maxWidth = '100%';
                         img.id = `imagePreview${index}`;
-                        imagePreviewsDiv.innerHTML = ''; // Clear previous previews
+                        imagePreviewsDiv.innerHTML = ''; 
                         imagePreviewsDiv.appendChild(img);
 
                         // Initialize the cropper for the uploaded image
@@ -132,7 +153,7 @@
                         });
                     };
                     reader.readAsDataURL(file);
-                    imagePreviewContainer.style.display = 'block'; // Show the preview container
+                    imagePreviewContainer.style.display = 'block';
                 }
             });
         });
@@ -144,6 +165,7 @@
             document.getElementById('descriptionError').textContent = '';
             document.getElementById('priceError').textContent = '';
             document.getElementById('stockError').textContent = '';
+            document.getElementById('discountError').textContent = '';
             document.getElementById('categoryError').textContent = '';
             document.getElementById('imagesError').textContent = '';
         };
@@ -158,6 +180,7 @@
             const descriptionInput = document.getElementById('description');
             const priceInput = document.getElementById('price');
             const stockInput = document.getElementById('stock');
+            const discountInput = document.getElementById('discount');
             const categoryInput = document.getElementById('category');
 
             // Title validation
@@ -189,6 +212,13 @@
             const stock = Number(stockInput.value);
             if (isNaN(stock) || stock < 0) {
                 document.getElementById('stockError').textContent = 'Stock must be a non-negative number';
+                valid = false;
+            }
+
+            // Discount validation
+            const discount = Number(discountInput.value);
+            if (isNaN(discount) || discount < 0 || discount > 100) {
+                document.getElementById('discountError').textContent = 'Discount must be a number between 0 and 100';
                 valid = false;
             }
 
@@ -225,6 +255,7 @@
             formData.append('description', document.getElementById('description').value);
             formData.append('price', document.getElementById('price').value);
             formData.append('stock', document.getElementById('stock').value);
+            formData.append('discount', document.getElementById('discount').value);
 
             // Append the categoryId
             const categoryId = document.getElementById('category').value;
@@ -273,112 +304,175 @@
     });
 </script>
 
-                 <!-- Edit Product Modal -->
-                 <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form action="/admin/editProduct" method="POST" enctype="multipart/form-data">
-                                    <!-- Hidden input to hold product ID -->
-                                    <input type="hidden" id="productId" name="id">
-                
-                                    <!-- Product Name -->
-                                    <div class="mb-3">
-                                        <label for="editProductName" class="form-label">Product Name</label>
-                                        <input type="text" class="form-control" id="editProductName" name="Name" required>
-                                    </div>
-                
-                                    <!-- Brand -->
-                                    <div class="mb-3">
-                                        <label for="editBrand" class="form-label">Brand</label>
-                                        <input type="text" class="form-control" id="editBrand" name="Brand" required>
-                                    </div>
-                
-                                    <!-- Description -->
-                                    <div class="mb-3">
-                                        <label for="editDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" id="editDescription" name="description" rows="3" required></textarea>
-                                    </div>
-                
-                                    <!-- Price -->
-                                    <div class="mb-3">
-                                        <label for="editPrice" class="form-label">Price</label>
-                                        <input type="number" class="form-control" id="editPrice" name="price" required step="0.01">
-                                    </div>
-                
-                                    <!-- Stock -->
-                                    <div class="mb-3">
-                                        <label for="editStock" class="form-label">Stock</label>
-                                        <input type="number" class="form-control" id="editStock" name="stock" required step="1">
-                                    </div>
-                
-                                    <!-- Existing Images with Remove Option -->
-                                    <div class="mb-3" id="existingImages">
-                                        <!-- JavaScript will inject current images here -->
-                                    </div>
-                
-                                    <!-- Upload New Images -->
-                                    <div class="mb-3">
-                                        <label for="editImages" class="form-label">Upload New Images (Optional)</label>
-                                        <input type="file" class="form-control" name="images" accept="image/*" multiple>
-                                    </div>
-                
-                                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                                </form>
-                            </div>
-                        </div>
+               <!-- Edit Product Modal -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/admin/editProduct" method="POST" enctype="multipart/form-data">
+                    <!-- Hidden input to hold product ID -->
+                    <input type="hidden" id="productId" name="id">
+
+                    <!-- Product Name -->
+                    <div class="mb-3">
+                        <label for="editProductName" class="form-label">Product Name</label>
+                        <input type="text" class="form-control" id="editProductName" name="Name" required>
                     </div>
-                </div>
+
+                    <!-- Brand -->
+                    <div class="mb-3">
+                        <label for="editBrand" class="form-label">Brand</label>
+                        <input type="text" class="form-control" id="editBrand" name="Brand" required>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="editDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="editDescription" name="description" rows="3" required></textarea>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="mb-3">
+                        <label for="editPrice" class="form-label">Price</label>
+                        <input type="number" class="form-control" id="editPrice" name="price" required step="0.01">
+                    </div>
+
+                    <!-- Stock -->
+                    <div class="mb-3">
+                        <label for="editStock" class="form-label">Stock</label>
+                        <input type="number" class="form-control" id="editStock" name="stock" required step="1">
+                    </div>
+                    <!-- Existing Images with Remove Option -->
+                    <div class="mb-3" id="existingImages">
+                        <!-- JavaScript will inject current images here -->
+                    </div>
+
+                    <!-- Upload New Images -->
+                    <div class="mb-3">
+                        <label for=""editImages" class="form-label">Upload Product Images</label>
+                        <input  class="form-control" type="file" name="images" id="imageInput1" />
+                        <input class="form-control" type="file" name="images" id="imageInput2" />
+                        <input class="form-control" type="file" name="images" id="imageInput3" />
+                    </div>
+                    <!-- <div class="mb-3">
+                        <label for="editImages" class="form-label">Upload New Images (Optional)</label>
+                        <input type="file" class="form-control" name="images" accept="image/*" multiple>
+                    </div> -->
+
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <!-- edit product -->
 <script>
+    // document.addEventListener('DOMContentLoaded', () => {
+    //     const editProductModal = document.getElementById('editProductModal');
+
+    //     editProductModal.addEventListener('show.bs.modal', (event) => {
+    //         const button = event.relatedTarget;
+
+    //         const productId = button.getAttribute('data-id');
+    //         const productName = button.getAttribute('data-name');
+    //         const productBrand = button.getAttribute('data-brand');
+    //         const productDescription = button.getAttribute('data-description');
+    //         const productPrice = button.getAttribute('data-price');
+    //         const productImages = JSON.parse(button.getAttribute('data-images'));
+    //         const productStock = button.getAttribute('data-stock');
+
+    //         document.getElementById('productId').value = productId;
+    //         document.getElementById('editProductName').value = productName;
+    //         document.getElementById('editBrand').value = productBrand;
+    //         document.getElementById('editDescription').value = productDescription;
+    //         document.getElementById('editPrice').value = productPrice;
+    //         document.getElementById('editStock').value = productStock;
+
+    //         // Handle displaying existing images
+    //         const existingImagesContainer = document.getElementById('existingImages');
+    //         existingImagesContainer.innerHTML = '';
+    //         existingImagesContainer.classList.add('d-flex', 'flex-column', 'gap-3'); // Use flex-column for vertical images
+
+    //         productImages.forEach((image, index) => {
+    //             const imageElement = `
+    //                 <div style="width: 100%; max-width: 150px;">
+    //                     <img src="/uploads/${image}" alt="Product Image ${index + 1}" style="width: 100%; height: auto;">
+    //                 </div>`;
+    //             existingImagesContainer.innerHTML += imageElement;
+    //         });
+    //     });
+
+    //     // Handle file input change and preview new images
+    //     document.querySelector('input[name="images"]').addEventListener('change', function () {
+    //         const imagePreviewContainer = document.getElementById('existingImages');
+    //         imagePreviewContainer.innerHTML += '<h5>New Images:</h5>';
+
+    //         Array.from(this.files).forEach((file, index) => {
+    //             if (index >= 3) return; // Limit to 3 images
+
+    //             const reader = new FileReader();
+    //             reader.onload = function (e) {
+    //                 const imageElement = `
+    //                     <div class="col-sm-4 mb-3">
+    //                         <img src="${e.target.result}" alt="Uploaded Image ${index + 1}">
+    //                     </div>`;
+    //                 imagePreviewContainer.innerHTML += imageElement;
+    //             };
+    //             reader.readAsDataURL(file);
+    //         });
+    //     });
+
+    // });
+
+
     document.addEventListener('DOMContentLoaded', () => {
-        const editProductModal = document.getElementById('editProductModal');
+    const editProductModal = document.getElementById('editProductModal');
 
-        editProductModal.addEventListener('show.bs.modal', (event) => {
-            const button = event.relatedTarget;
+    editProductModal.addEventListener('show.bs.modal', (event) => {
+        const button = event.relatedTarget;
 
-            const productId = button.getAttribute('data-id');
-            const productName = button.getAttribute('data-name');
-            const productBrand = button.getAttribute('data-brand');
-            const productDescription = button.getAttribute('data-description');
-            const productPrice = button.getAttribute('data-price');
-            const productImages = JSON.parse(button.getAttribute('data-images'));
-            const productStock = button.getAttribute('data-stock');
+        const productId = button.getAttribute('data-id');
+        const productName = button.getAttribute('data-name');
+        const productBrand = button.getAttribute('data-brand');
+        const productDescription = button.getAttribute('data-description');
+        const productPrice = button.getAttribute('data-price');
+        const productImages = JSON.parse(button.getAttribute('data-images'));
+        const productStock = button.getAttribute('data-stock');
 
-            document.getElementById('productId').value = productId;
-            document.getElementById('editProductName').value = productName;
-            document.getElementById('editBrand').value = productBrand;
-            document.getElementById('editDescription').value = productDescription;
-            document.getElementById('editPrice').value = productPrice;
-            document.getElementById('editStock').value = productStock;
+        document.getElementById('productId').value = productId;
+        document.getElementById('editProductName').value = productName;
+        document.getElementById('editBrand').value = productBrand;
+        document.getElementById('editDescription').value = productDescription;
+        document.getElementById('editPrice').value = productPrice;
+        document.getElementById('editStock').value = productStock;
 
-            // Handle displaying existing images
-            const existingImagesContainer = document.getElementById('existingImages');
-            existingImagesContainer.innerHTML = '';
-            existingImagesContainer.classList.add('d-flex', 'flex-column', 'gap-3'); // Use flex-column for vertical images
+        // Handle displaying existing images
+        const existingImagesContainer = document.getElementById('existingImages');
+        existingImagesContainer.innerHTML = '';
+        existingImagesContainer.classList.add('d-flex', 'flex-column', 'gap-3');
 
-            productImages.forEach((image, index) => {
-                const imageElement = `
-                    <div style="width: 100%; max-width: 150px;">
-                        <img src="/uploads/${image}" alt="Product Image ${index + 1}" style="width: 100%; height: auto;">
-                    </div>`;
-                existingImagesContainer.innerHTML += imageElement;
-            });
+        productImages.forEach((image, index) => {
+            const imageElement = `
+                <div style="width: 100%; max-width: 150px;">
+                    <img src="/uploads/${image}" alt="Product Image ${index + 1}" style="width: 100%; height: auto;">
+                </div>`;
+            existingImagesContainer.innerHTML += imageElement;
         });
+    });
 
-        // Handle file input change and preview new images
-        document.querySelector('input[name="images"]').addEventListener('change', function () {
+    // Handle file input change and preview new images
+    document.querySelectorAll('input[type="file"]').forEach((inputElement, index) => {
+        inputElement.addEventListener('change', function () {
             const imagePreviewContainer = document.getElementById('existingImages');
-            imagePreviewContainer.innerHTML += '<h5>New Images:</h5>';
+            imagePreviewContainer.innerHTML += `<h5>New Image ${index + 1}:</h5>`;
 
-            Array.from(this.files).forEach((file, index) => {
-                if (index >= 3) return; // Limit to 3 images
-
+            const file = this.files[0]; 
+            if (file) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     const imageElement = `
@@ -388,11 +482,15 @@
                     imagePreviewContainer.innerHTML += imageElement;
                 };
                 reader.readAsDataURL(file);
-            });
+            }
         });
-
     });
+});
+
+
+
 </script>
+
                 
 
                 <div class="table-responsive">
@@ -449,9 +547,7 @@
         </div>
 
 
-   <!-- SweetAlert2 -->
-   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ 
    
    <!-- Pagination Controls -->
    <nav aria-label="Page navigation">
@@ -482,9 +578,9 @@
 
    <script>
     function confirmDeleteProduct(event, form) {
-        event.preventDefault(); // Prevent the form from submitting immediately
+        event.preventDefault(); 
     
-        // Show SweetAlert confirmation dialog
+       
         Swal.fire({
             title: 'Are you sure you want to delete this product?',
             icon: 'warning',
@@ -493,16 +589,15 @@
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'No, cancel',
-            background: '#fffff',  // Black theme background
-            color: 'black'           // Text color white
+            background: '#fffff',  
+            color: 'black'         
         }).then((result) => {
             if (result.isConfirmed) {
-                // Submit the form if the user confirms
                 form.submit();
             }
         });
     
-        return false;  // Always prevent default form submission
+        return false; 
     }
     </script>
 
