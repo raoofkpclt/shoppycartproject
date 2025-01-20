@@ -1,588 +1,759 @@
-const adminSchema = require("../model/adminModel");
+const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const adminSchema = require("../model/adminModel");
 const userSchema = require("../model/userModel");
-const mongoose= require('mongoose');
-const Category=require('../model/categoryModel');
-const Product=require('../model/productModel');
-const path=require('path');
-const fs=require('fs');
-const Order=require('../model/orderModel');
+const Order = require("../model/orderModel");
+
+const ExcelJS = require("exceljs");
+const PDFDocument = require("pdfkit");
+// const { Table } = require('pdfkit-table');
+// const pdf = require('html-pdf')
+const { jsPDF } = require("jspdf");
+require("jspdf-autotable");
 
 // Load Admin Login Page
 const loadlogin = async (req, res) => {
-    res.render("admin/login");
+  res.render("admin/login");
 };
 
 // Handle Admin Login
 const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-        const admin = await adminSchema.findOne({ email });
-        console.log(req.body);
+    const admin = await adminSchema.findOne({ email });
+    console.log(req.body);
 
-        if (!admin) {
-            return res.render("admin/login", { message: "Invalid credentials" });
-        }
-
-        const isMatch = await bcrypt.compare(password, admin.password);
-        if (!isMatch) {
-            return res.render("admin/login", { message: "Invalid credentials" });
-        }
-
-        req.session.admin = true; 
-        res.redirect("/admin/dash");
-    } catch (error) {
-        console.error("Error during admin login:", error);
-        res.status(500).render("admin/login", { message: "Something went wrong. Please try again later." });
+    if (!admin) {
+      return res.render("admin/login", { message: "Invalid credentials" });
     }
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.render("admin/login", { message: "Invalid credentials" });
+    }
+
+    req.session.admin = true;
+    res.redirect("/admin/dash");
+  } catch (error) {
+    console.error("Error during admin login:", error);
+    res.status(500).render("admin/login", {
+      message: "Something went wrong. Please try again later.",
+    });
+  }
 };
 
 // Load Admin Home Page
 const loadHome = async (req, res) => {
-    try {
-        const admin = req.session.admin;
-        if (!admin) return res.redirect("/admin/login");
+  try {
+    const admin = req.session.admin;
+    if (!admin) return res.redirect("/admin/login");
 
-        const users = await userSchema.find({}); 
-        res.render("admin/dash", { users });
-    } catch (error) {
-        console.error("Error loading admin home:", error);
-        res.status(500).send("Something went wrong.");
-    }
+    res.render("admin/dash");
+  } catch (error) {
+    console.error("Error loading admin home:", error);
+    res.status(500).send("Something went wrong.");
+  }
 };
 
-//user management page 
-const userManagement=async(req,res)=>{
-    try {
-        const page=parseInt(req.query.page)||1
-        const limit=20;
-        const skip=(page-1)*limit;
+const getDashboardData = async (req, res) => {
+  try {
+    const period = req.query.period || "monthly";
+    let dateFilter;
 
-        const totalUser=await userSchema.countDocuments({});
-        const userData=await userSchema.find({}).skip(skip).limit(limit);
+    // Define date filter based on the selected period
+    const now = new Date();
+    let startDate = new Date(now); // Clone the current date
 
-        const totalPage=Math.ceil(totalUser/limit);
-        res.render('admin/userManagement',{
-            users:userData,
-            currentPage:page,
-            totalPages:totalPage
-        })
-        
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        res.status(500).send('An error occurred');
+    switch (period) {
+      case "daily":
+        startDate.setDate(now.getDate() - 1);
+        break;
+      case "weekly":
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case "monthly":
+        startDate.setMonth(now.getMonth() - 1);
+        break;
+      case "yearly":
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        startDate = null;
     }
+
+    if (startDate) {
+      dateFilter = { $gte: startDate };
+    }
+
+    const matchFilter = {
+      ...(dateFilter && { createdAt: dateFilter }),
+      status: "delivered",
+    };
+
+    const salesSummary = await Order.aggregate([
+      { $match: matchFilter },
+      {
+        $group: {
+          _id: null,
+          totalSalesCount: { $sum: { $sum: "$products.quantity" } },
+          totalRevenue: { $sum: "$totalAmount" },
+          totalDiscount: { $sum: "$couponDiscount" },
+        },
+      },
+    ]);
+
+    const bestSellingProducts = await Order.aggregate([
+      { $match: matchFilter },
+      { $unwind: "$products" },
+      {
+        $group: {
+          _id: "$products.productId",
+          totalSold: { $sum: "$products.quantity" },
+        },
+      },
+
+      { $sort: { totalSold: -1 } },
+
+      { $limit: 10 },
+
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "productInfo",
+        },
+      },
+
+      { $unwind: { path: "$productInfo", preserveNullAndEmptyArrays: true } },
+
+      {
+        $project: {
+          _id: 1,
+          totalSold: 1,
+          name: { $ifNull: ["$productInfo.product", "Unknown Product"] },
+          brand: { $ifNull: ["$productInfo.brand", "Unknown Brand"] },
+          productId: { $toString: "$_id" },
+        },
+      },
+    ]);
+
+    const bestSellingCategories = await Order.aggregate([
+      { $match: matchFilter },
+
+      { $unwind: "$products" },
+
+      {
+        $lookup: {
+          from: "products",
+          localField: "products.productId",
+          foreignField: "_id",
+          as: "productInfo",
+        },
+      },
+
+      { $unwind: { path: "$productInfo", preserveNullAndEmptyArrays: true } },
+
+      {
+        $lookup: {
+          from: "categories",
+          localField: "productInfo.categoryId",
+          foreignField: "_id",
+          as: "categoryInfo",
+        },
+      },
+
+      { $unwind: { path: "$categoryInfo", preserveNullAndEmptyArrays: true } },
+
+      {
+        $group: {
+          _id: "$categoryInfo.name",
+          totalSold: { $sum: "$products.quantity" },
+        },
+      },
+
+      { $sort: { totalSold: -1 } },
+
+      { $limit: 10 },
+
+      {
+        $project: {
+          _id: 0,
+          categoryName: "$_id",
+          totalSold: 1,
+        },
+      },
+    ]);
+
+    const bestSellingBrands = await Order.aggregate([
+      { $match: matchFilter },
+      { $unwind: "$products" },
+      {
+          $lookup: {
+              from: "products",
+              localField: "products.productId",
+              foreignField: "_id",
+              as: "productInfo",
+          },
+      },
+      { $unwind: { path: "$productInfo", preserveNullAndEmptyArrays: true } },
+      {
+          $group: {
+              _id: "$productInfo.brand",
+              totalSold: { $sum: "$products.quantity" },
+          },
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: 10 },
+      {
+          $project: {
+              _id: 0,
+              brandName: "$_id",
+              totalSold: 1,
+          },
+      },
+  ]);
+    
+
+    const dailyRevenue = await Order.aggregate([
+      { $match: matchFilter },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          totalRevenue: { $sum: "$totalAmount" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const totalUsers = await userSchema.countDocuments();
+
+    res.json({
+      salesSummary: salesSummary[0] || {
+        totalSalesCount: 0,
+        totalRevenue: 0,
+        totalDiscount: 0,
+      },
+      bestSellingProducts,
+      bestSellingCategories,
+      bestSellingBrands,
+      totalUsers,
+      dailyRevenue,
+    });
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+    res.status(500).json({ error: "Failed to fetch dashboard data" });
+  }
+};
+
+//user management page
+const userManagement = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const totalUser = await userSchema.countDocuments({});
+    const userData = await userSchema.find({}).skip(skip).limit(limit);
+
+    const totalPage = Math.ceil(totalUser / limit);
+    res.render("admin/userManagement", {
+      users: userData,
+      currentPage: page,
+      totalPages: totalPage,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).send("An error occurred");
+  }
 };
 
 // user blocking
-const blockUser=async(req,res)=>{
-    try {
-        const {userId}=req.body;
+const blockUser = async (req, res) => {
+  try {
+    const { userId } = req.body;
 
-        if(!userId){
-            return res.status(400).send('User ID is required');
-        }
-        await userSchema.findByIdAndUpdate(userId,{isBlocked:true});
-        req.session.user=null;
-        res.redirect('/admin/userManagement')
-        
-    } catch (error) {
-        console.error('Error blocking user:', error);
-        res.status(500).send('Server Error');
+    if (!userId) {
+      return res.status(400).send("User ID is required");
     }
-}
+    await userSchema.findByIdAndUpdate(userId, { isBlocked: true });
+    req.session.user = null;
+    res.redirect("/admin/userManagement");
+  } catch (error) {
+    console.error("Error blocking user:", error);
+    res.status(500).send("Server Error");
+  }
+};
 
 // Unblock user
 const unblockUser = async (req, res) => {
-    try {
-        const { userId } = req.body; 
+  try {
+    const { userId } = req.body;
 
-        if (!userId) {
-            return res.status(400).send('User ID is required');
-        }
-
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).send('Invalid User ID format');
-        }
-
-        await userSchema.findByIdAndUpdate(userId, { isBlocked: false });
-        res.redirect('/admin/userManagement');
-    } catch (error) {
-        console.log('Error unblocking user:', error);
-        res.redirect('/admin/userManagement');
+    if (!userId) {
+      return res.status(400).send("User ID is required");
     }
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).send("Invalid User ID format");
+    }
+
+    await userSchema.findByIdAndUpdate(userId, { isBlocked: false });
+    res.redirect("/admin/userManagement");
+  } catch (error) {
+    console.log("Error unblocking user:", error);
+    res.redirect("/admin/userManagement");
+  }
 };
 
-//category management
-const categoryManagement=async (req,res) => {
-    try {
-        const {message,error}=req.body
-        const categories=await Category.find({})
-        res.render('admin/categoryManagement' ,{categories,message,error});
-    } catch (error) {
-        console.error('Error fetching categories:', error);
-        res.status(500).json({ message: 'Error fetching categories' });
-        
-    }
+// calculate sale summary
+const calculateSalesSummary = async (salesData) => {
+  return {
+    totalOrders: salesData.length,
+    totalSales: salesData.reduce((sum, order) => sum + order.totalAmount, 0),
+    totalDiscount: salesData.reduce(
+      (sum, order) => sum + (order.couponDiscount || 0),
+      0
+    ),
+    averageOrderValue:
+      salesData.length > 0
+        ? salesData.reduce((sum, order) => sum + order.totalAmount, 0) /
+          salesData.length
+        : 0,
+  };
 };
 
-//load create category
-const createCategory=async (req,res) => {
-    try {
-        res.render('admin/addCategory')
-    } catch (error) {
-        console.log(error);
-    }
+// Remove the salesController object and directly export individual functions
+const renderSalesReport = async (req, res) => {
+  try {
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+    // Get initial daily sales data
+    const salesData = await Order.find({
+      createdAt: { $gte: startOfDay, $lte: endOfDay },
+      status: { $nin: ["cancelled"] },
+    })
+      .populate("user", "name")
+      .populate("products.productId");
+
+    // Calculate summary statistics
+    const summary = await calculateSalesSummary(salesData);
+
+    res.render("admin/report", {
+      sales: salesData,
+      summary,
+      reportType: "daily",
+    });
+  } catch (error) {
+    console.error("Error rendering sales report:", error);
+    res.status(500).send("Error loading sales report");
+  }
 };
 
-//add category page 
-const addCategory = async (req, res) => {
-    try {
-        const { name } = req.body;
+//get sale repport
+const getSalesReport = async (req, res) => {
+  console.log("Full Request Body:", req.body);
+  console.log("Report Type:", req.body.reportType);
 
-        // Trim the input to remove leading and trailing spaces
-        const trimmedName = name.trim();
+  try {
+    const { reportType, startDate, endDate } = req.body;
 
-        // Check if the category name is empty after trimming
-        if (!trimmedName) {
-            return res.redirect('/admin/categoryManagement?error=Category name cannot be empty or only spaces.');
-        }
-
-        // Check for duplicate category
-        const existing = await Category.findOne({ name: { $regex: new RegExp(`^${trimmedName}$`, 'i') } });
-        if (existing) {
-            return res.redirect('/admin/categoryManagement?error=Category with this title already exists');
-        }
-
-        // Validate the category name to allow only letters and spaces
-        const validNamePattern = /^[A-Za-z\s]+$/;
-        if (!validNamePattern.test(trimmedName)) {
-            return res.redirect('/admin/categoryManagement?error=Category name can only contain letters and spaces.');
-        }
-
-        // Create and save the new category
-        const newCategory = new Category({ name: trimmedName });
-        await newCategory.save();
-        res.redirect('/admin/categoryManagement?message=Category Added');
-    } catch (error) {
-        console.error('Error adding category:', error);
-        res.status(500).json({ message: 'Error adding category' });
+    // Validate report type
+    if (!reportType) {
+      return res.status(400).json({
+        success: false,
+        message: "Report type is required",
+      });
     }
-};
 
-///load edit category
-const loadEditCategory = async (req, res) => {
-    try {
-        const { message, error } = req.query;
-        const { id } = req.params;
+    // Determine date range based on report type
+    let dateQuery = {
+      // Only include delivered orders
+      status: "delivered",
+    };
+    const now = new Date();
 
-        // Validate ID
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.redirect('/admin/categoryManagement?error=Invalid category ID.');
+    switch (reportType) {
+      case "daily":
+        dateQuery.createdAt = {
+          $gte: new Date(now.setHours(0, 0, 0, 0)),
+          $lte: new Date(now.setHours(23, 59, 59, 999)),
+        };
+        break;
+
+      case "weekly":
+        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+        dateQuery.createdAt = {
+          $gte: new Date(startOfWeek.setHours(0, 0, 0, 0)),
+          $lte: new Date(),
+        };
+        break;
+
+      case "monthly":
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        dateQuery.createdAt = {
+          $gte: startOfMonth,
+          $lte: new Date(),
+        };
+        break;
+
+      case "custom":
+        if (!startDate || !endDate) {
+          return res.status(400).json({
+            success: false,
+            message: "Start and end dates are required for custom report",
+          });
         }
+        dateQuery.createdAt = {
+          $gte: new Date(startDate),
+          $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
+        };
+        break;
 
-        const category = await Category.findById(id);
-
-        if (!category) {
-            return res.redirect('/admin/categoryManagement?error=Category not found');
-        }
-
-        res.render('admin/editCategory', { category, message, error });
-    } catch (error) {
-        console.error('Error loading edit category page:', error);
-        res.redirect('/admin/categoryManagement?error=Server error while loading category.');
-    }
-};
-
-//edit category
-const editCategory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { name } = req.body;
-
-        // Validate ID
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.redirect('/admin/categoryManagement?error=Invalid category ID.');
-        }
-
-        // Validate name
-        const validNamePattern =  /^[A-Za-z\s ]+$/;
-        if (!name || !validNamePattern.test(name.trim())) {
-            return res.redirect(`/admin/editCategory/${id}?error=Category name must contain only letters and spaces.`);
-        }
-
-        const trimmedName = name.trim();
-
-        // Check if category exists
-        const existingCategory = await Category.findById(id);
-        if (!existingCategory) {
-            return res.redirect('/admin/categoryManagement?error=Category not found.');
-        }
-
-        // Check if the name has actually changed
-        if (existingCategory.name.trim().toLowerCase() === trimmedName.toLowerCase()) {
-            return res.redirect(`/admin/editCategory/${id}?error=No changes made to the category name.`);
-        }
-
-        // Check for duplicates
-        const duplicateCategory = await Category.findOne({
-            name: { $regex: new RegExp(`^${trimmedName}$`, 'i') },
-            _id: { $ne: id },
+      default:
+        return res.status(400).json({
+          success: false,
+          message: "Invalid report type",
         });
-
-        if (duplicateCategory) {
-            return res.redirect(`/admin/editCategory/${id}?error=Category with this name already exists.`);
-        }
-
-       
-        await Category.findByIdAndUpdate(id, { name: trimmedName }, { new: true });
-
-        res.redirect('/admin/categoryManagement?message=Category updated successfully.');
-    } catch (error) {
-        console.error('Error updating category:', error);
-        res.redirect(`/admin/editCategory/${req.params.id}?error=Server error while updating category.`);
     }
+
+    // Fetch sales data
+    const salesData = await Order.find(dateQuery)
+      .populate("user", "name email")
+      .populate("products.productId")
+      .sort({ createdAt: -1 });
+
+    console.log("data is:", salesData);
+    // Calculate summary
+    const summary = await calculateSalesSummary(salesData);
+
+    // Return response
+    res.json({
+      success: true,
+      sales: salesData,
+      summary,
+    });
+  } catch (error) {
+    console.error("Error generating sales report:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error generating sales report",
+      error: error.message,
+    });
+  }
 };
 
-//delete category
-const deleteCategory=async(req,res)=>{
-    try {
-        const {categoryId}=req.body;
-        if(!categoryId){
-            return res.render('admin/categoryManagement?error=Category ID is required');
+const downloadExcel = async (req, res) => {
+  try {
+    console.log("Excel Download Query:", req.query);
+
+    const { reportType, startDate, endDate } = req.query;
+
+    // Determine date range based on report type
+    let dateQuery = {};
+    const now = new Date();
+
+    switch (reportType) {
+      case "daily":
+        dateQuery.createdAt = {
+          $gte: new Date(now.setHours(0, 0, 0, 0)),
+          $lte: new Date(now.setHours(23, 59, 59, 999)),
+        };
+        break;
+      case "weekly":
+        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+        dateQuery.createdAt = {
+          $gte: new Date(startOfWeek.setHours(0, 0, 0, 0)),
+          $lte: new Date(),
+        };
+        break;
+      case "monthly":
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        dateQuery.createdAt = {
+          $gte: startOfMonth,
+          $lte: new Date(),
+        };
+        break;
+      case "custom":
+        if (startDate && endDate) {
+          dateQuery.createdAt = {
+            $gte: new Date(startDate),
+            $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
+          };
         }
-        await Category.findByIdAndUpdate(categoryId,{isActive:false});
-        res.redirect('/admin/categoryManagement?message=Category deleted successfully');
-    } catch (error) {
-        console.error('Error deleting category:', error);
-        res.render('admin/categoryManagement?error=Error deleting category');
+        break;
     }
+
+    // Fetch sales data with populated references
+    const orders = await Order.find(dateQuery)
+      .populate("products.productId", "product brand")
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
+
+    // Generate Excel workbook
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sales Report");
+
+    // Add headers
+    worksheet.columns = [
+      { header: "Order ID", key: "orderId", width: 20 },
+      { header: "Date", key: "date", width: 15 },
+      { header: "Customer", key: "customer", width: 25 },
+      { header: "Shipping Address", key: "shippingAddress", width: 40 },
+      { header: "Products", key: "products", width: 50 },
+      { header: "Total Amount", key: "totalAmount", width: 15 },
+      { header: "Coupon Discount", key: "couponDiscount", width: 15 },
+      { header: "Final Amount", key: "finalAmount", width: 15 },
+      { header: "Payment Method", key: "paymentMethod", width: 15 },
+      { header: "Status", key: "status", width: 15 },
+    ];
+
+    // Add data rows
+    orders.forEach((order) => {
+      worksheet.addRow({
+        orderId: order._id,
+        date: new Date(order.createdAt).toLocaleDateString(),
+        customer: order.user
+          ? `${order.user.name} (${order.user.email})`
+          : "N/A",
+        shippingAddress: order.shippingAddress,
+        products: order.products
+          .map(
+            (item) =>
+              `${
+                item.productId
+                  ? `${item.productId.product} (${item.productId.brand})`
+                  : "N/A"
+              } - ${item.quantity} pcs @ ₹${item.price}`
+          )
+          .join(", "),
+        totalAmount: `₹${order.totalAmount.toFixed(2)}`,
+        couponDiscount: `₹${order.couponDiscount.toFixed(2)}`,
+        finalAmount: `₹${(order.totalAmount - order.couponDiscount).toFixed(
+          2
+        )}`,
+        paymentMethod: order.paymentMethod.toUpperCase(),
+        status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+      });
+    });
+
+    // Add summary rows
+    const totalOrders = orders.length;
+    const totalAmount = orders.reduce(
+      (sum, order) => sum + order.totalAmount,
+      0
+    );
+    const totalDiscount = orders.reduce(
+      (sum, order) => sum + (order.couponDiscount || 0),
+      0
+    );
+    const finalAmount = totalAmount - totalDiscount;
+
+    worksheet.addRow({});
+    worksheet.addRow(["Summary"]);
+    worksheet.addRow(["Total Orders", totalOrders]);
+    worksheet.addRow(["Total Sales", `₹${totalAmount.toFixed(2)}`]);
+    worksheet.addRow(["Total Discount", `₹${totalDiscount.toFixed(2)}`]);
+    worksheet.addRow(["Net Sales", `₹${finalAmount.toFixed(2)}`]);
+
+    // Set response headers
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=sales-report-${Date.now()}.xlsx`
+    );
+
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Excel Download Error:", error);
+    res.status(500).send("Error generating Excel: " + error.message);
+  }
 };
 
-//active category
-const activeCategory=async(req,res)=>{
-    try {
-        const {categoryId}=req.body;
-        if(!categoryId){
-            return res.status(400).send('Category ID is required');
-        }
-        await Category.findByIdAndUpdate(categoryId,{isActive:true});
-        res.redirect('/admin/categoryManagement?message=Category activated successfully');
+// Download pdf file
+const downloadPDF = async (req, res) => {
+  try {
+    const { reportType, startDate, endDate } = req.query;
 
-    } catch (error) {
-        console.error('Error activating category:', error);
-        res.status(500).send('Server Error');
-
+    // Validate report type
+    if (!reportType) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Report type is required." });
     }
-};
 
-// Display product management page
-const productManagement = async (req, res) => {
-    try {
-        const { message, error } = req.query;
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+    // Construct date query
+    const now = new Date();
+    let dateQuery = { status: "delivered" };
 
-        const product = await Product.find({ isActive: true })
-            .populate('categoryId')
-            .skip(skip)
-            .limit(limit);
-
-        const totalProduct = await Product.countDocuments({ isActive: true });
-        const totalPages = Math.ceil(totalProduct / limit);
-
-        const categories = await Category.find({ isActive: true });
-
-        res.render('admin/productManagement', {
-            product,
-            message,
-            error,
-            currentPage: page,
-            totalPages,
-            limit,
-            categories,
-        });
-    } catch (error) {
-        console.error(error);
-        res.redirect('/admin/productManagement?error=Error fetching products');
+    switch (reportType) {
+      case "daily":
+        dateQuery.createdAt = {
+          $gte: new Date(now.setHours(0, 0, 0, 0)),
+          $lte: new Date(now.setHours(23, 59, 59, 999)),
+        };
+        break;
+      case "weekly":
+        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+        dateQuery.createdAt = {
+          $gte: new Date(startOfWeek.setHours(0, 0, 0, 0)),
+          $lte: new Date(),
+        };
+        break;
+      case "monthly":
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        dateQuery.createdAt = {
+          $gte: startOfMonth,
+          $lte: new Date(),
+        };
+        break;
+      case "custom":
+        if (!startDate || !endDate) {
+          return res.status(400).json({
+            success: false,
+            message: "Start and end dates are required for custom reports.",
+          });
+        }
+        dateQuery.createdAt = {
+          $gte: new Date(startDate),
+          $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
+        };
+        break;
+      default:
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid report type." });
     }
-};
 
-// Add product
-const addProduct = async (req, res) => {
-    try {
-        console.log('1');
-        const { product, brand, categoryId, price, stock, description,discount } = req.body;
-        const images = req.files;
-        console.log(req.body);
-     
-        if (!product || !brand || !categoryId || !price || !stock || !description ||!discount|| images.length < 3) {
-            console.log('checking');
-            return res.redirect('/admin/productManagement?error=All fields and at least 3 images are required');
-        }
-        console.log('2');
-        const newProduct = new Product({
-            product,
-            brand,
-            categoryId,
-            price: parseFloat(price),
-            stock: parseInt(stock),
-            description,
-            discount: parseFloat(discount),
-            images: images.map(img => img.filename),
-        });
-        console.log('3');
+    // Fetch sales data
+    const salesData = await Order.find(dateQuery)
+      .populate("user", "name email") // Populate user info
+      .populate("products.productId", "product price") // Populate product info
+      .sort({ createdAt: -1 });
 
-        await newProduct.save();
-        console.log('4');
-        res.redirect('/admin/productManagement?message=Product added successfully');
-    } catch (err) {
-        console.log('5');
-        console.error(err);
-        res.redirect('/admin/productManagement?error=Error adding product');
+    if (!salesData.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No sales data found for the specified period.",
+      });
     }
-};
 
-/*
-// const addProduct = async (req, res) => {
-//     try {
-//         const { product, brand, categoryId, price, stock, description,size,color } = req.body;
-//         const images = req.files; 
-//         const getproduct=req.body
-//         console.log(getproduct);
-//         if (!product || !brand || !categoryId || !price || !stock || !description|| !size|| !color) {
-//             return res.redirect('/admin/productManagement?error=All fields are required');
-//         }
+    // Create a new PDF document
+    const doc = new jsPDF();
 
-//         if (isNaN(price) || price <= 0) {
-//             return res.redirect('/admin/productManagement?error=Price must be a positive number');
-//         }
+    // Title
+    doc.setFontSize(16);
+    doc.text("Sales Report", 105, 10, { align: "center" });
 
-//         if (isNaN(stock) || stock < 0) {
-//             return res.redirect('/admin/productManagement?error=Stock must be a non-negative number');
-//         }
+    // Metadata
+    doc.setFontSize(10);
+    doc.text(`Report Type: ${reportType}`, 14, 20);
+    doc.text(`Generated On: ${new Date().toLocaleString()}`, 14, 25);
 
-//         if (!images || images.length === 0) {
-//             return res.redirect('/admin/productManagement?error=At least one image is required');
-//         }
+    // Table data
+    const tableData = salesData.map((order) => [
+      order._id,
+      order.user ? order.user.name : "N/A",
+      order.products.map((product) => product.name).join(", "),
+      order.totalAmount.toFixed(2),
+      order.couponDiscount ? order.couponDiscount.toFixed(2) : "0.00",
+      (order.totalAmount - (order.couponDiscount || 0)).toFixed(2),
+      order.paymentMethod.toUpperCase(),
+      new Date(order.createdAt).toLocaleString(),
+    ]);
 
-//         const existingProduct = await Product.findOne({ product});
-//         if (existingProduct) {
-//             return res.redirect('/admin/productManagement?error=Product with this name already exists');
-//         }
-//         console.log('get offer something');
+    // Table headers
+    doc.autoTable({
+      startY: 30,
+      head: [
+        [
+          "Order ID",
+          "Customer",
+          "Products",
+          "Total Amount",
+          "Discount",
+          "Final Amount",
+          "Payment Method",
+          "Order Date",
+        ],
+      ],
+      body: tableData,
+      theme: "grid",
+      headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255] },
+      styles: { fontSize: 8, cellPadding: 2 },
+    });
 
-//         const newProduct = new Product({
-//             product: product,
-//             brand: brand,
-//             categoryId: categoryId,
-//             price: price,
-//             stock: stock,
-//             description: description,
-//             size:size,
-//             color:color,
-//             images: images.map((img) => img.filename), // Store image filenames
-//         });
+    // Summary
+    const totalSales = salesData
+      .reduce((acc, order) => acc + order.totalAmount, 0)
+      .toFixed(2);
+    const totalDiscount = salesData
+      .reduce((acc, order) => acc + (order.couponDiscount || 0), 0)
+      .toFixed(2);
+    const totalOrders = salesData.length;
 
-//         await newProduct.save();
-//         res.redirect('/admin/productManagement?message=Product added successfully');
-//     } catch (error) {
-//         console.error(error);
-//         res.redirect('/admin/productManagement?error=Error adding product');
-//     }
-// };
-*/
+    doc.addPage();
+    doc.text("Sales Summary", 105, 10, { align: "center" });
+    doc.autoTable({
+      startY: 20,
+      head: [["Metric", "Value"]],
+      body: [
+        ["Total Orders", totalOrders],
+        ["Total Sales", `${totalSales}/-`],
+        ["Total Discount", `${totalDiscount}/-`],
+      ],
+      theme: "grid",
+      styles: { fontSize: 10, cellPadding: 2 },
+    });
 
+    // Generate PDF Buffer
+    const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
 
-/*
-// const editProduct = async (req, res) => {
-//     try {
-//         const { id, product, brand, categoryId, price, stock, description, size, color } = req.body;
-//         const images = req.files;
+    // Set response headers
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=sales-report-${Date.now()}.pdf`
+    );
+    res.setHeader("Content-Length", pdfBuffer.length);
 
-//         const existingProduct = await Product.findById(id);
-//         if (!existingProduct) {
-//             return res.redirect('/admin/productManagement?error=Product not found');
-//         }
-
-//         existingProduct.product = product || existingProduct.product;
-//         existingProduct.brand = brand || existingProduct.brand;
-//         existingProduct.categoryId = categoryId || existingProduct.categoryId;
-//         existingProduct.price = price || existingProduct.price;
-//         existingProduct.stock = stock || existingProduct.stock;
-//         existingProduct.description = description || existingProduct.description;
-
-       
-//         if (images && images.length > 0) {
-//             existingProduct.images.forEach(image => {
-//                 const imagePath = path.join(__dirname, '../uploads', image);
-//                 if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
-//             });
-//             existingProduct.images = images.map(img => img.filename);
-//         }
-
-//         await existingProduct.save();
-//         res.redirect('/admin/productManagement?message=Product updated successfully');
-//     } catch (err) {
-//         console.error(err);
-//         res.redirect('/admin/productManagement?error=Error updating product');
-//     }
-// };
-*/
-
-// Edit product
-const editProduct = async (req, res) => {
-    try {
-        const { id, product, brand, categoryId, price, stock, description } = req.body;
-        const images = req.files;
-
-        const existingProduct = await Product.findById(id);
-        if (!existingProduct) {
-            return res.redirect('/admin/productManagement?error=Product not found');
-        }
-
-        existingProduct.product = product || existingProduct.product;
-        existingProduct.brand = brand || existingProduct.brand;
-        existingProduct.categoryId = categoryId || existingProduct.categoryId;
-        existingProduct.price = price || existingProduct.price;
-        existingProduct.stock = stock || existingProduct.stock;
-        existingProduct.description = description || existingProduct.description;
-
-     
-        if (images && images.length > 0) {
-            images.forEach((image, index) => {
-                if (image) {
-                   
-                    const imagePath = path.join(__dirname, '../uploads', existingProduct.images[index]);
-                    if (fs.existsSync(imagePath)) {
-                        fs.unlinkSync(imagePath); 
-                    }
-                    existingProduct.images[index] = image.filename; 
-                }
-            });
-        }
-
-        await existingProduct.save();
-        res.redirect('/admin/productManagement?message=Product updated successfully');
-    } catch (err) {
-        console.error(err);
-        res.redirect('/admin/productManagement?error=Error updating product');
-    }
-};
-
-// Delete product
-const deleteProduct = async (req, res) => {
-    try {
-        const { id } = req.params;
-        console.log(id);
-
-        const product = await Product.findById(id);
-        if (!product) {
-            return res.redirect('/admin/productManagement?error=Product not found');
-        }
-
-        product.isActive = false;
-        await product.save();
-        console.log('done');
-
-        res.redirect('/admin/productManagement?message=Product deleted successfully');
-    } catch (error) {
-        console.error(error);
-        res.redirect('/admin/productManagement?error=Error deleting product');
-    }
-};
-
-//order management
-const orderManagement = async (req, res) => {
-    try {
-        const page=parseInt(req.query.page)||1
-        const limit=20;
-        const skip=(page-1)*limit;
-
-        const totalOrder=await Order.countDocuments({});
-        const orders = await Order.find({})
-            .populate('user', 'name email')
-            .populate('products.productId', 'product price').skip(skip).limit(limit);
-
-            const totalPage=Math.ceil(totalOrder/limit);
-        res.render('admin/orderManagement', { orders , currentPage:page,
-            totalPages:totalPage});
-    } catch (error) {
-        console.error('Error fetching orders:', error);
-        res.render('admin/orderManagement', { orders: [], error: 'Failed to fetch orders' });
-    }
-};
-
-// Update order status
-const orderStatus = async (req, res) => {
-    try {
-        const { id } = req.params; 
-        const { status } = req.body; 
-
-        // Validate the input status
-        const validStatuses = ['pending', 'shipped', 'delivered', 'cancelled'];
-        if (!validStatuses.includes(status)) {
-            return res.status(400).send('Invalid status provided');
-        }
-
-        // Update the order in the database
-        const updatedOrder = await Order.findById(id);
-
-        if (!updatedOrder) {
-            return res.status(404).send('Order not found');
-        }
-
-        //  all products have a valid name
-        updatedOrder.products.forEach(product => {
-            if (!product.name) {
-                product.name = product.productId ? product.productId.name : 'Unknown Product';
-            }
-        });
-
-       
-        if (status === 'delivered') {
-            updatedOrder.paymentStatus = 'paid';
-        }
-
-        updatedOrder.status = status;
-        await updatedOrder.save();
-
-        res.redirect('/admin/orderManagement');
-    } catch (error) {
-        console.error('Error updating order status:', error);
-        res.status(500).send('Internal Server Error');
-    }
+    // Send PDF
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error generating PDF",
+      error: error.message,
+    });
+  }
 };
 
 // Handle Admin Logout
 const logout = async (req, res) => {
-    req.session.admin = null; 
-    res.redirect("/admin/login");
+  req.session.admin = null;
+  res.redirect("/admin/login");
 };
 
 module.exports = {
-    loadlogin,
-    login,
-    loadHome,
-    logout,
-    userManagement,
-    blockUser,
-    unblockUser,
-    productManagement,
-    categoryManagement,
-    createCategory,
-    addCategory,
-    loadEditCategory,
-    editCategory,
-    deleteCategory,
-    productManagement,
-    addProduct,
-    editProduct,
-    deleteProduct,
-    orderManagement,
-    activeCategory,
-    orderStatus,
-
+  loadlogin,
+  login,
+  loadHome,
+  getDashboardData,
+  logout,
+  userManagement,
+  blockUser,
+  unblockUser,
+  renderSalesReport,
+  getSalesReport,
+  downloadExcel,
+  downloadPDF,
 };

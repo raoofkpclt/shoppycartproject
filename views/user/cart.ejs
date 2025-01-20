@@ -213,12 +213,12 @@
                     <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
                 </a>
             </div>
-            <!-- Navigation Menu -->
-            <nav class="header__menu">
+             <!-- Navigation Menu -->
+             <nav class="header__menu">
                 <ul>
                     <li ><a href="/user/">Home</a></li>
                     <li ><a href="/user/productList">Shop</a></li>
-                    <li><a href="#">Pages</a>
+                    <!-- <li><a href="#">Pages</a>
                         <ul class="dropdown">
                             <li><a style="color: black;" href="./about.html">About Us</a></li>
                             <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
@@ -229,10 +229,11 @@
                     </li>
                     <li><a href="#">Contact</a> </li>
                   
-                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Blog</a></li> -->
                 </ul>
             </nav>
             <!-- Right Options -->
+
 
             <div class="header__nav__option">
                 <a href="/user/profile">
@@ -246,9 +247,13 @@
                 <a href="/user/cart">
                     <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
                 </a>
+                <a href="/user/wallet">
+                    <i class="fas fa-wallet" style="font-size: 24px; color: black;"></i> 
+                </a>
                 <a href="/user/logout">
                     <i class="fas fa-sign-out-alt" style="font-size: 24px; color: black;"></i> 
                 </a>
+            
             </div>
             
         </div>
@@ -286,7 +291,7 @@
                                                 </div>
                                             </td>
                                             <td class="column-2"><%= item.name %></td>
-                                            <td class="column-3" id="price-<%= item.productId._id %>"><%= item.price.toFixed(2) %></td>
+                                            <td class="column-3" id="price-<%= item.productId._id %>"> ₹ <%= item.price.toFixed(2) %></td>
                                             <td class="column-4">
                                                 <div class="quantity-controls">
 
@@ -295,7 +300,7 @@
                                                       class="btn-num-product-down" 
                                                       data-action="decrease" 
                                                       data-product-id="<%= item.productId._id %>">
-                                                      <i class="fa fa-minus"></i> <!-- Font Awesome icon -->
+                                                      <i class="fa fa-minus"></i> 
                                                   </button>
                                                     <!-- Quantity Input -->
                                                     <input 
@@ -309,8 +314,8 @@
                                                         class="btn-num-product-up" 
                                                         data-action="increase" 
                                                         data-product-id="<%= item.productId._id %>" 
-                                                        <%= item.quantity >= 5 ? 'disabled' : '' %>>
-                                                        <i class="fa fa-plus"></i> <!-- Font Awesome icon -->
+                                                        <%= item.quantity >= 6 ? 'disabled' : '' %>>
+                                                        <i class="fa fa-plus"></i>
                                                         </button>
 
                                               
@@ -318,7 +323,7 @@
                                               
                                                 </div>
                                             </td>
-                                            <td class="column-5" id="total-price-<%= item.productId._id %>"><%= (item.price * item.quantity).toFixed(2) %></td>
+                                            <td class="column-5" id="total-price-<%= item.productId._id %>"> ₹ <%= (item.price * item.quantity).toFixed(2) %></td>
                                             <td>
                                                 <button type="button" class="btn btn-danger remove-item" data-product-id="<%= item.productId._id %>">
                                                     <i class="fs-16 zmdi zmdi-delete"></i> Remove
@@ -401,48 +406,6 @@
     </form>
     <!-- Shopping Cart Section End -->
      
-	
-	<!-- <script>
-checkoutForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    try {
-        const response = await fetch('/user/checkout', { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-
-        if (!response.ok) {
-            throw new Error(`Server responded with status ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.redirect) {
-            // Handle redirection for authentication or empty cart
-            window.location.href = data.redirect;
-        } else if (data.stockError) {
-            // Show stock errors
-            const items = data.outOfStockItems
-                .map((item) => `${item.name} (Available: ${item.availableStock}, Requested: ${item.requestedQuantity})`)
-                .join('\n');
-
-            Swal.fire({
-                icon: 'error',
-                title: 'Stock Issues',
-                text: `The following items have stock issues:\n\n${items}`,
-            });
-        } else {
-            // Validation passed, navigate to the checkout page
-            window.location.href = '/user/checkout';
-        }
-    } catch (error) {
-        console.error('Error during checkout validation:', error);
-
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'An unexpected error occurred. Please try again later.',
-        });
-    }
-}); -->
 
 
 </script>
@@ -548,6 +511,7 @@ checkoutForm.addEventListener('submit', async (event) => {
                             productTotalElement.innerText = `$${productTotalPrice.toFixed(2)}`;
                         }
 
+                       
                         updateCartTotal();
 
                         if (data.quantity === 0) {
@@ -559,7 +523,23 @@ checkoutForm.addEventListener('submit', async (event) => {
 
                         const increaseButton = document.querySelector(`button[data-product-id="${productId}"][data-action="increase"]`);
                         if (increaseButton) {
-                            increaseButton.disabled = data.quantity >= 5;
+                            // increaseButton.disabled = data.quantity >= 6;
+                            if (data.quantity >= 6) {
+                            increaseButton.disabled = true;
+
+                            // Show an alert message for exceeding the limit
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Limit Reached',
+                                text: 'You cannot add more than 6 items of this product to your cart.',
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+                            window.location.reload();
+                        } else {
+                            window.location.reload();
+                            increaseButton.disabled = false;
+                        }
                         }
                     } else {
                         Swal.fire('Error', data.message, 'error');

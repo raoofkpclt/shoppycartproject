@@ -1,0 +1,325 @@
+<%-include('partials/header.ejs')%>
+
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+ 
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Main content -->
+<div class="h-screen flex-grow-1 overflow-y-lg-auto">
+    <!-- Header -->
+    <header class="bg-surface-primary border-bottom pt-6">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-sm-6 col-12 mb-4 mb-sm-0">
+                    <h1 class="h2 mb-0 ls-tight">Coupon Management</h1><br>
+                </div>
+                <div class="col-sm-6 col-12 text-sm-end">
+                    <a href="#" 
+                    class="btn btn-sm btn-primary" 
+                    id="createCouponBtn" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#createCouponModal">
+                    <i class="bi bi-plus pe-2"></i>Create
+                 </a>
+                 
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+    <main class="py-6 bg-surface-secondary">
+        <div class="container-fluid">
+            <!-- Card stats -->
+            <div class="card shadow border-0 mb-7">
+                <div class="card-header">
+                    <h5 class="mb-0">Coupons</h5>
+                </div>
+                <% if (message) { %>
+                    <script>
+                        Swal.fire({
+                            title: 'Success!',
+                            text: '<%= message %>',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                    </script>
+                <% } %>
+                
+                <% if (error) { %>
+                    <script>
+                        Swal.fire({
+                            title: 'Error!',
+                            text: '<%= error %>',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    </script>
+                <% } %>
+                
+
+    <!-- Create Coupon Modal -->
+    <div class="modal fade" id="createCouponModal" tabindex="-1" aria-labelledby="createCouponModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createCouponModalLabel">Create Coupon</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCouponForm" action="/admin/addCoupon" method="POST">
+                        <!-- Form Fields -->
+                        <div class="mb-3">
+                            <label for="code" class="form-label">Coupon Code</label>
+                            <input type="text" class="form-control" id="code" name="code" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="minPurchase" class="form-label">Minimum Purchase</label>
+                            <input type="number" class="form-control" id="minPurchase" name="minPurchase" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="discountPercentage" class="form-label">Discount Percentage</label>
+                            <input type="number" class="form-control" id="discountPercentage" name="discountPercentage" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="maxDiscount" class="form-label">Maximum Discount</label>
+                            <input type="number" class="form-control" id="maxDiscount" name="maxDiscount" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" name="startDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDate" name="endDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="isActive" class="form-label">Status</label>
+                            <select class="form-control" id="isActive" name="isActive" required>
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Coupon</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+
+<!-- Edit Coupon Modal -->
+<div class="modal fade" id="editCouponModal" tabindex="-1" aria-labelledby="editCouponModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCouponModalLabel">Edit Coupon</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/admin/editCoupon" method="POST">
+                    <!-- Hidden input to hold coupon ID -->
+                    <input type="hidden" id="couponId" name="id">
+
+                    <!-- Coupon Code -->
+                    <div class="mb-3">
+                        <label for="editCouponCode" class="form-label">Coupon Code</label>
+                        <input type="text" class="form-control" id="editCouponCode" name="code" required>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="editCouponDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="editCouponDescription" name="description" rows="3" required></textarea>
+                    </div>
+
+                    <!-- Minimum Purchase -->
+                    <div class="mb-3">
+                        <label for="editMinPurchase" class="form-label">Minimum Purchase</label>
+                        <input type="number" class="form-control" id="editMinPurchase" name="minPurchase" required>
+                    </div>
+
+                    <!-- Start Date -->
+                    <div class="mb-3">
+                        <label for="editStartDate" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="editStartDate" name="startDate" required>
+                    </div>
+
+                    <!-- End Date -->
+                    <div class="mb-3">
+                        <label for="editEndDate" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="editEndDate" name="endDate" required>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-3">
+                        <label for="editStatus" class="form-label">Status</label>
+                        <select class="form-control" id="editStatus" name="isActive" required>
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+
+
+<div class="table-responsive">
+    <table class="table table-hover table-bordered text-center">
+        <thead class="thead-light">
+            <tr>
+                <th>Id</th>
+                <th>Code</th>
+                <th>Discription</th>
+                <th>Minimum Purchese</th>
+                <th>Discount</th>
+                <th>Maximum Discount</th>
+                <th>Started date</th>
+                <th>End date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% coupons.forEach((coupon) => { 
+                if (coupon.isActive) { %>
+                    <tr>
+                        <td><%= coupon._id.toString().slice(-5) %></td>
+                        <td><%= coupon.code %></td>
+                        <td><%= coupon.description %></td>
+                        <td>₹<%= coupon.minPurchase %></td>
+                        <td>
+                         <%= coupon. discountPercentage%>%
+                        </td>
+                        <th><%=coupon.maxDiscount%></th>
+                        <td><%= coupon.startDate.toLocaleString() %></td>
+                        <td><%= coupon.endDate.toLocaleString() %></td>
+                        <td> <div class="btn badge-<%= coupon.isActive ?   'success':'danger' %>">
+                            <%= coupon.isActive ? 'Active':'Inactive' %>
+                        </div></td>
+                       
+                        <td>
+                            <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editCouponModal"
+                                data-id="<%=coupon._id %>" 
+                                data-code="<%= coupon.code %>" 
+                                data-description="<%= coupon.description %>" 
+                                data-minPurchase="<%= coupon.minPurchase %>" 
+                                data-startDate="<%= coupon.startDate.toISOString().slice(0, 10) %>" 
+                                data-endDate="<%= coupon.endDate.toISOString().slice(0, 10) %>"
+                                data-isActive="<%= coupon.isActive %>">
+
+                            
+                                Edit
+                            </button> -->
+
+                            <form name="delete" id="deleteForm-<%= coupon._id %>" action="/admin/deleteCoupon/<%= coupon._id %>" method="POST" style="display:inline;" onsubmit="return confirmDeleteCoupon(event, this)">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                            
+                        </td>
+                    </tr>
+            <% }}); %>
+        </tbody>
+    </table>
+</div>
+
+
+<!-- 
+<script>
+    //edit coupon
+    document.getElementById('editCouponForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var code = document.getElementById('editCouponCode').value;
+        var description = document.getElementById('editCouponDescription').value;
+        var minPurchase = document.getElementById('editMinPurchase').value;
+        var startDate = document.getElementById('editStartDate').value;
+        var endDate = document.getElementById('editEndDate').value;
+        var isActive = document.getElementById('editStatus').value;
+
+        var error = false;
+
+        if (code.trim() === '') {
+            document.getElementById('editCouponCodeError').textContent = 'Coupon code is required';
+            error = true;
+        } else {
+            document.getElementById('editCouponCodeError').textContent = '';
+        }
+
+        if (description.trim() === '') {
+            document.getElementById('editCouponDescriptionError').textContent = 'Description is required';
+            error = true;
+        } else {
+            document.getElementById('editCouponDescriptionError').textContent = '';
+        }
+        if (minPurchase.trim() === '') {
+            document.getElementById('editMinPurchaseError').textContent = 'Minimum purchase is required';
+            error = true;
+        } else {
+            document.getElementById('editMinPurchaseError').textContent = '';
+        }
+        if (startDate.trim() === '') {
+            document.getElementById('editStartDateError').textContent = 'Start date is required';
+            error = true;
+        } else {
+            document.getElementById('editStartDateError').textContent = '';
+        }
+        if (endDate.trim() === '') {
+            document.getElementById('editEndDateError').textContent = 'End date is required';
+            error = true;
+        } else {
+            document.getElementById('editEndDateError').textContent = '';
+        }
+        if (isActive.trim() === '') {
+            document.getElementById('editStatusError').textContent = 'Status is required';
+            error = true;
+        } else {
+            document.getElementById('editStatusError').textContent = '';
+        }
+        if (!error) {
+            this.submit();
+        }
+        return false;
+
+    })
+</script> -->
+
+
+<script>
+    function confirmDeleteCoupon(event, form) {
+        event.preventDefault(); 
+    
+       
+        Swal.fire({
+            title: 'Are you sure you want to delete this Coupon?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel',
+            background: '#fffff',  
+            color: 'black'         
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    
+        return false; 
+    }
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Bootstrap Bundle with Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

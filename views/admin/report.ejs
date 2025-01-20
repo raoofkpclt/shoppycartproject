@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="/assets/vendors/mdi/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="/assets/vendors/css/vendor.bundle.base.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+
+    <link rel="stylesheet" href="/stylesheet/report.css">
+</head>
+
+
+<body>
+    <div class="container-scroller">
+        <%-include('partials/header.ejs')%>
+
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Main content -->
+<div class="h-screen flex-grow-1 overflow-y-lg-auto">
+    <!-- Header -->
+    <header class="bg-surface-primary border-bottom pt-6">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-sm-6 col-12 mb-4 mb-sm-0">
+                    <h1 class="h2 mb-0 ls-tight">Sales Report</h1><br>
+                </div>
+                <div class="col-sm-6 col-12 text-sm-end">
+                  
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+<div class="container">
+    <div class="report-header text-center">
+        <!-- <h1 class="mb-4">Sales Report</h1>
+        <p class="text-muted">Generate and download sales reports based on various criteria.</p> -->
+    </div>
+
+    <form id="salesReportForm" class="row g-3">
+        <div class="col-md-4">
+            <label for="reportType" class="form-label">Select Report Type</label>
+            <select name="reportType" id="reportType" class="form-select">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="custom">Custom Date Range</option>
+            </select>
+        </div>
+        <div class="col-md-4" id="customDateRange" style="display: none;">
+            <label for="startDate" class="form-label">Start Date</label>
+            <input type="date" name="startDate" id="startDate" class="form-control">
+        </div>
+        <div class="col-md-4" id="customDateRange" style="display: none;">
+            <label for="endDate" class="form-label">End Date</label>
+            <input type="date" name="endDate" id="endDate" class="form-control">
+        </div>
+        <div class="col-md-12">
+            <button type="button" id="generateReport" class="btn btn-primary">Generate Report</button>
+            <button type="button" id="downloadPDF" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Download PDF</button>
+            <button type="button" id="downloadExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Download Excel</button>
+        </div>
+    </form>
+
+    <div id="reportContainer" class="table-container">
+        <!-- This is where the report will be displayed -->
+    </div>
+</div>
+
+<script>
+    document.getElementById('reportType').addEventListener('change', function() {
+        const customDateRange = document.querySelectorAll('#customDateRange');
+        if (this.value === 'custom') {
+            customDateRange.forEach(element => {
+                element.style.display = 'block';
+            });
+        } else {
+            customDateRange.forEach(element => {
+                element.style.display = 'none';
+            });
+        }
+    });
+
+    document.getElementById('generateReport').addEventListener('click', async () => {
+        const form = document.getElementById('salesReportForm');
+        const reportType = document.getElementById('reportType').value;
+        
+        // Prepare data object
+        const reportData = {
+            reportType: reportType
+        };
+
+        // If custom date range is selected, add start and end dates
+        if (reportType === 'custom') {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            // Validate custom date range
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates for the custom report.');
+                return;
+            }
+
+            // Add start and end dates to the data object
+            reportData.startDate = startDate;
+            reportData.endDate = endDate;
+        }
+
+        try {
+            const response = await fetch('/admin/getSalesReport', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(reportData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+
+            // Update the reportContainer with the sales data
+            const reportContainer = document.getElementById('reportContainer');
+            reportContainer.innerHTML = ''; // Clear previous content
+
+            if (data.success) {
+                // Create a table to display the sales data
+                const table = document.createElement('table');
+                table.className = 'table table-striped table-bordered';
+                const headerRow = table.insertRow();
+                headerRow.innerHTML = `
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Total Price</th>
+                    
+                    <th>Coupon Discount</th>
+                    <th>Final Amount</th>
+                    <th>Payment Method</th>
+                `;
+
+            
+                
+
+                data.sales.forEach(order => {
+                    const row = table.insertRow();
+                    row.innerHTML = `
+                        <td>${order._id}</td>
+                        <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                        <td>${order.user ? order.user.name : 'N/A'}</td>
+                        <td>₹${order.totalAmount.toFixed(2)}</td>
+                        
+                        <td>₹${order.couponDiscount ? order.couponDiscount.toFixed(2) : '0.00'}</td>
+                        <td>₹${order.totalAmount.toFixed(2)}</td>
+                        <td>${order.paymentMethod}</td>
+                    `;
+                });
+
+                reportContainer.appendChild(table);
+
+                // Create summary section
+                const summaryDiv = document.createElement('div');
+                summaryDiv.className = 'mt-4';
+                summaryDiv.innerHTML = `
+                    <h3>Sales Summary</h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p><strong>Total Orders:</strong> ${data.summary.totalOrders}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Total Sales:</strong> ₹${data.summary.totalSales.toFixed(2)}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Total Discount:</strong> ₹${data.summary.totalDiscount.toFixed(2)}</p>
+                        </div>
+                    </div>
+                `;
+                reportContainer.appendChild(summaryDiv);
+            } else {
+                reportContainer.innerHTML = `<p>${data.message}</p>`;
+            }
+        } catch (error) {
+            console.error('Error generating report:', error);
+            document.getElementById('reportContainer').innerHTML = '<p>Error generating report. Please try again.</p>';
+        }
+    });
+
+    document.getElementById('downloadPDF').addEventListener('click', async () => {
+        try {
+            const reportType = document.getElementById('reportType').value;
+            let url = `/admin/downloadSalesReport/pdf?reportType=${reportType}`;
+            
+            if (reportType === 'custom') {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                
+                if (!startDate || !endDate) {
+                    alert('Please select both start and end dates for the custom report.');
+                    return;
+                }
+                
+                url += `&startDate=${startDate}&endDate=${endDate}`;
+            }
+
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error('Failed to download PDF');
+            }
+            
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `sales-report-${Date.now()}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(downloadUrl);
+            
+        } catch (error) {
+            console.error('Download error:', error);
+            alert('Failed to download PDF. Please try again.');
+        }
+    });
+
+    document.getElementById('downloadExcel').addEventListener('click', async () => {
+        const reportType = document.getElementById('reportType').value;
+        let url = `/admin/downloadSalesReport/excel?reportType=${reportType}`;
+        
+        // Add start and end dates for custom report
+        if (reportType === 'custom') {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates for the custom report.');
+                return;
+            }
+            
+            url += `&startDate=${startDate}&endDate=${endDate}`;
+        }
+
+        try {
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error('Failed to download Excel');
+            }
+            
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = 'sales-report.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (error) {
+            console.error('Download error:', error);
+            alert('Failed to download Excel');
+        }
+    });
+</script>
+
+
+</body>
+</html>

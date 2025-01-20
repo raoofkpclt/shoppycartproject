@@ -2,6 +2,8 @@
 <%- include('./partials/header') %>
 <link rel="stylesheet" href="/stylesheet/home.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
 
 
 <header class="header" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
@@ -18,7 +20,7 @@
                 <ul>
                     <li class="active"><a href="/user/">Home</a></li>
                     <li ><a href="/user/productList">Shop</a></li>
-                    <li><a href="#">Pages</a>
+                    <!-- <li><a href="#">Pages</a>
                         <ul class="dropdown">
                             <li><a style="color: black;" href="./about.html">About Us</a></li>
                             <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
@@ -29,7 +31,7 @@
                     </li>
                     <li><a href="#">Contact</a> </li>
                   
-                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Blog</a></li> -->
                 </ul>
             </nav>
             <!-- Right Options -->
@@ -46,9 +48,10 @@
                 <a href="/user/cart">
                     <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
                 </a>
-                <a href="/user/logout">
-                    <i class="fas fa-sign-out-alt" style="font-size: 24px;color: black;"></i> 
+                <a href="/user/wallet">
+                    <i class="fas fa-wallet" style="font-size: 24px; color: black;"></i> 
                 </a>
+              
             </div>
             
         </div>
@@ -171,9 +174,12 @@
 							<div class="block2-pic hov-img0">
 								<img src="/uploads/<%= item.images[0] %>" alt="IMG-PRODUCT"> <!-- Display the first image of the product -->
 							
-								<a href="/user/productDetails/<%= item._id %>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 ">
+								<!-- <a href="/user/productDetails/<%= item._id %>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 ">
 									Quick View
-								</a>
+								</a> -->
+                                <a href="/user/productDetails/<%= item._id %>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
+                                    <%= item.categoryId.name %> <!-- Display the product title -->
+                                </a>
 							</div>
 						
 							<div class="block2-txt flex-w flex-t p-t-14">
@@ -181,12 +187,17 @@
 									<a href="/user/productDetails/<%= item._id %>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
 										<%= item.product %> <!-- Display the product title -->
 									</a>
-								
-									<span class="stext-105 cl3">
-										$<%= item.price %> <!-- Display the product price -->
-									</span>
                                     
-								</div><br>
+								
+									
+								</div>
+                                <div>
+                                    <span class="stext-105 cl3">
+                                        ₹<%= item.discountPrice %> 
+									</span>
+                                   
+                                    
+                                </div><br>
 							
 								
 							</div>
@@ -215,7 +226,7 @@
                     <img src="/banners/banneroffer.png" alt="">
                     <div class="hot__deal__sticker">
                         <span>Sale Of</span>
-                        <h5>$2999</h5>
+                        <h5>₹2999</h5>
                     </div>
                 </div>
             </div>
