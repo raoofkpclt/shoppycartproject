@@ -17,7 +17,7 @@
                 <ul>
                     <li ><a href="/user/">Home</a></li>
                     <li class="active" ><a href="/user/productList">Shop</a></li>
-                    <li><a href="#">Pages</a>
+                    <!-- <li><a href="#">Pages</a>
                         <ul class="dropdown">
                             <li><a style="color: black;" href="./about.html">About Us</a></li>
                             <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
@@ -28,7 +28,7 @@
                     </li>
                     <li><a href="#">Contact</a> </li>
                   
-                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Blog</a></li> -->
                 </ul>
             </nav>
             <!-- Right Options -->
@@ -45,9 +45,13 @@
                 <a href="/user/cart">
                     <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
                 </a>
+                <a href="/user/wallet">
+                    <i class="fas fa-wallet" style="font-size: 24px; color: black;"></i> 
+                </a>
                 <a href="/user/logout">
                     <i class="fas fa-sign-out-alt" style="font-size: 24px; color: black;"></i> 
                 </a>
+              
             </div>
             
         </div>
@@ -56,12 +60,12 @@
 <!-- Header Section End -->
 
  <!-- Breadcrumb Section Begin -->
- <section class="breadcrumb-option">
+ <section style="height: 8vh; padding-top: 15px;">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
                 <div class="breadcrumb__text">
-                    <h4>Shop</h4>
+        
                     <div class="breadcrumb__links">
                         <a href="home">Home</a>
                         <span>Shop</span>
@@ -117,6 +121,9 @@
                         
                             <!-- Submit Button -->
                             <button type="submit" class="btn btn-primary mt-3">Apply Filters</button>
+                            <!-- Clear Filters Button -->
+                            <button type="button" class="btn btn-secondary mt-3" onclick="clearFilters()">Clear Filters</button>
+
                         </form>
                         
 					</div>
@@ -130,28 +137,33 @@
                         <div class="block2">
                             <div class="block2-pic hov-img0">
                                 <img src="/uploads/<%= item.images[0] %>" alt="IMG-PRODUCT">
-                                <a href="/user/productDetails/<%= item._id %>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15">
+                                <!-- <a href="/user/productDetails/<%= item._id %>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15">
                                     Quick View
-                                </a>
+                                </a> -->
                             </div>
                             <div class="block2-txt flex-w flex-t p-t-14">
                                 <div class="block2-txt-child1 flex-col-l">
                                     <a href="/user/productDetails/<%= item._id %>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
                                         <%= item.product %>
                                     </a>
-                                    <br>
-                                    <span class="stext-105 cl3">
-                                        <% if (item.hasDiscount) { %>
-                                            <span style="text-decoration: line-through; color: red;">
-                                                ₹<%= item.price.toFixed(2) %>
-                                            </span>
-                                            <span style="color: green; font-weight: bold;">
-                                                ₹<%= item.discountedPrice.toFixed(2) %>
-                                            </span>
-                                        <% } else { %>
-                                            ₹<%= item.price.toFixed(2) %>
-                                        <% } %>
-                                    </span>
+                                    <h6><%=item.brand%></h6>
+                                   
+                                   <span class="stext-105 cl3">
+                        <% if (item.hasDiscount) { %>
+                            <!-- Discounted Price -->
+                            <span style="color: green; font-weight: bold;">
+                                ₹<%= item.discountedPrice.toFixed(2) %>
+                            </span>
+                            <!-- Original Price -->
+                            <span style="text-decoration: line-through; color: red;">
+                                ₹<%= item.price.toFixed(2) %>
+                            </span>
+                        <% } else { %>
+                            <!-- Only Original Price -->
+                            ₹<%= item.price.toFixed(2) %>
+                        <% } %>
+                    </span>
+                                    
                                 </div>
                             </div>
                             
@@ -162,6 +174,12 @@
                                     <input type="hidden" name="productId" value="<%= item._id %>">
                                     <% if (item.stock > 0) { %>
                                         <button type="submit" class="btn btn-outline-primary py-2 px-4 rounded"><i class="bi bi-cart-check me-1"></i> Add Cart</button>
+                                       
+                                <!-- Wishlist Button -->
+            <button type="button" class="btn btn-outline-danger py-2 px-4 rounded" onclick="addToWishlist('<%= item._id %>')">
+                <i class="fa fa-heart" aria-hidden="true"></i> Wishlist
+            </button>
+
                                     <% } else { %>
                                         <button type="button" class="btn btn-outline-danger py-2 px-4 rounded opacity-70 cursor-not-allowed" disabled>Sold Out</button>
                                     <% } %>
@@ -174,15 +192,26 @@
                     <% }); %>
                 </div>    
             </div>
-            <div class="pagination-container d-flex justify-content-center my-4">
-                <ul class="pagination">
+               <!-- Pagination Controls -->
+               <nav aria-label="User pagination">
+                <ul class="pagination justify-content-center">
+                    <% if (currentPage > 1) { %>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
+                        </li>
+                    <% } %>
                     <% for (let i = 1; i <= totalPages; i++) { %>
-                        <li class="page-item <%= currentPage == i ? 'active' : '' %>">
-                            <a class="page-link" href="?page=<%= i %>&search=<%= search || '' %>&sort=<%= sort || '' %>&category=<%= category || 'all' %>"><%= i %></a>
+                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                        </li>
+                    <% } %>
+                    <% if (currentPage < totalPages) { %>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
                         </li>
                     <% } %>
                 </ul>
-            </div>
+            </nav>
             
             </div>
                 </div>
@@ -237,17 +266,83 @@
 </script>  
            
 <script>
-$(document).on('click', '.page-link', function(event) {
-    event.preventDefault();
-    const page = $(this).data('page');
-    fetchProducts(page);
-});
+
+ // Clear filters function
+function clearFilters() {
+    // Reset the form
+    $('#filter-form')[0].reset();
+    
+    // Manually reset the values of the search input, category, and sort dropdowns to empty
+    $('#search').val('');
+    $('#category').val('all');
+    $('#sort').val('');
+    
+    // Fetch all products again without filters
+    fetchProducts();
+}
+function fetchProducts() {
+    const searchValue = '';
+    const categoryValue = 'all'; // Default to 'all' category
+    const sortValue = '';
+    
+    // Send request to the server to fetch products with no filters
+    fetch(`/user/productList?search=${searchValue}&category=${categoryValue}&sort=${sortValue}`)
+        .then(response => response.json())
+        .then(data => {
+            // Render the products
+            renderProducts(data);
+        })
+        .catch(error => console.error('Error fetching products:', error));
+}
+
 
 $('#filter-form').on('change', function () {
     $(this).submit();
 });
 
 
+</script>
+
+<script>
+    //add to wishlist
+    function addToWishlist(productId) {
+        fetch(`/user/addToWishlist/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials:'same-origin'
+        })
+       .then(response => response.json())
+       .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon:'success',
+                title: 'Success',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 1500
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message || 'Failed to add product to wishlist'
+            });
+        }
+       })
+       .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong while adding to wishlist!'
+        });
+       });
+
+       return false;
+
+    }
 </script>
 
 </div>

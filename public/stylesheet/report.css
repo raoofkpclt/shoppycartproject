@@ -1,0 +1,157 @@
+/* General Styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3 {
+    color: #212529;
+}
+
+.container {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+header {
+    background-color: #343a40;
+    color: #ffffff;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+/* Form Styles */
+form {
+    margin-top: 20px;
+}
+
+form label {
+    font-weight: bold;
+    color: #495057;
+}
+
+form .form-select, form .form-control {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+}
+
+form button {
+    margin-top: 15px;
+    border-radius: 6px;
+    padding: 10px 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.btn-danger:hover {
+    background-color: #b21f2d;
+    border-color: #921320;
+}
+
+/* Table Styles */
+.table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table th {
+    background-color: #f1f3f5;
+    color: #212529;
+    font-weight: bold;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+/* Summary Section */
+#reportContainer .mt-4 {
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    margin-top: 20px;
+}
+
+#reportContainer .mt-4 h3 {
+    margin-bottom: 15px;
+    color: #495057;
+}
+
+#reportContainer .mt-4 p {
+    margin: 0;
+    font-size: 1rem;
+    color: #343a40;
+}
+
+/* Custom Date Range Visibility */
+#customDateRange {
+    display: none;
+}
+
+/* Alerts */
+.alert {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 6px;
+    color: #ffffff;
+    background-color: #ff5e5e;
+    border: none;
+}
+
+.alert-success {
+    background-color: #28a745;
+}
+
+.alert-danger {
+    background-color: #dc3545;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .report-header h1 {
+        font-size: 1.5rem;
+    }
+
+    form .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}

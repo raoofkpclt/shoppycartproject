@@ -11,12 +11,12 @@
                     <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
                 </a>
             </div>
-            <!-- Navigation Menu -->
-            <nav class="header__menu">
+             <!-- Navigation Menu -->
+             <nav class="header__menu">
                 <ul>
                     <li ><a href="/user/">Home</a></li>
-                    <li class="active" ><a href="/user/productList">Shop</a></li>
-                    <li><a href="#">Pages</a>
+                    <li ><a href="/user/productList">Shop</a></li>
+                    <!-- <li><a href="#">Pages</a>
                         <ul class="dropdown">
                             <li><a style="color: black;" href="./about.html">About Us</a></li>
                             <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
@@ -27,10 +27,11 @@
                     </li>
                     <li><a href="#">Contact</a> </li>
                   
-                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Blog</a></li> -->
                 </ul>
             </nav>
             <!-- Right Options -->
+
 
             <div class="header__nav__option">
                 <a href="/user/profile">
@@ -44,9 +45,13 @@
                 <a href="/user/cart">
                     <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
                 </a>
+                <a href="/user/wallet">
+                    <i class="fas fa-wallet" style="font-size: 24px; color: black;"></i> 
+                </a>
                 <a href="/user/logout">
                     <i class="fas fa-sign-out-alt" style="font-size: 24px; color: black;"></i> 
                 </a>
+              
             </div>
             
         </div>
@@ -71,7 +76,7 @@
         </a>
 
         <span class="stext-109 cl4">
-            <%= product.name %>			</span>
+            <%= product.product %>			</span>
     </div>
 </div>
     
@@ -162,9 +167,9 @@ container.addEventListener('mousemove', (e) => {
                     <h4 class="mtext-105 cl2 js-name-detail p-b-14">
                         <%= product.product %>
                     </h4>
-                    
+                    <h6><%=product.brand%></h6>
                     <span class="mtext-106 cl2" style="font-size: x-large;">
-                        <% if (product.discountPercentage > 0) { %>
+                        <% if (product.hasDiscount) { %>
                             <span style="text-decoration: line-through; color: red;">
                                 ₹<%= product.price.toFixed(2) %>
                             </span>
@@ -177,7 +182,6 @@ container.addEventListener('mousemove', (e) => {
                         <% } %>
                     </span>
                     
-                
                   
                     <div class="custom-div">
                         <p class="small-text"><%= product.categoryId.name ? product.categoryId.name : 'No category' %></p>
@@ -322,41 +326,46 @@ container.addEventListener('mousemove', (e) => {
         return false;
     }
 </script>
+
 <script>
+    //add to wishlist
     function addToWishlist(productId) {
-        $.ajax({
-            url: '/user/addToWishlist',
+        fetch(`/user/addToWishlist/${productId}`, {
             method: 'POST',
-            data: {
-                productId: productId
+            headers: {
+                'Content-Type': 'application/json'
             },
-            success: (response) => {
-                if (response.status) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Added to Wishlist',
-                        text: "The product has been added to your wishlist",
-                        showConfirmButton: false,
-                        timer: 1500
-                    })
-                } else {
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Already in Wishlist',
-                        text: response.message,
-                        timer: 1500
-                    })
-                }
-            },
-            error: (error) => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Something went wrong while adding to wishlist!',
-                    timer: 1500
-                })
-            }
+            credentials:'same-origin'
         })
+       .then(response => response.json())
+       .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon:'success',
+                title: 'Success',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 1500
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message || 'Failed to add product to wishlist'
+            });
+        }
+       })
+       .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong while adding to wishlist!'
+        });
+       });
+
+       return false;
+
     }
 </script>
 
@@ -375,14 +384,14 @@ container.addEventListener('mousemove', (e) => {
         
 
 
-<div class="add-review" >
+<!-- <div class="add-review" >
     <h4>Add a review</h4>
     <form action="#" method="post">
        <textarea  type="text name="Message" required="" placeholder="Write Something........" style="background-color: rgb(237, 237, 237);" class="rounded"></textarea>
         <button type="submit" class="btn btn-primary" style="height: 33px; width: 90px; display: flex; justify-content: center; align-items: center; text-align: center;">SEND</button>
 
     </form>
-</div>
+</div> -->
 
 <div class="tab3">
 
@@ -420,9 +429,9 @@ container.addEventListener('mousemove', (e) => {
                         <!-- Display the first image of the product -->
                         <img src="/uploads/<%= item.images[0] %>" alt="IMG-PRODUCT">
         
-                        <a href="/user/productDetails/<%= item._id %>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15">
+                        <!-- <a href="/user/productDetails/<%= item._id %>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15">
                             Quick View
-                        </a>
+                        </a> -->
                     </div>
         
                     <div class="block2-txt flex-w flex-t p-t-14">
@@ -432,9 +441,10 @@ container.addEventListener('mousemove', (e) => {
                                 <%= item.product %>
                             </a>
         
+                            <h6><%=item.brand%></h6>
                             <!-- Display the product price -->
                             <span class="stext-105 cl3">
-                                ₹<%= item.price %>
+                                ₹<%= item.discountPrice %>
                             </span>
                         </div>
                         <div>

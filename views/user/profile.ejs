@@ -15,12 +15,12 @@
                     <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
                 </a>
             </div>
-            <!-- Navigation Menu -->
-            <nav class="header__menu">
+             <!-- Navigation Menu -->
+             <nav class="header__menu">
                 <ul>
                     <li ><a href="/user/">Home</a></li>
                     <li ><a href="/user/productList">Shop</a></li>
-                    <li><a href="#">Pages</a>
+                    <!-- <li><a href="#">Pages</a>
                         <ul class="dropdown">
                             <li><a style="color: black;" href="./about.html">About Us</a></li>
                             <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
@@ -31,10 +31,11 @@
                     </li>
                     <li><a href="#">Contact</a> </li>
                   
-                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Blog</a></li> -->
                 </ul>
             </nav>
             <!-- Right Options -->
+
 
             <div class="header__nav__option">
                 <a href="/user/profile">
@@ -48,9 +49,13 @@
                 <a href="/user/cart">
                     <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
                 </a>
+                <a href="/user/wallet">
+                    <i class="fas fa-wallet" style="font-size: 24px; color: black;"></i> 
+                </a>
                 <a href="/user/logout">
                     <i class="fas fa-sign-out-alt" style="font-size: 24px; color: black;"></i> 
                 </a>
+                
             </div>
             
         </div>
@@ -99,75 +104,172 @@
                     </div>
 
                     <!-- order session -->
-                  <div class="col-lg-8">
+                    <div class="col-lg-8">
                         <div id="orderDetails" class="order_card">
                             <h2 class="mb-4">Your Orders</h2>
                     
                             <% if (orders.length > 0) { %>
-                                <% orders.forEach(order => { %>
-                                    <div class="card shadow-sm mb-4">
-                                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-0">Order ID: <%= order._id %></h5>
-                                            <span class="badge bg-<%= order.status === 'pending' ? 'warning' : order.status === 'paid' ? 'success' : 'danger' %>">
-                                                <%= order.status %>
-                                            </span>
-                                        </div>
-                                        <div class="card-body">
-                                            <p><strong>Payment Status:</strong> <%= order.paymentStatus %></p>
-                                            <p><strong>Total Amount:</strong> ₹<%= order.totalAmount %></p>
-                    
-                                            <h6 class="mt-3">Products:</h6>
-                                            <div class="table-responsive">
-                                                <table class="table table-sm table-hover align-middle">
-                                                    <thead class="table-light">
-                                                        <tr>
-                                                            <th>Image</th>
-                                                            <th>Name</th>
-                                                            <th>Quantity</th>
-                                                            <th>Price</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <% order.products.forEach(product => { %>
-                                                            <tr>
-                                                                <td>
-                                                                    <img src="/uploads/<%= product.productId.images[0] %>" 
-                                                                         alt="<%= product.productId.product %>" 
-                                                                         class="img-thumbnail" 
-                                                                         style="width: 50px; height: 50px; object-fit: cover;">
-                                                                </td>
-                                                                <td><%= product.productId.product %></td>
-                                                                <td><%= product.quantity %></td>
-                                                                <td>₹<%= product.total %></td>
-                                                            </tr>
-                                                        <% }) %>
-                                                    </tbody>
-                                                </table>
+                                <div class="order-list-container">
+                                    <% orders.forEach(order => { %>
+                                        <div class="card shadow-sm mb-4">
+                                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">Order ID: <%= order._id %></h5>
+                                                <span class="badge bg-<%= 
+                                                    order.status === 'pending' ? 'warning' : 
+                                                    order.status === 'delivered' ? 'success' : 
+                                                    order.status === 'cancelled' ? 'danger' : 
+                                                    order.status === 'shipped' ? 'primary' : 
+                                                    order.status === 'returnRequested' ? 'info' : 
+                                                    order.status === 'returned' ? 'secondary' : 
+                                                    'danger' %>">
+                                                    <%= order.status %>
+                                                </span>
                                             </div>
-                                            <% if (order.status === 'pending') { %>
-                                                <!-- Cancel Button -->
-                                                <button class="btn btn-danger mt-3" onclick="showCancelForm('<%= order._id %>')">
-                                                    Cancel Order
-                                                </button>
-                                            
-                                                <!-- Hidden Cancel Form -->
-                                                <div id="cancel-form-<%= order._id %>" class="cancel-form mt-3" style="display: none;">
-                                                    <textarea class="form-control mb-2" id="cancel-reason-<%= order._id %>" rows="3" placeholder="Enter cancellation reason"></textarea>
-                                                    <button class="btn btn-primary btn-sm" onclick="submitCancelOrder('<%= order._id %>')">Confirm Cancellation</button>
-                                                    <button class="btn btn-secondary btn-sm" onclick="hideCancelForm('<%= order._id %>')">Close</button>
+                                            <div class="card-body">
+                                                <p><strong>Payment Status:</strong> <%= order.paymentStatus %></p>
+                                                <p><strong>Delivery Charge:</strong> ₹99</p>
+                                                <p><strong>Discount:</strong> -₹<%= order.couponDiscount %></p>
+                                                <p><strong>Total Amount:</strong> ₹<%= order.totalAmount %></p>
+                    
+                                                <h6 class="mt-3">Products:</h6>
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm table-hover align-middle">
+                                                        <thead class="table-light">
+                                                            <tr>
+                                                                <th>Image</th>
+                                                                <th>Name</th>
+                                                                <th>Quantity</th>
+                                                                <th>Price</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <% order.products.forEach(product => { %>
+                                                                <tr>
+                                                                    <td onclick="window.location.href='/user/productDetails/<%= product.productId._id %>'">
+                                                                        <img src="/uploads/<%= product.productId.images[0] %>" 
+                                                                             alt="<%= product.productId.product %>" 
+                                                                             class="img-thumbnail" 
+                                                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                                                    </td>
+                                                                    <td><%= product.productId.product %></td>
+                                                                    <td><%= product.quantity %></td>
+                                                                    <td>₹<%= product.total %></td>
+                                                                </tr>
+                                                            <% }) %>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
-                                            <% } %>
-                                            
+                                                <% if (order.status === 'pending') { %>
+                                                    <!-- Cancel Button -->
+                                                    <button class="btn btn-danger mt-3" onclick="showCancelForm('<%= order._id %>')">
+                                                        Cancel Order
+                                                    </button>
+                    
+                                                    <!-- Hidden Cancel Form -->
+                                                    <div id="cancel-form-<%= order._id %>" class="cancel-form mt-3" style="display: none;">
+                                                        <textarea class="form-control mb-2" id="cancel-reason-<%= order._id %>" rows="3" placeholder="Enter cancellation reason"></textarea>
+                                                        <button class="btn btn-primary btn-sm" onclick="submitCancelOrder('<%= order._id %>')">Confirm Cancellation</button>
+                                                        <button class="btn btn-secondary btn-sm" onclick="hideCancelForm('<%= order._id %>')">Close</button>
+                                                    </div>
+                    
+                                                <% } else if (order.status === 'delivered'&& order.returnStatus==='pending') { %>
+                                                    <!-- Return Button -->
+                                                    <button class="btn btn-primary mt-3" onclick="showReturnForm('<%= order._id %>')">
+                                                        Return Order
+                                                    </button>
+                    
+                                                    <!-- Hidden Return Form -->
+                                                    <div id="return-form-<%= order._id %>" class="return-form mt-3" style="display: none;">
+                                                        <textarea class="form-control mb-2" id="return-reason-<%= order._id %>" rows="3" placeholder="Enter return reason"></textarea>
+                                                        <button class="btn btn-primary btn-sm" onclick="submitReturnOrder('<%= order._id %>')">Confirm Return</button>
+                                                        <button class="btn btn-secondary btn-sm" onclick="hideReturnForm('<%= order._id %>')">Close</button>
+                                                    </div>
+                                                <% } %>
+                                                <div>
+                                                    <br>
+                                                    <% if (order.paymentStatus === 'failed' && order.paymentMethod !== 'cod') { %>
+                                                        <button class=" btn btn-primary retry-payment-btn btn-custom-padding" data-order-id="<%= order._id %>">Retry Payment</button>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer bg-light border-top-0">
+                                                <% if (order.status === 'delivered') { %>
+                                                    <a 
+                                                        href="/user/orders/<%= order._id %>/invoice" 
+                                                        class="btn btn-outline-primary mr-auto" 
+                                                        download
+                                                    >
+                                                        <i class="fas fa-file-invoice mr-2"></i>Download Invoice
+                                                    </a>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                        Close
+                                                    </button>
+                                                <% } %>
+                                               
+                                            </div>
+                                          
+                                            <div class="card-footer text-muted text-end">
+                                                <small>Ordered on <%= new Date(order.createdAt).toLocaleDateString() %></small>
+                                            </div>
                                         </div>
-                                        <div class="card-footer text-muted text-end">
-                                            <small>Ordered on <%= new Date(order.createdAt).toLocaleDateString() %></small>
-                                        </div>
-                                    </div>
-                                <% }) %>
+                                    <% }) %>
+                                </div>
                             <% } else { %>
                                 <p class="text-muted">No orders found.</p>
                             <% } %>
                         </div>
+                 <style>
+                    /* General button styling */
+.copy-btn {
+    height: 40px;
+    width: 100px;
+    border: 1px solid #ced4da;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+/* Add hover effects */
+.copy-btn:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+    color: #495057;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Add focus effects */
+.copy-btn:focus {
+    outline: none;
+    background-color: #dfe4ea;
+    border-color: #6c757d;
+    box-shadow: 0 0 5px rgba(108, 117, 125, 0.5);
+}
+
+/* Add active state */
+.copy-btn:active {
+    background-color: #dee2e6;
+    transform: scale(0.98);
+}
+
+/* Add an icon next to the button text */
+.copy-btn i {
+    font-size: 16px;
+}
+
+/* For accessibility */
+.copy-btn:focus-visible {
+    outline: 2px solid #6c757d;
+}
+
+                 </style>
                    
               
 
@@ -180,8 +282,13 @@
                                     <p><strong>Email Address: </strong><%= user.email %></p>
                                     <p><strong>Contact: </strong><%= firstAddress.phone || 'Not provided' %></p>
                                     <p><strong>City: </strong><%= firstAddress.city || 'Not provided' %></p>
-                                    <p><strong>State: </strong><%= firstAddress.state%></p>
-                                    <p><strong>Role: </strong>User</p>
+                                    <p><strong>State: </strong><%= firstAddress.state || 'Not provided' %></p>
+                                    <strong>Referral Code: </strong>
+                                    <span id="referralCode"><%= user.referralCode %></span>
+                                    <button class="copy-btn" onclick="copyReferralCode()" title="Copy Referral Code">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                </p>
                                     <button 
                                         class="btn btn-primary btn-sm mt-3" 
                                         onclick="toggleEditForm()">
@@ -473,6 +580,8 @@
     }
 
 
+
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -554,13 +663,90 @@
         });
     }
 
+    //returns the order
 
-    //        function showAddAddressModal() {
-    //     const modal = document.getElementById('addAddressModal');
-    //     modal.style.display = 'block';
-    //     isFormVisible = true;
-       
-    // }
+    // Show the return form
+function showReturnForm(orderId) {
+    const form = document.getElementById(`return-form-${orderId}`);
+    form.style.display = 'block';
+}
+
+// Hide the return form
+function hideReturnForm(orderId) {
+    const form = document.getElementById(`return-form-${orderId}`);
+    form.style.display = 'none';
+}
+
+// Submit the return order
+function submitReturnOrder(orderId) {
+    const reason = document.getElementById(`return-reason-${orderId}`).value.trim();
+    if (!reason) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Oops!',
+            text: 'Please provide a return reason.',
+        });
+        return;
+    }
+
+    // Show confirmation alert
+    Swal.fire({
+        title: "Are you sure?",
+        text: "Do you really want to return this order?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, return it!",
+        cancelButtonText: "No, keep it",
+        dangerMode: true,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with return order
+            fetch(`/user/ordersReturn/${orderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reason }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Returned!',
+                            text: 'Your order has been returned successfully.',
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: data.message || 'Failed to return the order. Please try again.',
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error('Error returning order:', err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred. Please try again.',
+                    });
+                });
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Cancelled!',
+                text: 'Your order was not returned.',
+            });
+        }
+    });
+}
+
+
+
+    //end returns
+    
+    
     function showAddAddressModal() {
     const modal = document.getElementById('addAddressModal');
     modal.style.display = 'block';
@@ -640,8 +826,145 @@ function showAddressBook2() {
 // Optional: CSS for highlighting
 
 
+function copyReferralCode() {
+    // Get the referral code text
+    const referralCode = document.getElementById('referralCode').innerText;
+
+    // Create a temporary input element to hold the text
+    const tempInput = document.createElement('input');
+    tempInput.value = referralCode;
+    document.body.appendChild(tempInput);
+
+    // Select and copy the text
+    tempInput.select();
+    tempInput.setSelectionRange(0, 99999); // For mobile devices
+    navigator.clipboard.writeText(tempInput.value)
+        .then(() => {
+            // Show success feedback
+            Swal.fire({
+                icon: 'success',
+                title: 'Copied!',
+                text: 'Referral code copied to clipboard.',
+                confirmButtonText: 'OK'
+            });
+        })
+        .catch(err => {
+            console.error('Error copying referral code:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed!',
+                text: 'Unable to copy referral code.',
+                confirmButtonText: 'OK'
+            });
+        });
+
+    // Remove the temporary input element
+    document.body.removeChild(tempInput);
+}
+
+
 
     </script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".retry-payment-btn").forEach(button => {
+        button.addEventListener("click", async function () {
+            const orderId = this.getAttribute("data-order-id");
+
+            try {
+                // Fetch order details from server to initiate Razorpay retry
+                const response = await fetch(`/user/order-details/${orderId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch order details');
+                }
+
+                const data = await response.json();
+
+                // Configure Razorpay options for retry payment
+                const options = {
+                    key: 'rzp_test_pXZoNFSmNMsqPv', // Replace with your Razorpay key
+                    amount: data.amount, // Amount in smallest currency unit
+                    currency: data.currency,
+                    name: 'Your Company Name',
+                    description: 'Retry Order Payment',
+                    order_id: data.orderId, // Use existing Razorpay order ID
+                    handler: async function (response) {
+                        try {
+                            // Verify the payment on the server
+                            const verifyResponse = await fetch('/user/verify-razorpay-payment', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                }),
+                            });
+
+                            const verificationData = await verifyResponse.json();
+                            if (verifyResponse.ok) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Paid Successfully',
+                                    text: 'Thank you for your payment!',
+                                    confirmButtonText: 'OK',
+                                    timer: 3000, // Optional: Automatically close after 3 seconds
+                                    timerProgressBar: true, // Optional: Show a progress bar
+                                }).then(() => {
+                                    window.location.reload(); // Reload the page after OK is clicked
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Payment Verification Failed',
+                                    text: 'Please try again or contact support.',
+                                });
+                                console.error('Payment verification failed:', verificationData);
+                                window.location.href = '/failed';
+                            }
+                        } catch (error) {
+                            console.error('Error during payment verification:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred while verifying your payment. Please try again.',
+                            });
+                            window.location.href = '/failed';
+                        }
+                    },
+                    theme: { color: '#F37254' },
+                };
+
+                // Open Razorpay payment modal for retry
+                const rzp = new Razorpay(options);
+
+                rzp.on('payment.failed', function (response) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Payment Failed',
+                        text: 'Please try again or use a different method.',
+                    });
+                    console.error('Payment failed:', response.error);
+                    window.location.href = '/failed';
+                });
+
+                rzp.open();
+            } catch (error) {
+                console.error('Error during Razorpay retry:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while processing your payment. Please try again.',
+                });
+                window.location.href = '/failed';
+            }
+        });
+    });
+});
+
+                </script>
         
 </body>
 

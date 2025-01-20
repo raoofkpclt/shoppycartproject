@@ -1,0 +1,377 @@
+<%-include('partials/header.ejs')%>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="/assets/vendors/mdi/css/materialdesignicons.min.css">
+<link rel="stylesheet" href="/assets/vendors/css/vendor.bundle.base.css">
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="shortcut icon" href="/assets/images/favicon.png" />
+
+
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+ 
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Main content -->
+<div class="h-screen flex-grow-1 overflow-y-lg-auto">
+    <!-- Header -->
+    <header class="bg-surface-primary border-bottom pt-6">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-sm-6 col-12 mb-4 mb-sm-0">
+                    <h1 class="h2 mb-0 ls-tight">Offer Management</h1><br>
+                </div>
+                <div class="col-sm-6 col-12 text-sm-end">
+                    <a href="#" 
+                    class="btn btn-sm btn-primary" 
+                    id="createOfferBtn" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#createOfferModal">
+                    <i class="bi bi-plus pe-2"></i>Create Offer
+                 </a>
+                 
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+
+    <main class="py-6 bg-surface-secondary">
+        <div class="container-fluid">
+            <!-- Card stats -->
+            <div class="card shadow border-0 mb-7">
+                <div class="card-header">
+                    <h5 class="mb-0">Offers</h5>
+                </div>
+
+                <% if (message) { %>
+                    <script>
+                        Swal.fire({
+                            title: 'Success!',
+                            text: '<%= message %>',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
+                    </script>
+                <% } %>
+                
+                <% if (error) { %>
+                    <script>
+                        Swal.fire({
+                            title: 'Error!',
+                            text: '<%= error %>',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    </script>
+                <% } %>
+                
+
+                <!-- Create Offer Modal -->
+<div class="modal fade" id="createOfferModal" tabindex="-1" aria-labelledby="createOfferModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createOfferModalLabel">Create Offer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addOfferForm" action="/admin/addOffer" method="POST">
+                    <!-- Form Fields -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Offer Name</label>
+                        <input type="text" class="form-control" id="code" name="name" required>
+                    </div>
+
+                                                          <!-- Applicable Products -->
+<div class="form-group">
+    <label>Applicable Products</label>
+    <div class="dropdown">
+        <button type="button" onclick="toggleDropdown('products')" class="btn btn-secondary dropdown-toggle">Select Products</button>
+        <div id="productsDropdown" class="dropdown-content">
+            
+            <% products.forEach((product) => { %>
+                <label><input type="checkbox" name="applicableProducts[]" value="<%= product._id %>"><%= product.product %></label>
+            <% }) %>
+        </div>
+    </div>
+</div>
+
+<!-- Applicable Categories -->
+<div class="form-group">
+    <label>Applicable Categories</label>
+    <div class="dropdown">
+        <button type="button" onclick="toggleDropdown('categories')" class="btn btn-secondary dropdown-toggle">Select Categories</button>
+        <div id="categoriesDropdown" class="dropdown-content">
+            <input type="text" placeholder="Search categories..." id="categoriesSearch" class="form-control mb-2">
+            <% categories.forEach((category) => { %>
+                <label><input type="checkbox" name="applicableCategories[]" value="<%= category._id %>"><%= category.name %></label>
+            <% }) %>
+        </div>
+    </div>
+</div>
+
+    
+
+                 
+                    <div class="mb-3">
+                        <label for="discountPercentage" class="form-label">Discount Percentage</label>
+                        <input type="number" class="form-control" id="discountPercentage" name="discount" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="startDate" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="startDate" name="startDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="endDate" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="endDate" name="endDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="isActive" class="form-label">Status</label>
+                        <select class="form-control" id="isActive" name="isActive" required>
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Offer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="table-responsive">
+    <table class="table table-hover table-bordered text-center">
+        <thead class="thead-light">
+            <tr>
+                <th>Id</th>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Products</th>
+                <th>Categories</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% offers.forEach((offer) => { 
+                if (offer.isActive) { %>
+                    <tr>
+                        <td><%= offer._id.toString().slice(-5) %></td>
+                        <td><%= offer.name %></td>
+                        <td>
+                         <%= offer.discount %>%
+                        </td>
+                        <!-- <td>
+                            <% offer.applicableProducts.forEach((productId) => { %>
+                                <% const product = products.find((product) => product._id == productId); %>
+                                <% if (product) { %>
+                                    <span class="badge bg-primary me-1"><%= product.product %></span>
+                                <% } else { %>
+                                    <span class="badge bg-danger me-1">Unknown Product</span>
+                                <% } %>
+                            <% }); %>
+                        </td>
+                        <td>
+                            <% offer.applicableCategories.forEach((categoryId) => { %>
+                                <% const category = categories.find((category) => category._id == categoryId); %>
+                                <% if (category) { %>
+                                    <span class="badge bg-primary me-1"><%= category.name %></span>
+                                <% } else { %>
+                                    <span class="badge bg-danger me-1">Unknown Category</span>
+                                <% } %>
+                            <% }); %>
+                        </td>
+                      -->
+
+                      <td>
+                        <% offer.applicableProducts.forEach((productId) => { %>
+                            <% const product = products.find((product) => product._id.toString() === productId.toString()); %>
+                            <% if (product) { %>
+                                <span class="badge bg-primary me-1"><%= product.product %></span>
+                            <% } else { %>
+                                <span class="badge bg-danger me-1">Unknown Product (ID: <%= productId %>)</span>
+                            <% } %>
+                        <% }); %>
+                    </td>
+                    <td>
+                        <% offer.applicableCategories.forEach((categoryId) => { %>
+                            <% const category = categories.find((category) => category._id.toString() === categoryId.toString()); %>
+                            <% if (category) { %>
+                                <span class="badge bg-primary me-1"><%= category.name %></span>
+                            <% } else { %>
+                                <span class="badge bg-danger me-1">Unknown Category (ID: <%= categoryId %>)</span>
+                            <% } %>
+                        <% }); %>
+                    </td>
+                    
+                        
+                       
+                        <td><%= offer.startDate.toLocaleString() %></td>
+                        <td><%= offer.endDate.toLocaleString() %></td>
+                        <td> <div class="btn badge-<%= offer.isActive ?   'success':'danger' %>">
+                            <%= offer.isActive ? 'Active':'Inactive' %>
+                        </div></td>
+                       
+                        <td>
+                            <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editOfferModal"
+                                data-id="<%= offer._id %>" 
+                                data-code="<%= offer.code %>" 
+                                data-description="<%= offer.description %>" 
+                                data-minPurchase="<%= offer.minPurchase %>" 
+                                data-startDate="<%= offer.startDate.toISOString().slice(0, 10) %>" 
+                                data-endDate="<%= offer.endDate.toISOString().slice(0, 10) %>"
+                                data-isActive="<%= offer.isActive %>">
+                                Edit
+                            </button> -->
+
+                            <form name="delete" id="deleteForm-<%= offer._id %>" action="/admin/deleteOffer/<%= offer._id %>" method="POST" style="display:inline;" onsubmit="return confirmDeleteOffer(event, this)">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                            
+                        </td>
+                    </tr>
+            <% }}); %>
+        </tbody>
+    </table>
+</div>
+
+
+
+<script>
+    function confirmDeleteOffer(event, form) {
+        event.preventDefault(); 
+    
+       
+        Swal.fire({
+            title: 'Are you sure you want to delete this Offer?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel',
+            background: '#fffff',  
+            color: 'black'         
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    
+        return false; 
+    }
+    </script>
+
+
+<style>
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #ffffff;
+        min-width: 160px;
+        overflow-y: auto;
+        max-height: 200px;
+        border: 1px solid #ddd;
+        z-index: 1;
+    }
+    
+    .dropdown-content label {
+        display: block;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    
+    .dropdown-content label:hover {
+        background-color: #c8c8c8;
+    }
+    
+    .show {
+        display: block;
+    }
+    
+    .selected-items {
+        width:100px;
+        margin-top: 5px;
+        padding: 5px;
+        border: 1px solid #000000;
+    }
+    
+    .selected-items div {
+        margin-bottom: 5px;
+    }
+    </style>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        $('#productsDropdown').select2({
+            placeholder: 'Select products',
+            closeOnSelect: false,
+        });
+    
+        $('#categoriesDropdown').select2({
+            placeholder: 'Select categories',
+            closeOnSelect: false,
+        });
+    });
+    
+    function toggleDropdown(id) {
+        document.getElementById(`${id}Dropdown`).classList.toggle("show");
+    }
+    
+    window.onclick = function(event) {
+        if (!event.target.matches('.dropdown button')) {
+            let dropdowns = document.getElementsByClassName("dropdown-content");
+            for (let i = 0; i < dropdowns.length; i++) {
+                let openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+    }
+    
+    document.querySelectorAll('.dropdown-content input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const text = this.value;
+            const selectedItems = document.querySelector(`.${this.name.split('[')[0]}Selected`);
+            const existingItem = selectedItems.querySelector(`[data-value="${text}"]`);
+    
+            if (this.checked) {
+                if (!existingItem) {
+                    const selectedItem = document.createElement('div');
+                    selectedItem.setAttribute('data-value', text);
+                    selectedItem.innerText = text;
+                    selectedItems.appendChild(selectedItem);
+                }
+            } else {
+                if (existingItem) {
+                    existingItem.remove();
+                }
+            }
+        });
+    });
+    </script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <!-- SweetAlert2 for Confirmation Dialog -->
+    <script src="/assets/vendors/js/vendor.bundle.base.js"></script>
+    <script src="/assets/js/off-canvas.js"></script>
+    <script src="/assets/js/hoverable-collapse.js"></script>
+    <script src="/assets/js/misc.js"></script>
+    <script src="/assets/js/settings.js"></script>
+    <script src="/assets/js/todolist.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Bootstrap Bundle with Popper.js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

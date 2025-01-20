@@ -26,6 +26,7 @@
     <table class="table table-hover table-bordered text-center">
         <thead class="thead-light">
             <tr>
+                <th>Order Date</th>
                 <th>Order ID</th>
                 <th>User Name</th>
                 <th>User Email</th>
@@ -41,33 +42,44 @@
         <tbody>
             <% orders.forEach((order) => { %>
                 <tr>
+                    <td><%= order.createdAt.toLocaleString() %></td>
                     <td><%= order._id %></td>
                     <td><%= order.user ? order.user.name : 'N/A' %></td>
                     <td><%= order.user ? order.user.email : 'N/A' %></td>
                     <td><%= order.user ? order.shippingAddress : 'N/A' %></td>
                     <td>
                         <% order.products.forEach((item) => { %>
-                            <div><%= item.productId ? item.productId.product : 'Unknown Product' %> - $<%= item.productId ? item.productId.price.toFixed(2) : '0.00' %> x <%= item.quantity %></div>
+                            <div><%= item.productId ? item.productId.product : 'Unknown Product' %> - ₹<%= item.productId ? item.productId.price.toFixed(2) : '0.00' %> x <%= item.quantity %></div>
                         <% }); %>
                     </td>
-                    <td>$<%= order.totalAmount.toFixed(2) %></td>
+                    <td>₹<%= order.totalAmount.toFixed(2) %></td>
                     <td><%= order.paymentMethod %></td>
                     <td><%= order.paymentStatus %></td>
                     <td>
-                        <div class="badge <%= order.status === 'pending' ? 'bg-warning' : order.status === 'shipped' ? 'bg-primary' : order.status === 'delivered' ? 'bg-success' : 'bg-danger' %>">
+                        <div class="badge <%= order.status === 'pending' ? 'bg-warning' : order.status === 'shipped' ? 'bg-primary' : order.status === 'delivered' ? 'bg-success' : 'bg-danger' ?' bg-danger':order.status==='returned' %>">
                             <%= order.status %>
                         </div>
                     </td>
                     <td>
-                        <form action="/admin/changeOrderStatus/<%= order._id %>" method="POST">
-                            <select name="status" class="form-select" onchange="this.form.submit()">
+                        <form action="/admin/changeOrderStatus/<%= order._id %>" method="POST" id="statusForm">
+                            <% if (order.status !== 'cancelled' && order.status !== 'returned' && order.status !== 'returnRequested' && order.status !== 'delivered') { %>
+                              <select name="status" class="form-select" onchange="this.form.submit()">
                                 <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending</option>
                                 <option value="shipped" <%= order.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
                                 <option value="delivered" <%= order.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
                                 <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-                            </select>
-                        </form>
+                              </select>
+                            <% } else if (order.status === 'returnRequested') { %>
+                              <button class="btn btn-primary" type="button" onclick="confirmReturn('<%= order._id %>')">Accept</button>
+                              <button class="btn btn-danger" type="button" onclick="rejectReturn('<%= order._id %>')">Reject</button>
+                            <% } else { %>
+                              <select name="status" class="form-select" disabled>
+                                <option value="<%= order.status %>" selected><%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %></option>
+                              </select>
+                            <% } %>
+                          </form>
                     </td>
+                    
                 </tr>
             <% }); %>
         </tbody>
@@ -103,31 +115,72 @@
     <span class="text-muted text-sm"></span>
 </div>
 
+
 <script>
-    function confirmDeleteProduct(event, form) {
-        event.preventDefault(); // Prevent the form from submitting immediately
-    
-       
-        Swal.fire({
-            title: 'Are you sure you want to delete this product?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel',
-            background: '#fffff', 
-            color: 'black'          
-        }).then((result) => {
-            if (result.isConfirmed) {
-             
-                form.submit();
-            }
-        });
-    
-        return false; 
+    function confirmReturn(orderId) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You want to accept this return request?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, accept!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/acceptReturn/${orderId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                Swal.fire('Accepted!', data.message, 'success').then(() => location.reload());
+              } else {
+                Swal.fire('Error!', data.message, 'error');
+              }
+            })
+            .catch((error) => {
+              Swal.fire('Error!', 'Something went wrong!', 'error');
+              console.error('Error:', error);
+            });
+        }
+      });
     }
-</script>
+  
+    function rejectReturn(orderId) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You want to reject this return request?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, reject!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/rejectReturn/${orderId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                Swal.fire('Rejected!', data.message, 'success').then(() => location.reload());
+              } else {
+                Swal.fire('Error!', data.message, 'error');
+              }
+            })
+            .catch((error) => {
+              Swal.fire('Error!', 'Something went wrong!', 'error');
+              console.error('Error:', error);
+            });
+        }
+      });
+    }
+  </script>
+
+  
 
 <!-- Include Cropper.js JavaScript -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>

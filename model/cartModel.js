@@ -26,6 +26,14 @@ const cartSchema= new Schema({
             type:Number,
             required:true
         },
+        withOutDiscount:{
+            type:Number,
+            required:true
+        },
+        offer:{
+            type:Number,
+            required:true
+        },
         totalPrice:{
             type:Number,
             required:true

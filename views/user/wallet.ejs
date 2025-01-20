@@ -1,0 +1,217 @@
+<%-include('partials/header.ejs')%>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<style>
+  /* General Layout */
+.transactions {
+  margin-top: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.transactions h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* Header Styling */
+.transaction-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  font-weight: bold;
+  color: #555;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.transaction-header span {
+  text-align: center;
+}
+
+/* Transaction Rows */
+.transaction {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.transaction-type,
+.transaction-amount,
+.transaction-date {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #444;
+}
+
+/* Credit/Debit Styling */
+.transaction-type.credit {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.transaction-type.debit {
+  color: #f44336;
+  font-weight: bold;
+}
+
+/* Amount Styling */
+.transaction-amount {
+  font-family: "Roboto Mono", monospace;
+  font-size: 1rem;
+}
+
+/* Date Styling */
+.transaction-date {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .transaction-header,
+  .transaction {
+    grid-template-columns: 1fr;
+    text-align: left;
+    padding: 10px 0;
+  }
+
+  .transaction-type,
+  .transaction-amount,
+  .transaction-date {
+    text-align: left;
+  }
+
+  .transaction-header span {
+    margin-bottom: 5px;
+  }
+}
+
+</style>
+
+
+<link rel="stylesheet" href="/stylesheet//wallet.css">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<header class="header" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <div class="container">
+        <div class="header__content">
+            <!-- Logo Section -->
+            <div class="header__logo">
+                <a href="/user/">
+                    <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
+                </a>
+            </div>
+           <!-- Navigation Menu -->
+           <nav class="header__menu">
+            <ul>
+                <li ><a href="/user/">Home</a></li>
+                <li ><a href="/user/productList">Shop</a></li>
+                <!-- <li><a href="#">Pages</a>
+                    <ul class="dropdown">
+                        <li><a style="color: black;" href="./about.html">About Us</a></li>
+                        <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
+                        <li><a style="color: black;" href="./shopping-cart.html">Shopping Cart</a></li>
+                        <li><a style="color: black;" href="./checkout.html">Check Out</a></li>
+                        <li><a style="color: black;" href="./blog-details.html">Blog Details</a></li>
+                    </ul>
+                </li>
+                <li><a href="#">Contact</a> </li>
+              
+                <li><a href="#">Blog</a></li> -->
+            </ul>
+        </nav>
+        <!-- Right Options -->
+
+
+            <div class="header__nav__option">
+                <a href="/user/profile">
+                    <i class="fas fa-user" style="font-size: 24px; color: black;"></i> 
+                </a>
+                
+                <a href="/user/wishlist">
+                    <i class="fas fa-heart" style="font-size: 24px; color: black;"></i> 
+                </a>
+                
+                <a href="/user/cart">
+                    <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
+                </a>
+                <a href="/user/wallet">
+                    <i class="fas fa-wallet" style="font-size: 24px; color: black;"></i> 
+                </a>
+                <a href="/user/logout">
+                    <i class="fas fa-sign-out-alt" style="font-size: 24px; color: black;"></i> 
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</header>
+<!-- Header Section End -->
+
+<body>
+    <div class="wrapper">
+      <div class="app-wrapper">
+  
+        <!--Wallet-->
+        <aside class="wallet">
+          <h2>My Wallets</h2>
+          <div class="modal-control">+</div>
+          <div class="cards"></div>
+        </aside>
+  
+        <content class="transactions-wrapper">
+          <h2>
+            Current Balance
+            <span class="total-balance"><%=wallet.balance%></span>
+          </h2>
+          <div class="transactions">
+            <h2>Wallet History</h2>
+          
+            <% wallet.transactions.forEach((transaction) => { %>
+            <div class="transaction">
+              <div class="transaction-type">
+                <%= transaction.type === "credit" ? "Credit" : "Debit" %>
+              </div>
+              <div class="transaction-amount">
+                <%= transaction.amount %>
+              </div>
+              <div class="transaction-date">
+                <%= new Date(transaction.date).toLocaleString() %>
+              </div>
+            </div>
+            <% }) %>
+          </div>
+          
+        
+        </content>
+  
+      </div>
+  
+    </div>
+    <div class="modal">
+      <div class="modal-body">
+        <h3>Add New Card</h3>
+        <div class="modal-close">+</div>
+        <div class="card-list">
+          <div class="card-image visa"></div>
+          <div class="card-image amex"></div>
+          <div class="card-image mc"></div>
+        </div>
+      </div>
+    </div>
+  
+  </body>
+
+  
+<%-include('partials/footer.ejs')%>

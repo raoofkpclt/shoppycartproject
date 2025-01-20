@@ -2,7 +2,7 @@ const mongoose=require('mongoose');
 
 const connectDb=async()=>{
     try {
-        const connect=await mongoose.connect('mongodb://localhost:27017/shoppycart',{});
+        const connect=await mongoose.connect(process.env.MONGODB_URI,{});
         console.log(`MongoDB Connected ${connect.connection.host}`);
     } catch (error) {
         console.log('there are some error',error);
