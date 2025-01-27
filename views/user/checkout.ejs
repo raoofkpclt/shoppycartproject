@@ -206,7 +206,7 @@
                 />
                 <label class="form-check-label" for="razorpay">Pay with Razorpay</label>
             </div>
-            <div class="form-check">
+            <!-- <div class="form-check">
                 <input
                     class="form-check-input"
                     type="radio"
@@ -216,7 +216,7 @@
                     required
                 />
                 <label class="form-check-label" for="wallet">Pay with Wallet</label>
-            </div>
+            </div> -->
             <div id="wallet-balance" style="display: none; margin-top: 5px;">
                 Wallet Balance: ₹<span id="balance-amount">0</span>
             </div>
@@ -298,6 +298,7 @@
             } catch (error) {
                 console.error('Error during Razorpay checkout:', error);
                 alert('Error during payment. Please try again.');
+                window.location.href = `/user/orderfailed?orderId=${error.orderId}`;
             }
         } else {
            // Handle non-Razorpay payment methods

@@ -159,7 +159,7 @@
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                <% if (order.status === 'pending') { %>
+                                                <% if (order.status === 'pending'&& order.paymentStatus!=='failed') { %>
                                                     <!-- Cancel Button -->
                                                     <button class="btn btn-danger mt-3" onclick="showCancelForm('<%= order._id %>')">
                                                         Cancel Order

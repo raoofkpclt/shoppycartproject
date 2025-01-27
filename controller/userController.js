@@ -104,17 +104,17 @@ const verifyOTP = async (req, res) => {
 
     const { name, email, password, referrals } = req.session.tempUser;
 
-    if(referrals){
-    //check referrals is valid
-    var referrer = await userSchema.findOne({ referralCode: referrals });
-    if (!referrer) {
-      return res.render("user/verification", {
-        error: "",
-        message: "Invalid referral code. Try again.",
-        email: req.session.tempUser.email,
-      });
+    if (referrals) {
+      //check referrals is valid
+      var referrer = await userSchema.findOne({ referralCode: referrals });
+      if (!referrer) {
+        return res.render("user/verification", {
+          error: "",
+          message: "Invalid referral code. Try again.",
+          email: req.session.tempUser.email,
+        });
+      }
     }
-  }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, saltRound);
@@ -122,29 +122,31 @@ const verifyOTP = async (req, res) => {
     // Generate unique referral code
     const referralCode = await userSchema.generateReferralCode();
 
+    const googleId = email;
     const newUser = new userSchema({
       name,
       email,
       password: hashedPassword,
       referralCode,
+      googleId: googleId || null,
     });
 
     await newUser.save();
 
-    if(referrals){
-    // Add ₹100 to referrer's wallet
-    let referrerWallet = await Wallet.findOne({ userId: referrer._id });
-    if (!referrerWallet) {
-      referrerWallet = new Wallet({ userId: referrer._id, balance: 100 });
-    } else {
-      referrerWallet.balance += 100;
-    }
-    await referrerWallet.save();
+    if (referrals) {
+      // Add ₹100 to referrer's wallet
+      let referrerWallet = await Wallet.findOne({ userId: referrer._id });
+      if (!referrerWallet) {
+        referrerWallet = new Wallet({ userId: referrer._id, balance: 100 });
+      } else {
+        referrerWallet.balance += 100;
+      }
+      await referrerWallet.save();
 
-    // Add ₹100 to new user's wallet
-    const newUserWallet = new Wallet({ userId: newUser._id, balance: 100 });
-    await newUserWallet.save();
-  }
+      // Add ₹100 to new user's wallet
+      const newUserWallet = new Wallet({ userId: newUser._id, balance: 100 });
+      await newUserWallet.save();
+    }
     await OTP.deleteOne({ email });
     delete req.session.tempUser;
     delete req.session.otp;

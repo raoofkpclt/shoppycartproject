@@ -75,8 +75,8 @@ app.use('/admin', (req, res, next) => {
   });
   
 
-//server port configaration 3002
-const PORT = process.env.PORT || 3002;
+//server port configaration 3000
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Your server running ${PORT} succesfully`);
 });

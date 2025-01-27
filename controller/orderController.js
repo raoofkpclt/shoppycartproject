@@ -735,6 +735,8 @@ const cancelOrder = async (req, res) => {
     order.updatedAt = new Date();
     await order.save();
 
+
+    
     //add to amount wallet
        // Find or create the user's wallet
        let wallet = await Wallet.findOne({ userId });
@@ -809,6 +811,7 @@ const returnOrder = async (req, res) => {
 // processto checkout
 const processCheckout1 = async (req, res) => {
   try {
+    console.log('1');
     const addressId = req.body.addressId;
     const userId = req.session.user.id;
     if (!userId) {
@@ -869,15 +872,15 @@ const processCheckout1 = async (req, res) => {
         req.body.paymentMethod === "razorpay" ? "failed" : "pending",
       couponDiscount: totalDiscount,
     });
-
+    console.log('2');
     await newOrder.save();
-
+    console.log('3');
     const razorpayOrderOptions = {
       amount: Math.round(total * 100),
       currency: "INR",
       receipt: newOrder._id.toString(),
     };
-
+    console.log('4');
     const razorpayOrder = await razorpay.orders.create(razorpayOrderOptions);
 
     newOrder.razorpayOrderId = razorpayOrder.id;
@@ -901,7 +904,7 @@ const processCheckout1 = async (req, res) => {
 const verifyPayment = async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
     req.body;
-
+    console.log('1');
   // Verify the payment signature
   const generatedSignature = crypto
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
