@@ -195,7 +195,7 @@ const loadHome = async (req, res) => {
     // const categories = await Category.find({ isActive: true });
     console.log(product);
 
-    res.render("user/loadhome", { product });
+    res.render("user/loadHome", { product });
   } catch (error) {
     console.error("Error fetching products or categories:", error);
   }
