@@ -9,247 +9,769 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="shortcut icon" href="/assets/images/favicon.png" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Type: Manrope for the interface, Newsreader for the page title and the revenue figure -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-    
-</head>
-<body>
-    <%- include("partials/header.ejs") %>
-    <div class="container-fluid vh-100 d-flex flex-column">
+    <style>
+        /* =====================================================
+           Dashboard theme (scoped to .dash so it never leaks)
+           ===================================================== */
+        body.dash-body { background: #F2F4F7; }
 
-        
+        .dash {
+            --ink: #0F1B33;
+            --ink-2: #2A3F6B;
+            --mist: #F2F4F7;
+            --line: #E3E7EE;
+            --slate: #5B6578;
+            --mute: #8A93A5;
+            --brass: #B8935A;
+            --champagne: #E2C792;
+
+            font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+            font-size: 14px;
+            color: var(--ink);
+            padding: 36px 40px 56px;
+            max-width: 1360px;
+            margin: 0 auto;
+        }
+
+        /* ---------- page head ---------- */
+        .dash-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+        .dash-title {
+            font-family: 'Newsreader', Georgia, serif;
+            font-weight: 500;
+            font-size: 2.25rem;
+            line-height: 1.05;
+            letter-spacing: -0.015em;
+            margin: 0;
+        }
+        .dash-sub { margin: 8px 0 0; color: var(--slate); font-size: 14px; }
+
+        /* ---------- period control ---------- */
+        .seg {
+            display: inline-flex;
+            padding: 4px;
+            gap: 2px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+        }
+        .seg-btn {
+            appearance: none;
+            border: 0;
+            background: transparent;
+            color: var(--slate);
+            font: inherit;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 8px 16px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: background-color .15s, color .15s;
+        }
+        .seg-btn:hover { color: var(--ink); }
+        .seg-btn.is-active { background: var(--ink); color: #fff; }
+        .seg-btn:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+        /* ---------- error banner ---------- */
+        .dash-error {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: #FFF4F2;
+            border: 1px solid #F3C9C2;
+            border-radius: 12px;
+            color: #8E2A1E;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .dash-error[hidden] { display: none; }
+        .dash-error button {
+            border: 1px solid #E5A9A0;
+            background: #fff;
+            color: #8E2A1E;
+            font: inherit;
+            font-weight: 600;
+            font-size: 12.5px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* ---------- shared surface ---------- */
+        .panel {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 1px 2px rgba(15, 27, 51, .04), 0 10px 28px -20px rgba(15, 27, 51, .18);
+            transition: opacity .2s;
+        }
+        .panel-title { font-size: 15px; font-weight: 700; margin: 0; }
+        .panel-sub { margin: 4px 0 0; font-size: 12.5px; color: var(--slate); }
+        .panel-head { margin-bottom: 18px; }
+
+        /* ---------- hero: revenue ---------- */
+        .hero {
+            position: relative;
+            height: 100%;
+            background: var(--ink);
+            color: #fff;
+            border-radius: 20px;
+            padding: 30px 32px 24px;
+            overflow: hidden;
+            box-shadow: 0 28px 50px -28px rgba(15, 27, 51, .65);
+            transition: opacity .2s;
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 32px; right: 32px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--brass), rgba(184, 147, 90, 0) 70%);
+        }
+        .hero-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .hero-label { font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, .62); margin: 0; }
+        .hero-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--champagne);
+            border: 1px solid rgba(226, 199, 146, .35);
+            border-radius: 999px;
+            padding: 4px 12px;
+            white-space: nowrap;
+        }
+        .hero-figure {
+            font-family: 'Newsreader', Georgia, serif;
+            font-weight: 400;
+            font-size: clamp(2.4rem, 7vw, 4rem);
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            margin: 14px 0 22px;
+            font-variant-numeric: lining-nums tabular-nums;
+            word-break: break-word;
+        }
+        .hero-figure .cur {
+            font-family: 'Manrope', system-ui, sans-serif;
+            font-size: .42em;
+            font-weight: 500;
+            color: var(--champagne);
+            margin-right: .12em;
+            vertical-align: .72em;
+        }
+        .hero-figure .dec {
+            font-size: .5em;
+            color: rgba(255, 255, 255, .45);
+            letter-spacing: 0;
+        }
+
+        /* ---------- chart boxes ---------- */
+        .chart-box { position: relative; height: 230px; }
+        .chart-box.tall { height: 300px; }
+        .chart-empty {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 20px;
+            font-size: 13px;
+            color: var(--mute);
+        }
+        .chart-empty[hidden] { display: none; }
+        .hero .chart-empty { color: rgba(255, 255, 255, .5); }
+
+        /* ---------- side stats (one panel, hairline rows) ---------- */
+        .stats { display: flex; flex-direction: column; height: 100%; padding: 8px 24px; }
+        .stat {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 0;
+        }
+        .stat + .stat { border-top: 1px solid var(--line); }
+        .stat-ico {
+            width: 42px; height: 42px;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px;
+            background: #EEF1F7;
+            color: var(--ink-2);
+        }
+        .stat-ico svg { width: 20px; height: 20px; }
+        .stat-body { min-width: 0; }
+        .stat-label { margin: 0; font-size: 13px; font-weight: 600; color: var(--slate); }
+        .stat-value {
+            margin: 3px 0 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            font-variant-numeric: tabular-nums;
+            word-break: break-word;
+        }
+        .stat-value .cur { font-size: .6em; font-weight: 600; color: var(--slate); margin-right: 2px; }
+        .stat-value .dec { font-size: .6em; color: var(--mute); font-weight: 600; }
+
+        /* ---------- ranked lists ---------- */
+        .rank { width: 100%; border-collapse: collapse; margin: 0; }
+        .rank th {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--mute);
+            padding: 0 0 10px;
+            border: 0;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+        }
+        .rank th.num, .rank td.num { text-align: right; }
+        .rank td {
+            padding: 13px 0;
+            border: 0;
+            border-bottom: 1px solid var(--line);
+            vertical-align: middle;
+        }
+        .rank tr:last-child td { border-bottom: 0; }
+        .rank .idx {
+            width: 34px;
+            color: var(--mute);
+            font-size: 12.5px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+        .rank .name { font-weight: 600; font-size: 14px; word-break: break-word; padding-right: 16px; }
+        .rank .num { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .rank .bar { height: 4px; margin-top: 9px; border-radius: 4px; background: #EDF0F5; overflow: hidden; }
+        .rank .bar i { display: block; height: 100%; border-radius: 4px; background: #AEB8CD; }
+        .rank tr.is-top .bar i { background: var(--brass); }
+        .rank tr.is-top .idx { color: var(--brass); }
+        .rank-empty { padding: 28px 0 !important; text-align: center; color: var(--mute); font-size: 13px; }
+
+        /* ---------- loading ---------- */
+        .dash.is-loading .hero,
+        .dash.is-loading .panel { opacity: .6; }
+
+        /* ---------- responsive ---------- */
+        @media (max-width: 991.98px) {
+            .dash { padding: 28px 24px 48px; }
+            .stats { flex-direction: row; flex-wrap: wrap; padding: 8px 20px; }
+            .stat { flex: 1 1 100%; }
+        }
+        @media (max-width: 575.98px) {
+            .dash { padding: 22px 14px 40px; }
+            .dash-title { font-size: 1.9rem; }
+            .seg { display: flex; width: 100%; }
+            .seg-btn { flex: 1; padding: 9px 4px; }
+            .hero { padding: 24px 20px 18px; border-radius: 16px; }
+            .hero::before { left: 20px; right: 20px; }
+            .panel { padding: 18px; }
+            .chart-box { height: 200px; }
+            .chart-box.tall { height: 250px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .panel, .hero, .seg-btn { transition: none; }
+        }
+    </style>
+</head>
+<body class="dash-body">
+    <%- include("partials/header.ejs") %>
+    <div class="container-fluid vh-100 d-flex flex-column p-0">
+
         <!-- Main Content -->
         <div class="flex-grow-1 overflow-auto">
-            <header class="bg-light border-bottom py-4">
-                <div class="container">
-                    <h1 class="h2 ">Dashboard</h1>
-                </div>
-            </header>
+            <main class="dash" id="dash" aria-busy="false">
 
-            <main class="container py-4">
-                <!-- Filter -->
-                <div class="row mb-4">
-                    <div class="col-md-4">
-                        <select id="timePeriodFilter" class="form-control" onchange="updateDashboardData()">
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly" selected>Monthly</option>
-                            <option value="yearly">Yearly</option>
-                        </select>
+                <!-- Page head + period -->
+                <div class="dash-head">
+                    <div>
+                        <h1 class="dash-title">Dashboard</h1>
+                        <p class="dash-sub">Orders, revenue and customers at a glance.</p>
+                    </div>
+                    <div class="seg" role="group" aria-label="Time period">
+                        <button type="button" class="seg-btn" data-period="daily" aria-pressed="false">Daily</button>
+                        <button type="button" class="seg-btn" data-period="weekly" aria-pressed="false">Weekly</button>
+                        <button type="button" class="seg-btn is-active" data-period="monthly" aria-pressed="true">Monthly</button>
+                        <button type="button" class="seg-btn" data-period="yearly" aria-pressed="false">Yearly</button>
                     </div>
                 </div>
 
-                <!-- Summary Cards -->
-                <div class="row text-center mb-4">
-                    <div class="col-md-4">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="text-muted">Total Orders</h5>
-                                <h3 class="text-primary" id="totalSalesCount">0</h3>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="text-muted">Total Revenue</h5>
-                                <h3 class="text-success" id="totalRevenue">₹0.00</h3>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="text-muted">Total Users</h5>
-                                <h3 class="text-warning" id="totalUsers">0</h3>
-                            </div>
-                        </div>
-                    </div>
+                <div class="dash-error" id="dashError" role="alert" hidden>
+                    <span>We couldn't load the dashboard data. Check your connection and try again.</span>
+                    <button type="button" id="retryBtn">Retry</button>
                 </div>
 
-                <!-- Charts Section -->
+                <!-- Revenue hero + key numbers -->
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="text-muted">Sales Chart</h5>
-                                <canvas id="totalSalesChart"></canvas>
+                    <div class="col-lg-8 mb-4">
+                        <section class="hero" aria-label="Revenue">
+                            <div class="hero-top">
+                                <div>
+                                    <p class="hero-label">Total revenue</p>
+                                </div>
+                                <span class="hero-badge" id="periodBadge">Monthly</span>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="text-muted">Revenue Chart</h5>
+                            <div class="hero-figure" id="totalRevenue"><span class="cur">₹</span>0<span class="dec">.00</span></div>
+                            <div class="chart-box">
                                 <canvas id="totalRevenueChart"></canvas>
+                                <div class="chart-empty" id="revenueEmpty" hidden>No revenue recorded in this period.</div>
                             </div>
-                        </div>
+                        </section>
                     </div>
-                </div>
 
-                <!-- Tables Section -->
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="text-muted">Best Selling Products</h5>
-                                <table class="table table-striped table-hover mt-3" id="bestSellingProductsTable">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th>Product Name</th>
-                                            <th>Total Sold</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="text-muted">Best Selling Categories</h5>
-                                <table class="table table-striped table-hover mt-3" id="bestSellingCategoriesTable">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th>Category Name</th>
-                                            <th>Total Sold</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <div class="card shadow-sm border-0">
-                                <div class="card-body">
-                                    <h5 class="text-muted">Best Selling Brands</h5>
-                                    <table class="table table-striped table-hover mt-3" id="bestSellingBrandsTable">
-                                        <thead class="thead-light">
-                                            <tr>
-                                                <th>Brand Name</th>
-                                                <th>Total Sold</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
+                    <div class="col-lg-4 mb-4">
+                        <section class="panel stats" aria-label="Key numbers">
+                            <div class="stat">
+                                <div class="stat-ico" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 016 0"/></svg>
+                                </div>
+                                <div class="stat-body">
+                                    <p class="stat-label">Total orders</p>
+                                    <p class="stat-value" id="totalSalesCount">0</p>
                                 </div>
                             </div>
-                        </div>
+                            <div class="stat">
+                                <div class="stat-ico" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.9"/><path d="M16 3.1a4 4 0 010 7.8"/></svg>
+                                </div>
+                                <div class="stat-body">
+                                    <p class="stat-label">Total users</p>
+                                    <p class="stat-value" id="totalUsers">0</p>
+                                </div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-ico" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><path d="M7 7h.01"/></svg>
+                                </div>
+                                <div class="stat-body">
+                                    <p class="stat-label">Average order value</p>
+                                    <p class="stat-value" id="avgOrderValue"><span class="cur">₹</span>0<span class="dec">.00</span></p>
+                                </div>
+                            </div>
+                        </section>
                     </div>
-                    
                 </div>
+
+                <!-- Orders by product + ranking -->
+                <div class="row">
+                    <div class="col-lg-7 mb-4">
+                        <section class="panel h-100">
+                            <div class="panel-head">
+                                <h2 class="panel-title">Orders by product</h2>
+                                <p class="panel-sub">The top-selling product is highlighted.</p>
+                            </div>
+                            <div class="chart-box tall">
+                                <canvas id="totalSalesChart"></canvas>
+                                <div class="chart-empty" id="salesEmpty" hidden>No orders in this period.</div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="col-lg-5 mb-4">
+                        <section class="panel h-100">
+                            <div class="panel-head">
+                                <h2 class="panel-title">Best selling products</h2>
+                                <p class="panel-sub">Ranked by units sold.</p>
+                            </div>
+                            <table class="rank" id="bestSellingProductsTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Product</th>
+                                        <th class="num">Sold</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Categories + brands -->
+                <div class="row">
+                    <div class="col-lg-6 mb-4">
+                        <section class="panel h-100">
+                            <div class="panel-head">
+                                <h2 class="panel-title">Best selling categories</h2>
+                                <p class="panel-sub">Ranked by units sold.</p>
+                            </div>
+                            <table class="rank" id="bestSellingCategoriesTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Category</th>
+                                        <th class="num">Sold</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </section>
+                    </div>
+                    <div class="col-lg-6 mb-4">
+                        <section class="panel h-100">
+                            <div class="panel-head">
+                                <h2 class="panel-title">Best selling brands</h2>
+                                <p class="panel-sub">Ranked by units sold.</p>
+                            </div>
+                            <table class="rank" id="bestSellingBrandsTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Brand</th>
+                                        <th class="num">Sold</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </section>
+                    </div>
+                </div>
+
             </main>
         </div>
     </div>
 
- 
-
     <!-- Frontend Script for Fetching Data and Updating UI -->
     <script>
+        const INK = '#0F1B33';
+        const BRASS = '#B8935A';
+        const CHAMPAGNE = '#E2C792';
+        const LINE = '#E3E7EE';
+        const SLATE = '#5B6578';
+
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        Chart.defaults.font.family = "'Manrope', system-ui, sans-serif";
+        Chart.defaults.font.size = 12;
+        Chart.defaults.color = SLATE;
+
         let totalSalesChart, totalRevenueChart;
-    
+        let period = 'monthly';
+
+        /* ---------- formatting ---------- */
+        const fmtMoney = (n) =>
+            new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+        const fmtInt = (n) => new Intl.NumberFormat('en-IN').format(Math.round(n));
+        const compact = (n) =>
+            new Intl.NumberFormat('en-IN', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+
+        // "2025-03-31" -> "31 Mar"   ·   "2025-03" -> "Mar 2025"   ·   anything else stays as is
+        function prettyLabel(raw) {
+            const s = String(raw);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+                return new Date(s + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+            }
+            if (/^\d{4}-\d{2}$/.test(s)) {
+                return new Date(s + '-01T00:00:00').toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+            }
+            return s;
+        }
+
+        const moneyHTML = (v) => {
+            const [whole, dec] = fmtMoney(v).split('.');
+            return `<span class="cur">₹</span>${whole}<span class="dec">.${dec}</span>`;
+        };
+
+        /* ---------- count-up (answers the user's period change) ---------- */
+        function animateValue(el, to, render) {
+            const from = Number(el.dataset.value || 0);
+            el.dataset.value = to;
+            cancelAnimationFrame(el._raf);
+            if (reduceMotion || from === to) {
+                render(el, to);
+                return;
+            }
+            const start = performance.now();
+            const duration = 700;
+            const tick = (now) => {
+                const t = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - t, 3);
+                render(el, from + (to - from) * eased);
+                if (t < 1) el._raf = requestAnimationFrame(tick);
+            };
+            el._raf = requestAnimationFrame(tick);
+        }
+        const renderMoney = (el, v) => { el.innerHTML = moneyHTML(v); };
+        const renderInt = (el, v) => { el.textContent = fmtInt(v); };
+
+        /* ---------- loading / error state ---------- */
+        const dashEl = document.getElementById('dash');
+        const errorEl = document.getElementById('dashError');
+
+        function setLoading(on) {
+            dashEl.classList.toggle('is-loading', on);
+            dashEl.setAttribute('aria-busy', on ? 'true' : 'false');
+        }
+
+        /* ---------- fetch + paint ---------- */
         async function updateDashboardData() {
-            const period = document.getElementById('timePeriodFilter').value;
+            setLoading(true);
+            errorEl.hidden = true;
             try {
                 const response = await axios.get(`/admin/dashboard-data?period=${period}`);
-                const { salesSummary, bestSellingProducts, bestSellingCategories, bestSellingBrands,totalUsers, dailyRevenue } = response.data;
-    
-                // Updating Summary Cards
-                document.getElementById('totalSalesCount').innerText = salesSummary.totalSalesCount || 0;
-                document.getElementById('totalRevenue').innerText = `₹${(salesSummary.totalRevenue || 0).toFixed(2)}`;
-                document.getElementById('totalUsers').innerText = totalUsers || 0;
-    
-                // Updating Charts
+                const data = response.data || {};
+                const salesSummary = data.salesSummary || {};
+                const bestSellingProducts = data.bestSellingProducts || [];
+                const bestSellingCategories = data.bestSellingCategories || [];
+                const bestSellingBrands = data.bestSellingBrands || [];
+                const dailyRevenue = data.dailyRevenue || [];
+                const totalUsers = data.totalUsers || 0;
+
+                const orders = salesSummary.totalSalesCount || 0;
+                const revenue = salesSummary.totalRevenue || 0;
+                const avg = orders > 0 ? revenue / orders : 0;
+
+                // Summary numbers
+                animateValue(document.getElementById('totalSalesCount'), orders, renderInt);
+                animateValue(document.getElementById('totalRevenue'), revenue, renderMoney);
+                animateValue(document.getElementById('totalUsers'), totalUsers, renderInt);
+                animateValue(document.getElementById('avgOrderValue'), avg, renderMoney);
+
+                // Charts
                 updateTotalSalesChart(bestSellingProducts);
                 updateTotalRevenueChart(dailyRevenue);
-    
-                // Updating Tables
+
+                // Ranked lists
                 updateTable('bestSellingProductsTable', bestSellingProducts);
                 updateTable('bestSellingCategoriesTable', bestSellingCategories);
                 updateTable('bestSellingBrandsTable', bestSellingBrands);
             } catch (error) {
-                console.error("Error fetching dashboard data:", error);
+                console.error('Error fetching dashboard data:', error);
+                errorEl.hidden = false;
+            } finally {
+                setLoading(false);
             }
         }
-    
-        // Function to update the bar chart for product orders
+
+        function toggleEmpty(canvasId, emptyId, isEmpty) {
+            document.getElementById(canvasId).style.visibility = isEmpty ? 'hidden' : 'visible';
+            document.getElementById(emptyId).hidden = !isEmpty;
+        }
+
+        const tooltipBase = {
+            backgroundColor: '#FFFFFF',
+            titleColor: INK,
+            bodyColor: INK,
+            borderColor: LINE,
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 10,
+            displayColors: false,
+            titleFont: { weight: '700' },
+            bodyFont: { weight: '500' }
+        };
+
+        // Bar chart: orders for the top products, best seller highlighted
         function updateTotalSalesChart(bestSellingProducts) {
             if (totalSalesChart) totalSalesChart.destroy();
-    
-            const labels = bestSellingProducts.map(product => product.name);
-            const data = bestSellingProducts.map(product => product.totalSold);
-    
+
+            const labels = bestSellingProducts.map((p) => p.name);
+            const values = bestSellingProducts.map((p) => p.totalSold);
+            const max = Math.max(...values, 0);
+            toggleEmpty('totalSalesChart', 'salesEmpty', values.length === 0);
+            if (values.length === 0) return;
+
             totalSalesChart = new Chart(document.getElementById('totalSalesChart').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels,
                     datasets: [{
                         label: 'Orders',
-                        data: data,
-                        backgroundColor: '#4CAF50'
+                        data: values,
+                        backgroundColor: values.map((v) => (v === max ? INK : '#CBD3E1')),
+                        hoverBackgroundColor: values.map((v) => (v === max ? INK : '#AEB8CD')),
+                        borderRadius: 6,
+                        borderSkipped: false,
+                        barPercentage: 0.62,
+                        categoryPercentage: 0.8
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
+                    animation: reduceMotion ? false : { duration: 600 },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            ...tooltipBase,
+                            callbacks: { label: (ctx) => `${fmtInt(ctx.parsed.y)} orders` }
+                        }
+                    },
                     scales: {
-                        y: { beginAtZero: true }
+                        x: {
+                            grid: { display: false },
+                            border: { display: false },
+                            ticks: {
+                                maxRotation: 0,
+                                callback: function (value) {
+                                    const l = this.getLabelForValue(value);
+                                    return l.length > 12 ? l.slice(0, 11) + '…' : l;
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#EEF1F6' },
+                            border: { display: false },
+                            ticks: { precision: 0, maxTicksLimit: 5 }
+                        }
                     }
                 }
             });
         }
-    
-        // Function to update the line chart for revenue
+
+        // Line chart: revenue over time (sits on the dark hero)
         function updateTotalRevenueChart(dailyRevenue) {
             if (totalRevenueChart) totalRevenueChart.destroy();
-    
-            const labels = dailyRevenue.map(entry => entry._id); // _id is the date
-            const data = dailyRevenue.map(entry => entry.totalRevenue);
-    
-            totalRevenueChart = new Chart(document.getElementById('totalRevenueChart').getContext('2d'), {
+
+            const labels = dailyRevenue.map((entry) => prettyLabel(entry._id)); // _id is the date
+            const values = dailyRevenue.map((entry) => entry.totalRevenue);
+            toggleEmpty('totalRevenueChart', 'revenueEmpty', values.length === 0);
+            if (values.length === 0) return;
+
+            const ctx = document.getElementById('totalRevenueChart').getContext('2d');
+            const fill = ctx.createLinearGradient(0, 0, 0, 230);
+            fill.addColorStop(0, 'rgba(226, 199, 146, 0.30)');
+            fill.addColorStop(1, 'rgba(226, 199, 146, 0)');
+
+            totalRevenueChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels,
                     datasets: [{
                         label: 'Revenue',
-                        data: data,
-                        borderColor: '#FF5722',
-                        fill: false,
-                        tension: 0.1
+                        data: values,
+                        borderColor: CHAMPAGNE,
+                        backgroundColor: fill,
+                        fill: true,
+                        borderWidth: 2,
+                        tension: 0.35,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: CHAMPAGNE,
+                        pointHoverBorderColor: INK,
+                        pointHoverBorderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
+                    animation: reduceMotion ? false : { duration: 700 },
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            ...tooltipBase,
+                            callbacks: { label: (c) => `₹${fmtMoney(c.parsed.y)}` }
+                        }
+                    },
                     scales: {
-                        y: { beginAtZero: true }
+                        x: {
+                            grid: { display: false },
+                            border: { display: false },
+                            ticks: { color: 'rgba(255,255,255,0.55)', maxTicksLimit: 7, maxRotation: 0 }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.08)' },
+                            border: { display: false },
+                            ticks: {
+                                color: 'rgba(255,255,255,0.55)',
+                                maxTicksLimit: 5,
+                                callback: (v) => compact(v)
+                            }
+                        }
                     }
                 }
             });
         }
-    
-        // // Function for updating tables
-        // function updateTable(tableId, data) {
-        //     const tableBody = document.getElementById(tableId).querySelector('tbody');
-        //     tableBody.innerHTML = '';
-        //     data.forEach(item => {
-        //         const name = item.name || item.categoryName; // Ensure you have a fallback here
-        //         const row = `<tr><td>${name}</td><td>${item.totalSold}</td></tr>`;
-        //         tableBody.insertAdjacentHTML('beforeend', row);
-        //     });
-        // }
-        
+
+        // Ranked list with a share bar (built with DOM nodes, so names are never treated as HTML)
         function updateTable(tableId, data) {
-        const tableBody = document.getElementById(tableId).querySelector('tbody');
-        tableBody.innerHTML = '';
-        data.forEach(item => {
-            const name = item.name || item.categoryName || item.brandName; // Ensure fallback for brands
-            const row = `<tr><td>${name}</td><td>${item.totalSold}</td></tr>`;
-            tableBody.insertAdjacentHTML('beforeend', row);
+            const tableBody = document.getElementById(tableId).querySelector('tbody');
+            tableBody.innerHTML = '';
+
+            if (!data.length) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 3;
+                td.className = 'rank-empty';
+                td.textContent = 'No sales in this period.';
+                tr.appendChild(td);
+                tableBody.appendChild(tr);
+                return;
+            }
+
+            const max = Math.max(...data.map((d) => d.totalSold || 0), 1);
+
+            data.forEach((item, i) => {
+                const name = item.name || item.categoryName || item.brandName || 'Unnamed'; // fallback for brands
+                const sold = item.totalSold || 0;
+
+                const tr = document.createElement('tr');
+                if (i === 0) tr.className = 'is-top';
+
+                const idx = document.createElement('td');
+                idx.className = 'idx';
+                idx.textContent = i + 1;
+
+                const nameTd = document.createElement('td');
+                const nameEl = document.createElement('div');
+                nameEl.className = 'name';
+                nameEl.textContent = name;
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                const fill = document.createElement('i');
+                fill.style.width = `${(sold / max) * 100}%`;
+                bar.appendChild(fill);
+                nameTd.append(nameEl, bar);
+
+                const soldTd = document.createElement('td');
+                soldTd.className = 'num';
+                soldTd.textContent = fmtInt(sold);
+
+                tr.append(idx, nameTd, soldTd);
+                tableBody.appendChild(tr);
+            });
+        }
+
+        /* ---------- period control ---------- */
+        document.querySelectorAll('.seg-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                if (btn.dataset.period === period) return;
+                period = btn.dataset.period;
+                document.querySelectorAll('.seg-btn').forEach((b) => {
+                    const on = b === btn;
+                    b.classList.toggle('is-active', on);
+                    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+                document.getElementById('periodBadge').textContent = btn.textContent.trim();
+                updateDashboardData();
+            });
         });
-    }
+        document.getElementById('retryBtn').addEventListener('click', updateDashboardData);
 
         // Initialize the dashboard data
         updateDashboardData();
@@ -258,6 +780,6 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  
+
 </body>
 </html>

@@ -1,321 +1,287 @@
+<%- include('./partials/header', { title: 'Shoppycart | Sports, running and sneakers' }) %>
+<%- include('./partials/navbar') %>
 
-<%- include('./partials/header') %>
-<link rel="stylesheet" href="/stylesheet/home.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<%
+    const money = (n) => Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+    const year = new Date().getFullYear();
+    const lastDay = new Date(year, new Date().getMonth() + 1, 0)
+        .toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+    const slides = [
+        { img: '/banners/mainBanner.png', tag: 'Sports collection',  title: 'The ' + year + ' sport collection',
+          text: 'Performance footwear for the gym, the court and everything in between.' },
+        { img: '/banners/banner1.png',    tag: 'Running collection', title: 'The ' + year + ' running collection',
+          text: 'Light, responsive running shoes for daily miles and race day.' }
+    ];
+    const tiles = [
+        { img: '/banners/1.png', name: 'Trending' },
+        { img: '/banners/2.png', name: 'Sports' },
+        { img: '/banners/3.png', name: 'Sneakers' }
+    ];
+%>
 
+<style>
+    .sh {
+        font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        color: var(--ink); font-size: 15px; line-height: 1.5; background: #fff;
+    }
+    .sh *, .sh *::before, .sh *::after { box-sizing: border-box; }
+    .sh a { color: inherit; text-decoration: none; }
+    .sh img { display: block; max-width: 100%; }
+    .sh a:focus-visible, .sh button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 0 28px; }
+    .serif { font-family: 'Newsreader', Georgia, serif; font-weight: 500; letter-spacing: -0.015em; }
 
+    /* ---------- hero ---------- */
+    .hero { position: relative; }
+    .hero-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+    .hero-track::-webkit-scrollbar { display: none; }
+    .slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; min-height: clamp(420px, 68vh, 640px); display: flex; align-items: center; background: var(--ink) center / cover no-repeat; }
+    .slide::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(15,27,51,.82) 0%, rgba(15,27,51,.45) 48%, rgba(15,27,51,0) 80%); }
+    .slide .wrap { position: relative; width: 100%; }
+    .slide-text { max-width: 480px; color: #fff; }
+    .slide-tag { display: inline-block; padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,.14); font-size: 13px; font-weight: 600; }
+    .slide h2 { margin: 16px 0 14px; font-size: clamp(2.3rem, 5vw, 3.8rem); line-height: 1.05; }
+    .slide p { margin: 0 0 28px; color: #D5DBE8; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 13px 26px; border-radius: 10px; font-weight: 700; font-size: 14px; background: #fff; color: var(--ink) !important; transition: background-color .15s; }
+    .btn:hover { background: #F0F2F6; }
+    .btn-line { background: transparent; color: #fff !important; border: 1px solid rgba(255,255,255,.55); }
+    .btn-line:hover { background: rgba(255,255,255,.12); }
+    .slide-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .slide-text > * { animation: rise .7s cubic-bezier(.16,1,.3,1) both; }
+    .slide-text > :nth-child(2) { animation-delay: .08s; }
+    .slide-text > :nth-child(3) { animation-delay: .16s; }
+    .slide-text > :nth-child(4) { animation-delay: .24s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    .btn-ink { background: var(--ink); color: #fff !important; }
+    .btn-ink:hover { background: var(--ink-2); }
+    .dots { position: absolute; left: 0; right: 0; bottom: 22px; display: flex; justify-content: center; gap: 8px; }
+    .dots button { width: 24px; height: 4px; transition: width .25s, background-color .25s; padding: 0; border: 0; border-radius: 4px; background: rgba(255,255,255,.4); cursor: pointer; }
+    .dots button[aria-current="true"] { width: 44px; background: #fff; }
 
-<header class="header" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-    <div class="container">
-        <div class="header__content">
-            <!-- Logo Section -->
-            <div class="header__logo">
-                <a href="/user/">
-                    <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
-                </a>
-            </div>
-            <!-- Navigation Menu -->
-            <nav class="header__menu">
-                <ul>
-                    <li class="active"><a href="/user/">Home</a></li>
-                    <li ><a href="/user/productList">Shop</a></li>
-                    <!-- <li><a href="#">Pages</a>
-                        <ul class="dropdown">
-                            <li><a style="color: black;" href="./about.html">About Us</a></li>
-                            <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
-                            <li><a style="color: black;" href="./shopping-cart.html">Shopping Cart</a></li>
-                            <li><a style="color: black;" href="./checkout.html">Check Out</a></li>
-                            <li><a style="color: black;" href="./blog-details.html">Blog Details</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="#">Contact</a> </li>
-                  
-                    <li><a href="#">Blog</a></li> -->
-                </ul>
-            </nav>
-            <!-- Right Options -->
+    /* ---------- sections ---------- */
+    .sec { padding: 72px 0; }
+    .sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 32px; padding-bottom: 18px; border-bottom: 1px dashed rgba(184,147,90,.6); }
+    .sec-head h2 { margin: 0; font-size: clamp(1.8rem, 3vw, 2.4rem); line-height: 1.1; }
+    .more { font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--brass); padding-bottom: 2px; }
 
-            <div class="header__nav__option">
-                <a href="/user/profile">
-                    <i class="fas fa-user" style="font-size: 24px; color: black;"></i> 
-                </a>
-                
-                <a href="/user/wishlist">
-                    <i class="fas fa-heart" style="font-size: 24px; color: black;"></i> 
-                </a>
-                
-                <a href="/user/cart">
-                    <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
-                </a>
-                <a href="/user/wallet">
-                    <i class="fas fa-wallet" style="font-size: 24px; color: black;"></i> 
-                </a>
-                <a href="/user/logout">
-                    <i class="fas fa-sign-out-alt" style="font-size: 24px; color: black;"></i> 
-                </a>
-            </div>
-            
-        </div>
-    </div>
-</header>
+    /* category tiles */
+    .tiles { display: grid; grid-template-columns: 1.35fr 1fr; grid-template-rows: repeat(2, 300px); gap: 20px; }
+    .tile:first-child { grid-row: 1 / span 2; }
+    .tile { position: relative; border-radius: 18px; overflow: hidden; background: var(--soft); }
+    .tile img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+    .tile:hover img { transform: scale(1.04); }
+    .tile::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(15,27,51,.72), rgba(15,27,51,0) 55%); }
+    .tile-text { position: absolute; z-index: 1; left: 22px; right: 22px; bottom: 20px; color: #fff; }
+    .tile-text h3 { margin: 0 0 4px; font-size: 2rem; line-height: 1.1; }
+    .tile-text span { font-size: 13.5px; font-weight: 700; border-bottom: 1.5px solid var(--brass); }
 
+    /* products */
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 20px; }
+    .card { display: block; }
+    .card-pic { position: relative; aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: var(--soft); border: 1px solid var(--line); }
+    .card-pic img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+    .card:hover .card-pic img { transform: scale(1.04); }
+    .card-go { position: absolute; z-index: 1; left: 12px; right: 12px; bottom: 12px; padding: 10px; border-radius: 10px; background: rgba(255,255,255,.94); font-size: 13px; font-weight: 700; text-align: center; opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; }
+    .card:hover .card-go, .card:focus-visible .card-go { opacity: 1; transform: none; }
+    .card-name { transition: color .15s; }
+    .card:hover .card-name { color: var(--ink-2); }
+    .card-cat { margin-top: 12px; font-size: 12.5px; font-weight: 600; color: var(--mute); }
+    .card-name { margin-top: 2px; font-weight: 700; font-size: 15px; line-height: 1.3; }
+    .card-price { margin-top: 4px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .none { padding: 48px 0; text-align: center; color: var(--mute); }
 
-<!-- Header Section End -->
+    /* deal of the month */
+    .deal { background: var(--ink); background-image: radial-gradient(700px 320px at 90% -10%, rgba(184,147,90,.25), transparent 70%); color: #fff; }
+    .deal .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .deal-pic { position: relative; border-radius: 16px; overflow: hidden; background: #1a2a4d; }
+    .deal-pic img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+    .deal-price { position: absolute; left: 16px; top: 16px; padding: 10px 16px; border-radius: 12px; background: #fff; color: var(--ink); }
+    .deal-price small { display: block; font-size: 12px; font-weight: 600; color: var(--slate); }
+    .deal-price b { font-size: 1.4rem; font-weight: 800; }
+    .deal-note { color: #AEB8CE; font-weight: 600; }
+    .deal-end { margin: 16px 0 0; color: #AEB8CE; font-size: 13.5px; }
+    .deal h2 { margin: 8px 0 28px; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.08; }
+    .clock { display: flex; gap: 12px; margin-bottom: 32px; }
+    .clock div { min-width: 76px; padding: 14px 10px; border: 1px dashed rgba(184,147,90,.7); border-radius: 12px; text-align: center; }
+    .clock b { display: block; font-size: 1.7rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .clock span { font-size: 12px; color: #AEB8CE; }
 
-<!-- Hero Section Begin -->
-<section class="hero">
-    <div class="hero__slider owl-carousel ">
-        <div class="hero__items set-bg container-fluid" data-setbg="/banners/mainBanner.png">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xl-5 col-lg-7 col-md-8">
-                        <div class="hero__text">
-                            <h6>Sports Collection</h6>
-                            <h2>New - Sports Collections 2025</h2>
-                            <p>A specialist label creating luxury essentials. Ethically crafted with an unwavering
-                            commitment to exceptional quality.</p>
-                            <a href="/user/productList" class="primary-btn">Shop now <span class="arrow_right"></span></a>
-                            <div class="hero__social">
-                                <a href="#"><i class="fa fa-facebook"></i></a>
-                                <a href="#"><i class="fa fa-twitter"></i></a>
-                                <a href="#"><i class="fa fa-pinterest"></i></a>
-                                <a href="#"><i class="fa fa-instagram"></i></a>
+    /* instagram */
+    .insta { display: grid; grid-template-columns: 1.6fr 1fr; gap: 48px; align-items: center; }
+    .insta-pics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .insta-pics img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: var(--soft); }
+    .insta h2 { margin: 0 0 10px; font-size: 2.2rem; }
+    .insta p { margin: 0 0 14px; color: var(--slate); max-width: 340px; }
+    .insta b { font-weight: 800; }
+
+    @media (max-width: 991.98px) {
+        .grid { grid-template-columns: repeat(2, 1fr); }
+        .deal .wrap, .insta { grid-template-columns: 1fr; gap: 32px; }
+        .tiles { grid-template-rows: repeat(2, 240px); }
+        .card-go { display: none; }
+        .sec { padding: 56px 0; }
+    }
+    @media (max-width: 767.98px) {
+        .wrap { padding: 0 16px; }
+        .tiles { grid-template-columns: 1fr; grid-template-rows: none; }
+        .tile, .tile:first-child { grid-row: auto; aspect-ratio: 16 / 10; }
+        .clock div { min-width: 0; flex: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .tile img, .card-pic img, .btn, .card-go, .dots button { transition: none; }
+        .slide-text > * { animation: none; }
+        .hero-track { scroll-behavior: auto; }
+    }
+</style>
+
+<div class="sh">
+
+    <!-- Hero -->
+    <section class="hero" aria-label="Featured collections">
+        <div class="hero-track" id="heroTrack">
+            <% slides.forEach((s) => { %>
+                <div class="slide" style="background-image:url('<%= s.img %>')">
+                    <div class="wrap">
+                        <div class="slide-text">
+                            <span class="slide-tag"><%= s.tag %></span>
+                            <h2 class="serif"><%= s.title %></h2>
+                            <p><%= s.text %></p>
+                            <div class="slide-actions">
+                                <a href="/user/productList" class="btn">Shop now</a>
+                                <a href="/user/productList" class="btn btn-line">View new arrivals</a>
                             </div>
                         </div>
                     </div>
                 </div>
+            <% }); %>
+        </div>
+        <div class="dots" id="heroDots">
+            <% slides.forEach((s, i) => { %>
+                <button type="button" aria-label="Show <%= s.tag.toLowerCase() %>" <%- i === 0 ? 'aria-current="true"' : '' %>></button>
+            <% }); %>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="sec">
+        <div class="wrap">
+            <div class="tiles">
+                <% tiles.forEach((t) => { %>
+                    <a class="tile" href="/user/productList">
+                        <img src="<%= t.img %>" alt="" loading="lazy">
+                        <div class="tile-text"><h3 class="serif"><%= t.name %></h3><span>Shop now</span></div>
+                    </a>
+                <% }); %>
             </div>
         </div>
-        <div class="hero__items set-bg" data-setbg="/banners/banner1.png">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xl-5 col-lg-7 col-md-8">
-                        <div class="hero__text">
-                            <h6>Running Collection</h6>
-                            <h2>New - Running Collections 2025</h2>
-                            <p>A specialist label creating luxury essentials. Ethically crafted with an unwavering
-                            commitment to exceptional quality.</p>
-                            <a href="/user/productList" class="primary-btn">Shop now <span class="arrow_right"></span></a>
-                            <div class="hero__social">
-                                <a href="#"><i class="fa fa-facebook"></i></a>
-                                <a href="#"><i class="fa fa-twitter"></i></a>
-                                <a href="#"><i class="fa fa-pinterest"></i></a>
-                                <a href="#"><i class="fa fa-instagram"></i></a>
+    </section>
+
+    <!-- New arrivals -->
+    <section class="sec" style="padding-top:0">
+        <div class="wrap">
+            <div class="sec-head">
+                <h2 class="serif">New arrivals</h2>
+                <a class="more" href="/user/productList">View all</a>
+            </div>
+            <% if (!products || products.length === 0) { %>
+                <p class="none">New products will appear here soon.</p>
+            <% } else { %>
+                <div class="grid">
+                    <% products.forEach((item) => { %>
+                        <a class="card" href="/user/productDetails/<%= item._id %>">
+                            <div class="card-pic">
+                                <span class="card-go">View product</span>
+                                <% if (item.images && item.images[0]) { %><img src="/uploads/<%= item.images[0] %>" alt="<%= item.product %>" loading="lazy"><% } %>
                             </div>
-                        </div>
-                    </div>
+                            <% if (item.categoryId && item.categoryId.name) { %><div class="card-cat"><%= item.categoryId.name %></div><% } %>
+                            <div class="card-name"><%= item.product %></div>
+                            <div class="card-price">₹<%= money(item.discountPrice) %></div>
+                        </a>
+                    <% }); %>
                 </div>
+            <% } %>
+        </div>
+    </section>
+
+    <!-- Deal of the month -->
+    <section class="sec deal">
+        <div class="wrap">
+            <div class="deal-pic">
+                <img src="/banners/banneroffer.png" alt="Nike Zoom Vomero Roam" loading="lazy">
+                <div class="deal-price"><small>Sale price</small><b>₹2,999</b></div>
+            </div>
+            <div>
+                <span class="deal-note">Deal of the month</span>
+                <h2 class="serif">Nike Zoom Vomero Roam</h2>
+                <div class="clock" id="clock" role="timer" aria-label="Time left on this deal">
+                    <div><b data-u="d">0</b><span>Days</span></div>
+                    <div><b data-u="h">0</b><span>Hours</span></div>
+                    <div><b data-u="m">0</b><span>Minutes</span></div>
+                    <div><b data-u="s">0</b><span>Seconds</span></div>
+                </div>
+                <a href="/user/productList" class="btn">Shop the deal</a>
+                <p class="deal-end">Offer ends on <%= lastDay %>.</p>
             </div>
         </div>
-    </div>
-</section>
-<!-- Hero Section End -->
+    </section>
 
-<!-- Banner Section Begin -->
-<section class="banner spad">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-7 offset-lg-4">
-                <div class="banner__item">
-                    <div class="banner__item__pic">
-                        <img src="/banners/1.png" alt="">
-                    </div>
-                    <div class="banner__item__text">
-                        <h2>Trending</h2>
-                        <a href="/user/productList">Shop now</a>
-                    </div>
-                </div>
+    <!-- Instagram -->
+    <section class="sec">
+        <div class="wrap insta">
+            <div class="insta-pics">
+                <% [1,2,3,4,5,6].forEach((n) => { %><img src="/banners/ins<%= n %>.png" alt="" loading="lazy"><% }); %>
             </div>
-            <div class="col-lg-5">
-                <div class="banner__item banner__item--middle">
-                    <div class="banner__item__pic">
-                        <img src="/banners/2.png" alt="">
-                    </div>
-                    <div class="banner__item__text">
-                        <h2>Sports</h2>
-                        <a href="/user/productList">Shop now</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-7">
-                <div class="banner__item banner__item--last">
-                    <div class="banner__item__pic">
-                        <img src="/banners/3.png" alt="">
-                    </div>
-                    <div class="banner__item__text">
-                        <h2>Sneakers</h2>
-                        <a href="/user/productList">Shop now</a>
-                    </div>
-                </div>
+            <div>
+                <h2 class="serif">Instagram</h2>
+                <p>Follow us for new drops and styling ideas.</p>
+                <b>@shoppycart</b>
             </div>
         </div>
-    </div>
-</section>
-<!-- Banner Section End -->
+    </section>
 
-<!-- Product Section Begin -->
-<section class="product spad">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <ul class="filter__controls">
-
-                    <li data-filter=".new-arrivals">New Arrivals</li>
-                </ul>
-            </div>
-        </div>
-
-
-            <div class="row isotope-grid">
-				<% products.forEach(function(item) { %> 
-					<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
-						<!-- Block2 -->
-						<div class="block2">
-							<div class="block2-pic hov-img0">
-								<img src="/uploads/<%= item.images[0] %>" alt="IMG-PRODUCT"> <!-- Display the first image of the product -->
-							
-								<!-- <a href="/user/productDetails/<%= item._id %>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 ">
-									Quick View
-								</a> -->
-                                <a href="/user/productDetails/<%= item._id %>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
-                                    <%= item.categoryId.name %> <!-- Display the product title -->
-                                </a>
-							</div>
-						
-							<div class="block2-txt flex-w flex-t p-t-14">
-								<div class="block2-txt-child1 flex-col-l">
-									<a href="/user/productDetails/<%= item._id %>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
-										<%= item.product %> <!-- Display the product title -->
-									</a>
-                                    
-								
-									
-								</div>
-                                <div>
-                                    <span class="stext-105 cl3">
-                                        ₹<%= item.discountPrice %> 
-									</span>
-                                   
-                                    
-                                </div><br>
-								
-							</div>
-						</div>
-					</div>
-				<% }); %>
-			</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- Product Section End -->
-
-<!-- Categories Section Begin -->
-<section class="categories spad">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-3">
-                <div class="categories__text">
-                    <h2> <br /> <span>Shoe Collection</span> <br /> </h2>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="categories__hot__deal">
-                    <img src="/banners/banneroffer.png" alt="">
-                    <div class="hot__deal__sticker">
-                        <span>Sale Of</span>
-                        <h5>₹2999</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 offset-lg-1">
-                <div class="categories__deal__countdown">
-                    <span>Deal Of The Month</span>
-                    <h2>Nike Zoom Vomero Roam</h2>
-                    <div class="categories__deal__countdown__timer" id="countdown">
-                        <div class="cd-item">
-                            <span>3</span>
-                            <p>Days</p>
-                        </div>
-                        <div class="cd-item">
-                            <span>1</span>
-                            <p>Hours</p>
-                        </div>
-                        <div class="cd-item">
-                            <span>50</span>
-                            <p>Minutes</p>
-                        </div>
-                        <div class="cd-item">
-                            <span>18</span>
-                            <p>Seconds</p>
-                        </div>
-                    </div>
-                    <a href="/user/productList" class="primary-btn">Shop now</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- Categories Section End -->
-
-<!-- Instagram Section Begin -->
-<section class="instagram spad">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="instagram__pic">
-                    <div class="instagram__pic__item set-bg" data-setbg="/banners/ins1.png"></div>
-                    <div class="instagram__pic__item set-bg" data-setbg="/banners/ins2.png"></div>
-                    <div class="instagram__pic__item set-bg" data-setbg="/banners/ins3.png"></div>
-                    <div class="instagram__pic__item set-bg" data-setbg="/banners/ins4.png"></div>
-                    <div class="instagram__pic__item set-bg" data-setbg="/banners/ins5.png"></div>
-                    <div class="instagram__pic__item set-bg" data-setbg="/banners/ins6.png"></div>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="instagram__text">
-                    <h2>Instagram</h2>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                    labore et dolore magna aliqua.</p>
-                    <h3>@shoppycart</h3>
-                </div>
-            </div>
-        </div>
-    </div>
-    <br>
-</section>
-<!-- Instagram Section End -->
-
-
-
-<%-include('./partials/footer.ejs')%>
-
-<!-- Search Begin -->
-<div class="search-model">
-    <div class="h-100 d-flex align-items-center justify-content-center">
-        <div class="search-close-switch">+</div>
-        <form class="search-model-form">
-            <input type="text" id="search-input" placeholder="Search here.....">
-        </form>
-    </div>
 </div>
-<!-- Search End -->
 
-<!-- Js Plugins -->
-<script src="js/jquery-3.3.1.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
-<script src="js/jquery.nice-select.min.js"></script>
-<script src="js/jquery.nicescroll.min.js"></script>
-<script src="js/jquery.magnific-popup.min.js"></script>
-<script src="js/jquery.countdown.min.js"></script>
-<script src="js/jquery.slicknav.js"></script>
-<script src="js/mixitup.min.js"></script>
-<script src="js/owl.carousel.min.js"></script>
-<script src="js/main.js"></script>
+<%- include('./partials/footer.ejs') %>
+
+<script>
+    (function () {
+        /* ---------- hero slider ---------- */
+        var track = document.getElementById('heroTrack');
+        var dots = Array.prototype.slice.call(document.querySelectorAll('#heroDots button'));
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var timer = null;
+
+        function go(i) { track.scrollTo({ left: i * track.clientWidth, behavior: reduce ? 'auto' : 'smooth' }); }
+        function current() { return Math.round(track.scrollLeft / track.clientWidth); }
+        function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+        track.addEventListener('scroll', function () {
+            var i = current();
+            dots.forEach(function (d, n) { d.setAttribute('aria-current', n === i ? 'true' : 'false'); });
+        }, { passive: true });
+        dots.forEach(function (d, n) { d.addEventListener('click', function () { stop(); go(n); }); });
+
+        if (!reduce && dots.length > 1) {
+            timer = setInterval(function () { go((current() + 1) % dots.length); }, 6000);
+            ['pointerdown', 'wheel', 'focusin'].forEach(function (ev) { track.addEventListener(ev, stop, { passive: true }); });
+        }
+
+        /* ---------- deal countdown: runs to the end of this month ---------- */
+        var parts = {};
+        document.querySelectorAll('#clock [data-u]').forEach(function (el) { parts[el.dataset.u] = el; });
+        var now = new Date();
+        var end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+        function tick() {
+            var left = Math.max(0, end - new Date());
+            parts.d.textContent = Math.floor(left / 864e5);
+            parts.h.textContent = Math.floor(left / 36e5) % 24;
+            parts.m.textContent = Math.floor(left / 6e4) % 60;
+            parts.s.textContent = Math.floor(left / 1e3) % 60;
+        }
+        tick();
+        setInterval(tick, 1000);
+    })();
+</script>
 </body>
-
 </html>
-    
-   

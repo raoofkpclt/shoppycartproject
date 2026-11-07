@@ -17,14 +17,16 @@ userSchema.pre('save', async function (next) {
     if (!this.referralCode) {
         let code;
         let exists;
+        const model = this.constructor; // Get the model associated with this schema
         do {
             code = Math.random().toString(36).substring(2, 8).toUpperCase(); // Generate random code
-            exists = await mongoose.models.user.findOne({ referralCode: code });
+            exists = await model.findOne({ referralCode: code });
         } while (exists);
         this.referralCode = code;
     }
     next();
 });
+
 
 
 userSchema.statics.generateReferralCode = async function () {

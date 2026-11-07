@@ -1,470 +1,232 @@
-<%-include('partials/header.ejs')%>
+<%- include('partials/header.ejs') %>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <link rel="stylesheet" href="/stylesheet/productDetails.css">
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<header class="header" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-    <div class="container">
-        <div class="header__content">
-            <!-- Logo Section -->
-            <div class="header__logo">
-                <a href="/user/">
-                    <img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
-                </a>
-            </div>
-             <!-- Navigation Menu -->
-             <nav class="header__menu">
-                <ul>
-                    <li ><a href="/user/">Home</a></li>
-                    <li ><a href="/user/productList">Shop</a></li>
-                    <!-- <li><a href="#">Pages</a>
-                        <ul class="dropdown">
-                            <li><a style="color: black;" href="./about.html">About Us</a></li>
-                            <li><a style="color: black;" href="./shop-details.html">Shop Details</a></li>
-                            <li><a style="color: black;" href="./shopping-cart.html">Shopping Cart</a></li>
-                            <li><a style="color: black;" href="./checkout.html">Check Out</a></li>
-                            <li><a style="color: black;" href="./blog-details.html">Blog Details</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="#">Contact</a> </li>
-                  
-                    <li><a href="#">Blog</a></li> -->
-                </ul>
-            </nav>
-            <!-- Right Options -->
+<%
+    // Edit these lists to change the options shown (they are not sent to the cart yet)
+    const sizes  = ['S', 'L', 'XL', 'XXL'];
+    const colors = [
+        { name: 'Black', hex: '#151517' },
+        { name: 'Navy',  hex: '#20315f' },
+        { name: 'Grey',  hex: '#8a8f98' },
+        { name: 'Green', hex: '#1f6b45' },
+        { name: 'Tan',   hex: '#c2a27a' }
+    ];
 
+    const inStock = product.stock > 0;
+    const stockClass = product.stock === 0 ? 'is-out' : (product.stock === 1 ? 'is-low' : '');
+    const stockText = product.stock === 0
+        ? 'Sold out'
+        : (product.stock === 1 ? 'Only 1 left' : product.stock + ' in stock');
+    const categoryName = product.categoryId && product.categoryId.name ? product.categoryId.name : '';
+%>
 
-            <div class="header__nav__option">
-                <a href="/user/profile">
-                    <i class="fas fa-user" style="font-size: 24px; color: black;"></i> 
-                </a>
-                
-                <a href="/user/wishlist">
-                    <i class="fas fa-heart" style="font-size: 24px; color: black;"></i> 
-                </a>
-                
-                <a href="/user/cart">
-                    <i class="fas fa-shopping-cart" style="font-size: 24px; color: black;"></i> 
-                </a>
-                <a href="/user/wallet">
-                    <i class="fas fa-wallet" style="font-size: 24px; color: black;"></i> 
-                </a>
-                <a href="/user/logout">
-                    <i class="fas fa-sign-out-alt" style="font-size: 24px; color: black;"></i> 
-                </a>
-              
-            </div>
-            
+<!-- Top bar -->
+<header class="pl-nav">
+    <div class="pl-nav__inner">
+        <a class="pl-nav__logo" href="/user/">
+            <img src="/image/Shoppycartfinel.png" alt="ShoppyCart">
+        </a>
+
+        <ul class="pl-nav__links">
+            <li><a href="/user/">Home</a></li>
+            <li class="is-active"><a href="/user/productList">Shop</a></li>
+        </ul>
+
+        <div class="pl-nav__actions">
+            <a href="/user/profile" aria-label="Profile"><i class="fas fa-user"></i></a>
+            <a href="/user/wishlist" aria-label="Wishlist"><i class="fas fa-heart"></i></a>
+            <a href="/user/cart" aria-label="Cart"><i class="fas fa-shopping-cart"></i></a>
+            <a href="/user/wallet" aria-label="Wallet"><i class="fas fa-wallet"></i></a>
+            <a href="/user/logout" aria-label="Log out"><i class="fas fa-sign-out-alt"></i></a>
         </div>
     </div>
 </header>
-<!-- Header Section End -->
 
-<!-- breadcrumb -->
+<main>
+    <div class="pd-page">
+        <nav class="pd-crumbs" aria-label="Breadcrumb">
+            <a href="/user/">Home</a><span>/</span><a href="/user/productList">Shop</a><span>/</span><%= product.product %>
+        </nav>
 
+        <div class="pd-layout">
 
+            <!-- Gallery -->
+            <div class="pd-gallery">
+                <div class="pd-thumbs">
+                    <% product.images.forEach((image, index) => { %>
+                        <button type="button" class="pd-thumb <%= index === 0 ? 'is-active' : '' %>"
+                                data-image="/uploads/<%= image %>" aria-label="Show image <%= index + 1 %>">
+                            <img src="/uploads/<%= image %>" alt="" loading="lazy">
+                        </button>
+                    <% }); %>
+                </div>
 
-<div class="container" style="margin-top: 50px;">
-    <div class="bread-crumb flex-w p-l-25 p-r-15 p-t-30 p-lr-0-lg">
-        <a href="/user/home" class="stext-109 cl8 hov-cl1 trans-04">
-            Home
-            <i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
-        </a>
-
-        <a href="/user/productList" class="stext-109 cl8 hov-cl1 trans-04">
-                Shoe
-            <i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
-        </a>
-
-        <span class="stext-109 cl4">
-            <%= product.product %>			</span>
-    </div>
-</div>
-    
-
-<!-- Product Detail -->
-<section class="sec-product-detail bg0 p-t-65 p-b-60">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6 col-lg-7 p-b-30">
-                <div class="p-l-25 p-r-30 p-lr-0-lg">
-                    <div class="wrap-slick3 flex-sb flex-w">
-                        <div class="wrap-slick3-dots">
-                            
-                        </div>
-                        <section class="sec-product-detail bg0 p-t-65 p-b-60">
-                            <div class="container">
-                                <div class="row">
-                                    <!-- Left Side with Small Images -->
-                                    <div class="col-md-6 col-lg-3 p-b-30">
-                                        <div class="wrap-slick3 flex-sb flex-w">
-                                            <div class="gallery-thumbnails">
-                                                <% product.images.forEach((image, index) => { %>
-                                                    <div class="thumbnail-item" style="cursor: pointer;">
-                                                        <img src="/uploads/<%= image %>" alt="Thumbnail Image" class="thumbnail-image" style="width: 100px; height: auto;" onclick="changeMainImage('<%= image %>')">
-                                                    </div>
-                                                    <br><br>
-                                                <% }); %>
-                                            </div>
-                                        </div>
-                                    </div>
-                        
-                                    <!-- Right Side with Main Image -->
-                                    <div class="col-md-6 col-lg-9 p-b-30">
-                                        <div class="wrap-pic-w pos-relative zoom-container">
-                                            <!-- Main Image -->
-                                            <img id="mainImage" src="/uploads/<%= product.images[0] %>" alt="Main Product Image" class="zoom-image" style="width: 400px; height: auto;">
-                                            <a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="/<%= product.images[0] %>" style="right: 10px; top: 31px;">
-                                                <i class="fa fa-expand"></i>
-                                            </a>
-                                            <!-- Zoom Lens -->
-                                            <div class="zoom-lens"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        
-                            <script>
-                                // Function to change the main image when a thumbnail is clicked
-                                function changeMainImage(image) {
-                                    // Change the source of the main image
-                                    document.getElementById('mainImage').src = "/uploads/" + image;
-                                }
-                            
-                                </script>
-                        
-                     
-                        <script>
-                            document.querySelectorAll('.zoom-container').forEach(container => {
-const img = container.querySelector('.zoom-image');
-const lens = container.querySelector('.zoom-lens');
-
-container.addEventListener('mousemove', (e) => {
-    const { left, top, width, height } = container.getBoundingClientRect();
-
-    const posX = e.clientX - left;
-    const posY = e.clientY - top;
-
-    // Calculate lens position
-    const lensX = posX - (lens.offsetWidth / 2);
-    const lensY = posY - (lens.offsetHeight / 2);
-    lens.style.left = `${lensX}px`;
-    lens.style.top = `${lensY}px`;
-
-    // Calculate zoomed image position
-    const zoomedImgUrl = img.src;
-    lens.style.backgroundImage = `url(${zoomedImgUrl})`;
-    lens.style.backgroundSize = `${img.width * 2}px ${img.height * 2}px`; // Adjust zoom level
-    lens.style.backgroundPosition = `-${posX * 2}px -${posY * 2}px`; // Center the zoomed area
-});
-});
-                        </script>
-                    </div>
+                <div class="pd-main" id="pdMain">
+                    <img id="mainImage" src="/uploads/<%= product.images[0] %>" alt="<%= product.product %>">
                 </div>
             </div>
-        
-            <div class="col-md-6 col-lg-5 p-b-30" style="position: absolute; right: 25px">
-                <div class="p-r-50 p-t-5 p-lr-0-lg" style="right: 146px; position: absolute;">
-                    <h4 class="mtext-105 cl2 js-name-detail p-b-14">
-                        <%= product.product %>
-                    </h4>
-                    <h6><%=product.brand%></h6>
-                    <span class="mtext-106 cl2" style="font-size: x-large;">
-                        <% if (product.hasDiscount) { %>
-                            <span style="text-decoration: line-through; color: red;">
-                                ₹<%= product.price.toFixed(2) %>
-                            </span>
-                            <span style="color: green; font-weight: bold;">
-                                ₹<%= product.discountedPrice.toFixed(2) %>
-                            </span>
-                            <small>(<%= product.discountPercentage %>% off)</small>
-                        <% } else { %>
-                            ₹<%= product.price.toFixed(2) %>
-                        <% } %>
-                    </span>
-                    
-                  
-                    <div class="custom-div">
-                        <p class="small-text"><%= product.categoryId.name ? product.categoryId.name : 'No category' %></p>
+
+            <!-- Info -->
+            <div class="pd-info">
+                <% if (categoryName) { %><p class="pd-cat"><%= categoryName %></p><% } %>
+                <h1 class="pd-title"><%= product.product %></h1>
+                <% if (product.brand) { %><p class="pd-brand"><%= product.brand %></p><% } %>
+
+                <div class="pd-price">
+                    <% if (product.hasDiscount) { %>
+                        <span class="pd-price__now">₹<%= product.discountedPrice.toFixed(2) %></span>
+                        <span class="pd-price__was">₹<%= product.price.toFixed(2) %></span>
+                        <span class="pd-price__off"><%= product.discountPercentage %>% off</span>
+                    <% } else { %>
+                        <span class="pd-price__now">₹<%= product.price.toFixed(2) %></span>
+                    <% } %>
+                </div>
+
+                <div class="pd-meta">
+                    <p class="pd-stock <%= stockClass %>"><%= stockText %></p>
+                    <div class="pd-rating" aria-label="Rated 4.3 out of 5">
+                        <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star-half-alt"></i>
+                        <span>4.3</span>
                     </div>
-                    <style>
-                     
-                    </style>
-                    
-                    <div class="custom-div1">
-                        <p class="stock-status 
-    <% if (product.stock === 0) { %> sold-out <% } 
-       else if (product.stock === 1) { %> low-stock <% } 
-       else { %> in-stock <% } %>">
-    <% if (product.stock === 0) { %> Sold Out <% } 
-       else if (product.stock === 1) { %> Only 1 left in stock! <% } 
-       else { %> <%= product.stock %> left in stock <% } %>
-</p>
+                </div>
 
+                <div class="pd-opt">
+                    <p class="pd-opt__label">Size</p>
+                    <div class="pd-opt__row">
+                        <% sizes.forEach((size, i) => { %>
+                            <label class="pd-chip">
+                                <input type="radio" name="size" value="<%= size %>" <%= i === 0 ? 'checked' : '' %>>
+                                <span><%= size %></span>
+                            </label>
+                        <% }); %>
                     </div>
+                </div>
 
-                    <!-- Rating Section -->
-					<div class="rating-container mb-4">
-						<div class="stars">
-							<i class="fa fa-star filled"></i>
-							<i class="fa fa-star filled"></i>
-							<i class="fa fa-star filled"></i>
-							<i class="fa fa-star-half-o"></i>
-							
-						</div>
-						<span class="rating-text">(4.3/5)</span>
-					</div>
-
-
-                    <div>
-                        <p> 
-                            Lorem ipsum dolor sit amet, consectetur adipisicing elPellentesque vehicula augue eget nisl ullamcorper, molestie
-                            blandit ipsum auctor Lorem ipsum dolor sit amet, consectetur adipisicing elPellentesque vehicula
-                        </p>
-                            <br>
+                <div class="pd-opt">
+                    <p class="pd-opt__label">Colour</p>
+                    <div class="pd-opt__row">
+                        <% colors.forEach((c, i) => { %>
+                            <label class="pd-swatch" title="<%= c.name %>">
+                                <input type="radio" name="color" value="<%= c.name %>" aria-label="<%= c.name %>" <%= i === 0 ? 'checked' : '' %>>
+                                <span style="--c: <%= c.hex %>;"></span>
+                            </label>
+                        <% }); %>
                     </div>
+                </div>
 
-                    <!-- <div class="product__details__option">
-                        <div class="product__details__option__size">
-                            <span>Size:</span>
-                            <label for="xxl">xxl
-                                <input type="radio" id="xxl">
-                            </label>
-                            <label class="active" for="xl">xl
-                                <input type="radio" id="xl">
-                            </label>
-                            <label for="l">l
-                                <input type="radio" id="l">
-                            </label>
-                            <label for="sm">s
-                                <input type="radio" id="sm">
-                            </label>
-                        </div>
-                        <div class="product__details__option__color">
-                            <span>Color:</span>
-                            <label class="c-1" for="sp-1">
-                                <input type="radio" id="sp-1">
-                            </label>
-                            <label class="c-2" for="sp-2">
-                                <input type="radio" id="sp-2">
-                            </label>
-                            <label class="c-3" for="sp-3">
-                                <input type="radio" id="sp-3">
-                            </label>
-                            <label class="c-4" for="sp-4">
-                                <input type="radio" id="sp-4">
-                            </label>
-                            <label class="c-9" for="sp-9">
-                                <input type="radio" id="sp-9">
-                            </label>
-                        </div>
-                    </div> 
-                     -->
-        
-                    
-                  <!-- Add to Cart Form -->
-<div style="display: flex; gap: 10px; align-items: center;">
-   
-        <% if (product.stock > 0) { %>
-            <form onsubmit="return addToCart(event, '<%= product._id %>')" class="cart-form">
-                <input type="hidden" name="product_id" value="<%= product._id %>">
-                <button type="submit" class="btn btn-warning py-2 px-3">
-                    <i class="fa fa-shopping-cart"></i> Add to Cart
-                </button>
-            </form>
-        <% } else { %>
-            <button type="button" class="btn btn-danger fa fa-times-circle " disabled>  Sold Out</button>
-        <% } %>
-    </form>
+                <div class="pd-actions">
+                    <% if (inStock) { %>
+                        <button type="button" class="pd-add" data-cart="<%= product._id %>">Add to cart</button>
+                    <% } else { %>
+                        <button type="button" class="pd-add" disabled>Sold out</button>
+                    <% } %>
+                    <button type="button" class="pd-wish" data-wishlist="<%= product._id %>" aria-label="Add to wishlist">
+                        <i class="fa fa-heart"></i>
+                    </button>
+                </div>
 
-   
-    <button type="submit"  onclick="addToWishlist('<%= product._id %>')"  class="btn btn-warning py-2 px-3">
-        <i class="fa fa-heart"></i>  Add to Wishlist
-    </button>
-   
-    
-   
-</div>
+                <% if (product.description) { %>
+                    <div class="pd-desc">
+                        <h2>Description</h2>
+                        <p><%= product.description %></p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related products -->
+    <% if (relatedProducts && relatedProducts.length) { %>
+    <section class="pd-related">
+        <h2>Related products</h2>
+        <div class="pl-grid">
+            <% relatedProducts.forEach(function (item) {
+                const price = item.discountPrice || item.price;
+            %>
+                <a class="pl-card" href="/user/productDetails/<%= item._id %>">
+                    <div class="pl-card__media">
+                        <img src="/uploads/<%= item.images[0] %>" alt="<%= item.product %>" loading="lazy">
+                    </div>
+                    <div class="pl-card__body">
+                        <% if (item.brand) { %><p class="pl-card__brand"><%= item.brand %></p><% } %>
+                        <h3 class="pl-card__name"><%= item.product %></h3>
+                        <div class="pl-price">₹<%= price %></div>
+                    </div>
+                </a>
+            <% }); %>
+        </div>
+    </section>
+    <% } %>
+</main>
+
+<%- include('partials/footer.ejs') %>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function addToCart(event, productId) {
-        event.preventDefault();
-        
-        fetch(`/user/cart/addProducts/${productId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'same-origin'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: data.message,
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message || 'Failed to add product to cart'
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Something went wrong while adding to cart!'
+    // Gallery: switch main image
+    (function () {
+        const main = document.getElementById('mainImage');
+        const thumbs = document.querySelectorAll('.pd-thumb');
+        thumbs.forEach((thumb) => {
+            thumb.addEventListener('click', () => {
+                main.src = thumb.dataset.image;
+                thumbs.forEach((t) => t.classList.remove('is-active'));
+                thumb.classList.add('is-active');
             });
         });
-    
-        return false;
-    }
-</script>
 
-<script>
-    //add to wishlist
-    function addToWishlist(productId) {
-        fetch(`/user/addToWishlist/${productId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials:'same-origin'
-        })
-       .then(response => response.json())
-       .then(data => {
-        if (data.success) {
-            Swal.fire({
-                icon:'success',
-                title: 'Success',
-                text: data.message,
-                showConfirmButton: false,
-                timer: 1500
+        // Hover zoom (mouse only)
+        const frame = document.getElementById('pdMain');
+        if (!window.matchMedia('(hover: hover)').matches) return;
+        frame.addEventListener('mouseenter', () => frame.classList.add('is-zoomed'));
+        frame.addEventListener('mouseleave', () => frame.classList.remove('is-zoomed'));
+        frame.addEventListener('mousemove', (e) => {
+            const r = frame.getBoundingClientRect();
+            const x = ((e.clientX - r.left) / r.width) * 100;
+            const y = ((e.clientY - r.top) / r.height) * 100;
+            main.style.transformOrigin = x + '% ' + y + '%';
+        });
+    })();
+
+    // Cart / wishlist
+    const toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 1800,
+        timerProgressBar: true
+    });
+
+    async function postAction(url, failMessage) {
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin'
             });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: data.message || 'Failed to add product to wishlist'
+            const data = await res.json();
+            toast.fire({
+                icon: data.success ? 'success' : 'error',
+                title: data.message || (data.success ? 'Done' : failMessage)
             });
+        } catch (err) {
+            console.error(err);
+            toast.fire({ icon: 'error', title: failMessage });
         }
-       })
-       .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Something went wrong while adding to wishlist!'
-        });
-       });
-
-       return false;
-
     }
+
+    document.addEventListener('click', (e) => {
+        const cartBtn = e.target.closest('[data-cart]');
+        if (cartBtn) {
+            postAction('/user/cart/addProducts/' + cartBtn.dataset.cart, 'Could not add to cart');
+            return;
+        }
+        const wishBtn = e.target.closest('[data-wishlist]');
+        if (wishBtn) {
+            postAction('/user/addToWishlist/' + wishBtn.dataset.wishlist, 'Could not add to wishlist');
+        }
+    });
 </script>
-
-    
-                    <!-- Additional Elements -->
-                </div>
-                
-            </div>
-            
-        </div>
-        <div style="padding: 10px;">
-            <p class="stext-102 cl3 p-t-23">
-                <%= product.description %> <!-- Display product description -->
-            </p>
-        </div>
-        
-
-
-<!-- <div class="add-review" >
-    <h4>Add a review</h4>
-    <form action="#" method="post">
-       <textarea  type="text name="Message" required="" placeholder="Write Something........" style="background-color: rgb(237, 237, 237);" class="rounded"></textarea>
-        <button type="submit" class="btn btn-primary" style="height: 33px; width: 90px; display: flex; justify-content: center; align-items: center; text-align: center;">SEND</button>
-
-    </form>
-</div> -->
-
-<div class="tab3">
-
-    <div class="single_page">
-        <h6><%= product.productName %></h6>
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elPellentesque vehicula augue eget nisl ullamcorper, molestie
-            blandit ipsum auctor. Mauris volutpat augue dolor.Consectetur adipisicing elit, sed do eiusmod tempor incididunt
-            ut lab ore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco. labore et dolore
-            magna aliqua.</p>
-        <p class="para">Lorem ipsum dolor sit amet, consectetur adipisicing elPellentesque vehicula augue eget nisl ullamcorper, molestie
-            blandit ipsum auctor. Mauris volutpat augue dolor.Consectetur adipisicing elit, sed do eiusmod tempor incididunt
-            ut lab ore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco. labore et dolore
-            magna aliqua.</p>
-    </div>
-</div>
-     
-    </div>
-
-    </section>
-
-<!-- Related Products -->
-<section class="sec-relate-product bg0 p-t-45 p-b-105">
-    <div class="container">
-        <div class="p-b-45">
-            <h3 class="ltext-106 cl5 txt-center">
-                Related Products
-            </h3>
-        </div>
-        <div class="row isotope-grid">
-            <%  relatedProducts.forEach(function(item) { %> 
-            <div class="col-sm-6 col-md-4 col-lg-4 p-b-35 isotope-item"> <!-- Use col-lg-4 to ensure 3 products per row on large screens -->
-                <!-- Block2 -->
-                <div class="block2">
-                    <div class="block2-pic hov-img0">
-                        <!-- Display the first image of the product -->
-                        <img src="/uploads/<%= item.images[0] %>" alt="IMG-PRODUCT">
-        
-                        <!-- <a href="/user/productDetails/<%= item._id %>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15">
-                            Quick View
-                        </a> -->
-                    </div>
-        
-                    <div class="block2-txt flex-w flex-t p-t-14">
-                        <div class="block2-txt-child1 flex-col-l">
-                            <!-- Display the product title -->
-                            <a href="/user/productDetails/<%= item._id %>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
-                                <%= item.product %>
-                            </a>
-        
-                            <h6><%=item.brand%></h6>
-                            <!-- Display the product price -->
-                            <span class="stext-105 cl3">
-                                ₹<%= item.discountPrice %>
-                            </span>
-                        </div>
-                        <div>
-                            <br>
-                        </div>
-                        
-                    </div>
-                </div>
-            </div>
-            <% }); %> <!-- End of loop -->
-        </div>
-        
-        
-                
-            </div>
-        </div>
-    </div>
-
-</section>
-
-<%-include('partials/footer.ejs')%>
 </body>
 </html>

@@ -958,7 +958,6 @@ const retryPayment = async (req, res) => {
       console.log('orderId: ' , orderId);
       const order = await Order.findById(orderId);
       console.log('orderById',order);
-      
       // Assuming `razorpayOrderId` and `amount` are saved with the order
       res.json({
           orderId: order.razorpayOrderId,
@@ -1150,7 +1149,6 @@ doc.fontSize(12).font("Helvetica-Bold")
       res.status(500).send("Failed to generate invoice PDF.");
     }
   };
-
 
 module.exports = {
   //admin side

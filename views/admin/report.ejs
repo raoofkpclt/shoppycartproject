@@ -4,277 +4,495 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Report</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Same typefaces as the other admin pages -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <!-- Admin template (sidebar / icons) -->
     <link rel="stylesheet" href="/assets/vendors/mdi/css/materialdesignicons.min.css">
     <link rel="stylesheet" href="/assets/vendors/css/vendor.bundle.base.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-
-    <link rel="stylesheet" href="/stylesheet/report.css">
 </head>
 
-
 <body>
-    <div class="container-scroller">
-        <%-include('partials/header.ejs')%>
+<style>
+    /* =====================================================
+       Sales report theme (same tokens as the other admin pages)
+       ===================================================== */
+    .pm {
+        --ink: #0F1B33;
+        --ink-2: #2A3F6B;
+        --line: #E3E7EE;
+        --slate: #5B6578;
+        --mute: #8A93A5;
+        --brass: #B8935A;
+        font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        color: var(--ink);
+        font-size: 14px;
+        padding: 36px 40px 56px;
+        max-width: 1360px;
+        margin: 0 auto;
+    }
+    .pm-shell { flex-grow: 1; min-width: 0; width: 100%; }
 
-  <!-- SweetAlert2 -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    /* ---------- page head ---------- */
+    .pm-head { margin-bottom: 26px; }
+    .pm-title {
+        font-family: 'Newsreader', Georgia, serif;
+        font-weight: 500;
+        font-size: 2.25rem;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+        margin: 0;
+    }
+    .pm-sub { margin: 8px 0 0; color: var(--slate); font-size: 14px; }
 
-<!-- Main content -->
-<div class="h-screen flex-grow-1 overflow-y-lg-auto">
-    <!-- Header -->
-    <header class="bg-surface-primary border-bottom pt-6">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-sm-6 col-12 mb-4 mb-sm-0">
-                    <h1 class="h2 mb-0 ls-tight">Sales Report</h1><br>
-                </div>
-                <div class="col-sm-6 col-12 text-sm-end">
-                  
-                </div>
+    /* ---------- buttons ---------- */
+    .cb {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font: inherit;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 10px 18px;
+        border-radius: 10px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color .15s, border-color .15s, color .15s;
+    }
+    .cb:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    .cb[disabled] { opacity: .6; cursor: not-allowed; }
+    .cb .mdi { font-size: 17px; line-height: 1; }
+    .cb-ink { background: var(--ink); color: #fff; border: 1px solid var(--ink); }
+    .cb-ink:hover:not([disabled]) { background: var(--ink-2); border-color: var(--ink-2); color: #fff; }
+    .cb-ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .cb-ghost:hover:not([disabled]) { border-color: #C9D0DC; }
+
+    /* ---------- cards ---------- */
+    .pm-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 1px 2px rgba(15, 27, 51, .04), 0 10px 28px -20px rgba(15, 27, 51, .18);
+        overflow: hidden;
+        margin-bottom: 22px;
+    }
+    .pm-card-body { padding: 22px 24px; }
+
+    /* ---------- filters ---------- */
+    .filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: end; }
+    .fld { margin: 0; }
+    .fld[hidden] { display: none; }
+    .fld > label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--slate);
+    }
+    .inp {
+        width: 100%;
+        height: auto;
+        padding: 10px 12px;
+        font: inherit;
+        font-size: 14px;
+        color: var(--ink);
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        transition: border-color .15s;
+    }
+    .inp:hover { border-color: #C9D0DC; }
+    .inp:focus { outline: 2px solid var(--brass); outline-offset: 1px; border-color: transparent; box-shadow: none; }
+    select.inp { cursor: pointer; }
+    .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+    }
+    .actions .spacer { flex: 1; }
+
+    /* ---------- summary ---------- */
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
+    .stat { padding: 22px 24px; }
+    .stat + .stat { border-left: 1px solid var(--line); }
+    .stat-label { font-size: 12.5px; font-weight: 600; color: var(--mute); }
+    .stat-value {
+        margin-top: 6px;
+        font-weight: 800;
+        font-size: 1.6rem;
+        letter-spacing: -.01em;
+        font-variant-numeric: tabular-nums;
+    }
+    /* total sales is the headline figure */
+    .stat-value.is-serif {
+        font-family: 'Newsreader', Georgia, serif;
+        font-weight: 500;
+        font-size: 2.1rem;
+        line-height: 1.1;
+    }
+
+    /* ---------- results table ---------- */
+    .pm-card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--line);
+    }
+    .pm-card-head h2 { margin: 0; font-size: 15px; font-weight: 700; }
+    .pm-card-head .meta { color: var(--slate); font-size: 13px; }
+
+    .pm-scroll { overflow-x: auto; }
+    .pm-table { width: 100%; margin: 0; border-collapse: collapse; }
+    .pm-table th {
+        padding: 14px 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--mute);
+        text-align: left;
+        white-space: nowrap;
+        background: #FAFBFC;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    .pm-table th.right, .pm-table td.right { text-align: right; }
+    .pm-table td {
+        padding: 14px 20px;
+        vertical-align: middle;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        font-variant-numeric: tabular-nums;
+    }
+    .pm-table tbody tr:last-child td { border-bottom: 0; }
+    .pm-table tbody tr { transition: background-color .15s; }
+    .pm-table tbody tr:hover { background: #FAFBFD; }
+    .oid { font-weight: 700; }
+    .money { white-space: nowrap; }
+    .money.strong { font-weight: 800; }
+    .none { color: var(--mute); }
+    .tag {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 8px;
+        background: #F2F4F7;
+        color: var(--ink);
+        font-size: 12.5px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* ---------- states ---------- */
+    .pm-empty { padding: 56px 20px; text-align: center; color: var(--mute); font-size: 14px; }
+    .pm-empty strong { display: block; margin-bottom: 4px; color: var(--ink); font-size: 15px; }
+    .pm-empty.is-error strong { color: #A32A1F; }
+
+    /* ---------- tablet / mobile ---------- */
+    @media (min-width: 768px) {
+        .pm-table { min-width: 860px; }
+    }
+    @media (max-width: 991.98px) {
+        .pm { padding: 28px 24px 48px; }
+    }
+    @media (max-width: 767.98px) {
+        .pm { padding: 22px 14px 40px; }
+        .pm-title { font-size: 1.9rem; }
+        .filters { grid-template-columns: 1fr; }
+        .pm-card-body { padding: 18px 16px; }
+        .actions .cb { flex: 1 1 100%; padding: 12px 16px; }
+        .actions .spacer { display: none; }
+
+        .stats { grid-template-columns: 1fr; }
+        .stat { padding: 16px; }
+        .stat + .stat { border-left: 0; border-top: 1px solid var(--line); }
+        .pm-card-head { padding: 14px 16px; }
+
+        /* every order becomes a card */
+        .pm-table thead { display: none; }
+        .pm-table, .pm-table tbody, .pm-table tr, .pm-table td { display: block; width: 100%; }
+        .pm-table tbody tr { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+        .pm-table tbody tr:hover { background: none; }
+        .pm-table tbody tr:last-child { border-bottom: 0; }
+        .pm-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 6px 0;
+            border: 0;
+            text-align: right;
+        }
+        .pm-table td::before {
+            content: attr(data-label);
+            flex-shrink: 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--mute);
+            text-align: left;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .cb, .pm-table tbody tr { transition: none; }
+    }
+</style>
+
+<div class="container-scroller">
+    <%- include('partials/header.ejs') %>
+
+    <div class="pm-shell">
+        <main class="pm">
+
+            <!-- Page head -->
+            <div class="pm-head">
+                <h1 class="pm-title">Sales report</h1>
+                <p class="pm-sub">Pick a period to review orders, then download the report.</p>
             </div>
-        </div>
-    </header>
 
+            <!-- Filters -->
+            <section class="pm-card" aria-label="Report filters">
+                <div class="pm-card-body">
+                    <form id="salesReportForm" class="filters" novalidate>
+                        <div class="fld">
+                            <label for="reportType">Report type</label>
+                            <select name="reportType" id="reportType" class="inp">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="custom">Custom date range</option>
+                            </select>
+                        </div>
+                        <div class="fld js-custom" hidden>
+                            <label for="startDate">Start date</label>
+                            <input type="date" name="startDate" id="startDate" class="inp">
+                        </div>
+                        <div class="fld js-custom" hidden>
+                            <label for="endDate">End date</label>
+                            <input type="date" name="endDate" id="endDate" class="inp">
+                        </div>
+                    </form>
 
-<div class="container">
-    <div class="report-header text-center">
-        <!-- <h1 class="mb-4">Sales Report</h1>
-        <p class="text-muted">Generate and download sales reports based on various criteria.</p> -->
-    </div>
+                    <div class="actions">
+                        <button type="button" id="generateReport" class="cb cb-ink">
+                            <i class="mdi mdi-chart-line" aria-hidden="true"></i><span>Generate report</span>
+                        </button>
+                        <span class="spacer"></span>
+                        <button type="button" id="downloadPDF" class="cb cb-ghost">
+                            <i class="mdi mdi-file-pdf-box" aria-hidden="true"></i><span>Download PDF</span>
+                        </button>
+                        <button type="button" id="downloadExcel" class="cb cb-ghost">
+                            <i class="mdi mdi-file-excel-box" aria-hidden="true"></i><span>Download Excel</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
 
-    <form id="salesReportForm" class="row g-3">
-        <div class="col-md-4">
-            <label for="reportType" class="form-label">Select Report Type</label>
-            <select name="reportType" id="reportType" class="form-select">
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="custom">Custom Date Range</option>
-            </select>
-        </div>
-        <div class="col-md-4" id="customDateRange" style="display: none;">
-            <label for="startDate" class="form-label">Start Date</label>
-            <input type="date" name="startDate" id="startDate" class="form-control">
-        </div>
-        <div class="col-md-4" id="customDateRange" style="display: none;">
-            <label for="endDate" class="form-label">End Date</label>
-            <input type="date" name="endDate" id="endDate" class="form-control">
-        </div>
-        <div class="col-md-12">
-            <button type="button" id="generateReport" class="btn btn-primary">Generate Report</button>
-            <button type="button" id="downloadPDF" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Download PDF</button>
-            <button type="button" id="downloadExcel" class="btn btn-success"><i class="fas fa-file-excel"></i> Download Excel</button>
-        </div>
-    </form>
+            <!-- Report (filled in by the script below) -->
+            <section class="pm-card" id="reportCard" aria-live="polite" aria-label="Report results">
+                <div id="reportContainer">
+                    <div class="pm-empty">
+                        <strong>No report yet</strong>
+                        Choose a period above and select Generate report.
+                    </div>
+                </div>
+            </section>
 
-    <div id="reportContainer" class="table-container">
-        <!-- This is where the report will be displayed -->
+        </main>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.getElementById('reportType').addEventListener('change', function() {
-        const customDateRange = document.querySelectorAll('#customDateRange');
-        if (this.value === 'custom') {
-            customDateRange.forEach(element => {
-                element.style.display = 'block';
-            });
-        } else {
-            customDateRange.forEach(element => {
-                element.style.display = 'none';
+    (function () {
+        var $ = function (id) { return document.getElementById(id); };
+        var reportType = $('reportType');
+        var startDate = $('startDate');
+        var endDate = $('endDate');
+        var container = $('reportContainer');
+
+        /* ---------- helpers ---------- */
+        function esc(value) {
+            return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
             });
         }
-    });
-
-    document.getElementById('generateReport').addEventListener('click', async () => {
-        const form = document.getElementById('salesReportForm');
-        const reportType = document.getElementById('reportType').value;
-        
-        // Prepare data object
-        const reportData = {
-            reportType: reportType
-        };
-
-        // If custom date range is selected, add start and end dates
-        if (reportType === 'custom') {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-
-            // Validate custom date range
-            if (!startDate || !endDate) {
-                alert('Please select both start and end dates for the custom report.');
-                return;
-            }
-
-            // Add start and end dates to the data object
-            reportData.startDate = startDate;
-            reportData.endDate = endDate;
+        function money(n) {
+            return '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        function fmtDate(d) {
+            return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+        function problem(title, text) {
+            return Swal.fire({ icon: 'warning', title: title, text: text, confirmButtonColor: '#0F1B33' });
         }
 
-        try {
-            const response = await fetch('/admin/getSalesReport', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(reportData)
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.json();
-
-            // Update the reportContainer with the sales data
-            const reportContainer = document.getElementById('reportContainer');
-            reportContainer.innerHTML = ''; // Clear previous content
-
-            if (data.success) {
-                // Create a table to display the sales data
-                const table = document.createElement('table');
-                table.className = 'table table-striped table-bordered';
-                const headerRow = table.insertRow();
-                headerRow.innerHTML = `
-                    <th>Order ID</th>
-                    <th>Date</th>
-                    <th>Customer</th>
-                    <th>Total Price</th>
-                    
-                    <th>Coupon Discount</th>
-                    <th>Final Amount</th>
-                    <th>Payment Method</th>
-                `;
-
-            
-                
-
-                data.sales.forEach(order => {
-                    const row = table.insertRow();
-                    row.innerHTML = `
-                        <td>${order._id}</td>
-                        <td>${new Date(order.createdAt).toLocaleDateString()}</td>
-                        <td>${order.user ? order.user.name : 'N/A'}</td>
-                        <td>₹${order.totalAmount.toFixed(2)}</td>
-                        
-                        <td>₹${order.couponDiscount ? order.couponDiscount.toFixed(2) : '0.00'}</td>
-                        <td>₹${order.totalAmount.toFixed(2)}</td>
-                        <td>${order.paymentMethod}</td>
-                    `;
-                });
-
-                reportContainer.appendChild(table);
-
-                // Create summary section
-                const summaryDiv = document.createElement('div');
-                summaryDiv.className = 'mt-4';
-                summaryDiv.innerHTML = `
-                    <h3>Sales Summary</h3>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <p><strong>Total Orders:</strong> ${data.summary.totalOrders}</p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Total Sales:</strong> ₹${data.summary.totalSales.toFixed(2)}</p>
-                        </div>
-                        <div class="col-md-4">
-                            <p><strong>Total Discount:</strong> ₹${data.summary.totalDiscount.toFixed(2)}</p>
-                        </div>
-                    </div>
-                `;
-                reportContainer.appendChild(summaryDiv);
-            } else {
-                reportContainer.innerHTML = `<p>${data.message}</p>`;
-            }
-        } catch (error) {
-            console.error('Error generating report:', error);
-            document.getElementById('reportContainer').innerHTML = '<p>Error generating report. Please try again.</p>';
+        /* ---------- custom date fields ---------- */
+        function toggleCustom() {
+            var show = reportType.value === 'custom';
+            document.querySelectorAll('.js-custom').forEach(function (el) { el.hidden = !show; });
         }
-    });
+        reportType.addEventListener('change', toggleCustom);
+        toggleCustom();
 
-    document.getElementById('downloadPDF').addEventListener('click', async () => {
-        try {
-            const reportType = document.getElementById('reportType').value;
-            let url = `/admin/downloadSalesReport/pdf?reportType=${reportType}`;
-            
-            if (reportType === 'custom') {
-                const startDate = document.getElementById('startDate').value;
-                const endDate = document.getElementById('endDate').value;
-                
-                if (!startDate || !endDate) {
-                    alert('Please select both start and end dates for the custom report.');
-                    return;
+        // Returns the report parameters, or null (after telling the admin what is wrong)
+        function readParams() {
+            var params = { reportType: reportType.value };
+            if (params.reportType === 'custom') {
+                if (!startDate.value || !endDate.value) {
+                    problem('Select both dates', 'Choose a start date and an end date for the custom report.');
+                    return null;
                 }
-                
-                url += `&startDate=${startDate}&endDate=${endDate}`;
+                if (endDate.value < startDate.value) {
+                    problem('Check the dates', 'The end date must be on or after the start date.');
+                    return null;
+                }
+                params.startDate = startDate.value;
+                params.endDate = endDate.value;
             }
-
-            const response = await fetch(url);
-            
-            if (!response.ok) {
-                throw new Error('Failed to download PDF');
-            }
-            
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = `sales-report-${Date.now()}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(downloadUrl);
-            
-        } catch (error) {
-            console.error('Download error:', error);
-            alert('Failed to download PDF. Please try again.');
+            return params;
         }
-    });
 
-    document.getElementById('downloadExcel').addEventListener('click', async () => {
-        const reportType = document.getElementById('reportType').value;
-        let url = `/admin/downloadSalesReport/excel?reportType=${reportType}`;
-        
-        // Add start and end dates for custom report
-        if (reportType === 'custom') {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            
-            if (!startDate || !endDate) {
-                alert('Please select both start and end dates for the custom report.');
+        /* ---------- busy state for buttons ---------- */
+        function withBusy(button, label, task) {
+            var original = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<span>' + label + '</span>';
+            return task().finally(function () {
+                button.disabled = false;
+                button.innerHTML = original;
+            });
+        }
+
+        /* =====================================================
+           Generate report
+           ===================================================== */
+        function renderMessage(title, text, isError) {
+            container.innerHTML =
+                '<div class="pm-empty' + (isError ? ' is-error' : '') + '"><strong>' + esc(title) + '</strong>' + esc(text) + '</div>';
+        }
+
+        function renderReport(data) {
+            var sales = data.sales || [];
+            var summary = data.summary || {};
+
+            if (sales.length === 0) {
+                renderMessage('No orders in this period', 'Try a different report type or date range.', false);
                 return;
             }
-            
-            url += `&startDate=${startDate}&endDate=${endDate}`;
+
+            var rows = sales.map(function (order) {
+                var id = String(order._id || '');
+                return '<tr>' +
+                    '<td data-label="Order"><span class="oid" title="' + esc(id) + '">#' + esc(id.slice(-5).toUpperCase()) + '</span></td>' +
+                    '<td data-label="Date">' + esc(fmtDate(order.createdAt)) + '</td>' +
+                    '<td data-label="Customer">' + (order.user && order.user.name ? esc(order.user.name) : '<span class="none">N/A</span>') + '</td>' +
+                    '<td class="right" data-label="Total price"><span class="money">' + money(order.totalAmount) + '</span></td>' +
+                    '<td class="right" data-label="Coupon discount">' +
+                        (order.couponDiscount ? '<span class="money">' + money(order.couponDiscount) + '</span>' : '<span class="none">None</span>') + '</td>' +
+                    '<td class="right" data-label="Final amount"><span class="money strong">' + money(order.totalAmount) + '</span></td>' +
+                    '<td data-label="Payment"><span class="tag">' + esc(order.paymentMethod || 'N/A') + '</span></td>' +
+                '</tr>';
+            }).join('');
+
+            container.innerHTML =
+                '<div class="stats">' +
+                    '<div class="stat"><div class="stat-label">Total sales</div><div class="stat-value is-serif">' + money(summary.totalSales) + '</div></div>' +
+                    '<div class="stat"><div class="stat-label">Total orders</div><div class="stat-value">' + esc(summary.totalOrders == null ? sales.length : summary.totalOrders) + '</div></div>' +
+                    '<div class="stat"><div class="stat-label">Total discount</div><div class="stat-value">' + money(summary.totalDiscount) + '</div></div>' +
+                '</div>' +
+                '<div class="pm-card-head"><h2>Orders</h2><span class="meta">' + sales.length + (sales.length === 1 ? ' order' : ' orders') + '</span></div>' +
+                '<div class="pm-scroll"><table class="pm-table">' +
+                    '<thead><tr>' +
+                        '<th>Order</th><th>Date</th><th>Customer</th>' +
+                        '<th class="right">Total price</th><th class="right">Coupon discount</th><th class="right">Final amount</th>' +
+                        '<th>Payment</th>' +
+                    '</tr></thead>' +
+                    '<tbody>' + rows + '</tbody>' +
+                '</table></div>';
         }
 
-        try {
-            const response = await fetch(url);
-            
-            if (!response.ok) {
-                throw new Error('Failed to download Excel');
+        $('generateReport').addEventListener('click', function () {
+            var params = readParams();
+            if (!params) return;
+
+            withBusy($('generateReport'), 'Generating…', async function () {
+                try {
+                    var response = await fetch('/admin/getSalesReport', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(params)
+                    });
+                    if (!response.ok) throw new Error('Request failed with status ' + response.status);
+
+                    var data = await response.json();
+                    if (data.success) {
+                        renderReport(data);
+                    } else {
+                        renderMessage('No report available', data.message || 'The report could not be created.', false);
+                    }
+                } catch (error) {
+                    console.error('Error generating report:', error);
+                    renderMessage('Could not generate the report', 'Check your connection and try again.', true);
+                }
+            });
+        });
+
+        /* =====================================================
+           Downloads (PDF and Excel share one routine)
+           ===================================================== */
+        function download(button, kind, filename) {
+            var params = readParams();
+            if (!params) return;
+
+            var url = '/admin/downloadSalesReport/' + kind + '?reportType=' + encodeURIComponent(params.reportType);
+            if (params.startDate) {
+                url += '&startDate=' + encodeURIComponent(params.startDate) + '&endDate=' + encodeURIComponent(params.endDate);
             }
-            
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = 'sales-report.xlsx';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        } catch (error) {
-            console.error('Download error:', error);
-            alert('Failed to download Excel');
-        }
-    });
-</script>
 
+            withBusy(button, 'Preparing…', async function () {
+                try {
+                    var response = await fetch(url);
+                    if (!response.ok) throw new Error('Failed to download ' + kind);
+
+                    var blob = await response.blob();
+                    var href = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = href;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(href);
+                } catch (error) {
+                    console.error('Download error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Download failed',
+                        text: 'The ' + (kind === 'pdf' ? 'PDF' : 'Excel') + ' file could not be created. Please try again.',
+                        confirmButtonColor: '#0F1B33'
+                    });
+                }
+            });
+        }
+
+        function stamp() { return new Date().toISOString().slice(0, 10); }
+
+        $('downloadPDF').addEventListener('click', function () {
+            download($('downloadPDF'), 'pdf', 'sales-report-' + stamp() + '.pdf');
+        });
+        $('downloadExcel').addEventListener('click', function () {
+            download($('downloadExcel'), 'excel', 'sales-report-' + stamp() + '.xlsx');
+        });
+    })();
+</script>
 
 </body>
 </html>

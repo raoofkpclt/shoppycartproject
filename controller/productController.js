@@ -394,6 +394,8 @@ const productDetails = async (req, res) => {
   }
 };
 
+
+
 module.exports = {
   //admin side
 

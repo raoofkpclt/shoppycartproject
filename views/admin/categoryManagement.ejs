@@ -1,149 +1,439 @@
-
 <%- include('partials/header.ejs')%>
 
+<!-- Same typefaces as the dashboard -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-    <!-- Main content -->
-    <div class="h-screen flex-grow-1 overflow-y-lg-auto">
-        <!-- Header -->
-        <header class="bg-surface-primary border-bottom pt-6">
-            <div class="container-fluid">
-                <div class="mb-npx">
-                    <div class="row align-items-center">
-                        <div class="col-sm-6 col-12 mb-4 mb-sm-0">
-                            <!-- Title -->
-                            <h1 class="h2 mb-0 ls-tight">Category Management</h1>
-                        </div>
+<%
+    const flashMessage = locals.message || '';
+    const flashError = locals.error || '';
+    const activeCount = categories.filter((c) => c.isActive).length;
+%>
 
-                        <div class="col-sm-6 col-12 text-sm-end">
-                            <div class="mx-n1">
-                                <% if (message) { %>
-                                    <h4 style="color: rgb(21, 181, 66);"><%=message %></h4>
-                                    <% } %>
-                                    <% if (error) { %>
-                                        <h4 style="color: rgb(181, 21, 21);"><%=error%></h4>
-                                        <% } %>
-                                <a href="/admin/addCategory" class="btn d-inline-flex btn-sm btn-primary mx-1">
-                                    <span class=" pe-2">
-                                        <i class="bi bi-plus"></i>
-                                    </span>
-                                    <span>Create</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Nav -->
-                   <br>
+<style>
+    /* =====================================================
+       Category page theme (scoped to .cat)
+       ===================================================== */
+    .cat {
+        --ink: #0F1B33;
+        --ink-2: #2A3F6B;
+        --line: #E3E7EE;
+        --slate: #5B6578;
+        --mute: #8A93A5;
+        --brass: #B8935A;
+
+        font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        font-size: 14px;
+        color: var(--ink);
+        padding: 36px 40px 56px;
+        max-width: 1360px;
+        margin: 0 auto;
+    }
+
+    /* ---------- page head ---------- */
+    .cat-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 26px;
+    }
+    .cat-title {
+        font-family: 'Newsreader', Georgia, serif;
+        font-weight: 500;
+        font-size: 2.25rem;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+        margin: 0;
+    }
+    .cat-sub { margin: 8px 0 0; color: var(--slate); font-size: 14px; }
+
+    /* ---------- buttons ---------- */
+    .cb {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font: inherit;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 9px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color .15s, border-color .15s, color .15s;
+    }
+    .cb:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    .cb[disabled] { opacity: .55; cursor: not-allowed; }
+    .cb i { font-size: 15px; line-height: 1; }
+    .cb-ink { background: var(--ink); color: #fff; border: 1px solid var(--ink); }
+    .cb-ink:hover { background: var(--ink-2); border-color: var(--ink-2); color: #fff; text-decoration: none; }
+    .cb-ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .cb-ghost:hover { border-color: #C9D0DC; color: var(--ink); text-decoration: none; }
+    .cb-warn { background: #fff; color: #B3261E; border: 1px solid #F0C4BE; }
+    .cb-warn:hover { background: #FFF1EF; border-color: #E5A9A0; }
+
+    /* ---------- notices ---------- */
+    .notice {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .notice.ok { background: #E8F6EE; border: 1px solid #BFE3CF; color: #146C43; }
+    .notice.bad { background: #FDECEA; border: 1px solid #F3C9C2; color: #A32A1F; }
+    .notice button {
+        appearance: none; border: 0; background: none; color: inherit;
+        font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px; opacity: .7;
+    }
+    .notice button:hover { opacity: 1; }
+
+    /* ---------- card ---------- */
+    .cat-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 1px 2px rgba(15, 27, 51, .04), 0 10px 28px -20px rgba(15, 27, 51, .18);
+        overflow: hidden;
+    }
+    .cat-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--line);
+    }
+    .cat-search {
+        flex: 1 1 240px;
+        max-width: 360px;
+        padding: 9px 14px;
+        font: inherit;
+        font-size: 13px;
+        color: var(--ink);
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        transition: border-color .15s;
+    }
+    .cat-search::placeholder { color: var(--mute); }
+    .cat-search:hover { border-color: #C9D0DC; }
+    .cat-search:focus { outline: 2px solid var(--brass); outline-offset: 1px; border-color: transparent; }
+
+    .seg {
+        display: inline-flex;
+        padding: 3px;
+        gap: 2px;
+        background: #F2F4F7;
+        border-radius: 10px;
+    }
+    .seg-btn {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: var(--slate);
+        font: inherit;
+        font-weight: 600;
+        font-size: 12.5px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color .15s, color .15s;
+    }
+    .seg-btn:hover { color: var(--ink); }
+    .seg-btn.is-active { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(15, 27, 51, .1); }
+    .seg-btn:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+    /* ---------- table ---------- */
+    .cat-scroll { overflow-x: auto; }
+    .cat-table { width: 100%; margin: 0; border-collapse: collapse; }
+    .cat-table th {
+        padding: 14px 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--mute);
+        text-align: left;
+        white-space: nowrap;
+        background: #FAFBFC;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    .cat-table th.right, .cat-table td.right { text-align: right; }
+    .cat-table td {
+        padding: 16px 20px;
+        vertical-align: middle;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    .cat-table tbody tr:last-child td { border-bottom: 0; }
+    .cat-table tbody tr { transition: background-color .15s; }
+    .cat-table tbody tr:hover { background: #FAFBFD; }
+    .cat-table tr[hidden] { display: none !important; }
+
+    .cid { font-weight: 700; color: var(--mute); font-size: 13px; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+    .cname { font-weight: 700; font-size: 14.5px; word-break: break-word; }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 4px 11px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .chip.ok { background: #E8F6EE; color: #146C43; }
+    .chip.muted { background: #EEF1F5; color: #475066; }
+
+    .acts { display: inline-flex; align-items: center; gap: 8px; }
+    .acts form { margin: 0; }
+
+    .cat-empty { padding: 56px 20px; text-align: center; color: var(--mute); font-size: 14px; }
+    .cat-empty .cb { margin-top: 16px; }
+    .no-match td { padding: 40px 20px; text-align: center; color: var(--mute); font-size: 13.5px; }
+    .no-match[hidden] { display: none; }
+
+    /* ---------- tablet ---------- */
+    @media (max-width: 991.98px) {
+        .cat { padding: 28px 24px 48px; }
+    }
+
+    /* ---------- mobile: every category becomes a card ---------- */
+    @media (max-width: 767.98px) {
+        .cat { padding: 22px 14px 40px; }
+        .cat-title { font-size: 1.9rem; }
+        .cat-head .cb { width: 100%; padding: 11px 16px; }
+        .cat-bar { padding: 14px; }
+        .cat-search { max-width: none; font-size: 16px; padding: 11px 14px; }  /* 16px stops iOS zoom */
+        .seg { width: 100%; }
+        .seg-btn { flex: 1; padding: 8px 4px; }
+
+        .cat-table thead { display: none; }
+        .cat-table, .cat-table tbody, .cat-table tr, .cat-table td { display: block; width: 100%; }
+        .cat-table tbody tr { padding: 14px 16px 16px; border-bottom: 1px solid var(--line); }
+        .cat-table tbody tr:hover { background: none; }
+        .cat-table tbody tr:last-child { border-bottom: 0; }
+
+        .cat-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 7px 0;
+            border: 0;
+            text-align: right;
+        }
+        .cat-table td::before {
+            content: attr(data-label);
+            flex-shrink: 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--mute);
+            text-align: left;
+        }
+        .cat-table td.act {
+            display: block;
+            margin-top: 8px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--line);
+        }
+        .cat-table td.act::before { display: none; }
+        .acts { display: flex; width: 100%; }
+        .acts form, .acts .cb { flex: 1; }
+        .acts form .cb { width: 100%; }
+        .cb { padding: 11px 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .cb, .seg-btn, .cat-table tbody tr, .cat-search { transition: none; }
+    }
+</style>
+
+<div class="container-fluid vh-100 d-flex flex-column p-0">
+    <div class="flex-grow-1 overflow-auto">
+        <main class="cat">
+
+            <!-- Page head -->
+            <div class="cat-head">
+                <div>
+                    <h1 class="cat-title">Categories</h1>
+                    <p class="cat-sub">
+                        <%= categories.length %> <%= categories.length === 1 ? 'category' : 'categories' %>, <%= activeCount %> active.
+                    </p>
                 </div>
+                <a href="/admin/addCategory" class="cb cb-ink">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                    <span>Add category</span>
+                </a>
             </div>
-        </header>
-        <!-- Main -->
-        <main class="py-6 bg-surface-secondary">
-            <div class="container-fluid">
-                <!-- Card stats -->
-                <div class="card shadow border-0 mb-7">
-                    <div class="card-header">
-                        <h5 class="mb-0">Category</h5>
+
+            <!-- Messages from the server -->
+            <% if (flashMessage) { %>
+                <div class="notice ok" role="status">
+                    <span><%= flashMessage %></span>
+                    <button type="button" aria-label="Dismiss" data-dismiss-notice>&times;</button>
+                </div>
+            <% } %>
+            <% if (flashError) { %>
+                <div class="notice bad" role="alert">
+                    <span><%= flashError %></span>
+                    <button type="button" aria-label="Dismiss" data-dismiss-notice>&times;</button>
+                </div>
+            <% } %>
+
+            <!-- Categories -->
+            <section class="cat-card" aria-label="Categories">
+                <% if (!categories || categories.length === 0) { %>
+                    <div class="cat-empty">
+                        No categories yet. Add your first one to start organising products.
+                        <div><a href="/admin/addCategory" class="cb cb-ink">Add category</a></div>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-nowrap  table-bordered">
-                            <thead class="thead-light text-center">
-                                <tr>
-                                    <th scope="col">Id</th>
-                                    <th scope="col">Category</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% categories.forEach((category, index) => { %>
-                
-                                        <tr>
-                                            <td>C<%= Math.floor(Math.random() * 900) + 100 %></td>
-                                            <td><%= category.name %></td>
-                                            <td> <div class="btn badge-<%= category.isActive ?   'success':'danger' %>">
-                                                <%= category.isActive ? 'Active':'Inactive' %>
-                                            </div></td>
-                                            <!-- <td>
-                                                <form id="deleteCategoryForm-<%= category._id %>" action="/admin/deleteCategory/<%= category._id %>" method="POST" style="display:inline;" onsubmit="return confirmDeleteCategory(event, this)">
-                                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                <% } else { %>
+
+                <div class="cat-bar">
+                    <input type="search" id="catSearch" class="cat-search" placeholder="Search categories" aria-label="Search categories" autocomplete="off">
+                    <div class="seg" role="group" aria-label="Filter by status">
+                        <button type="button" class="seg-btn is-active" data-filter="all" aria-pressed="true">All</button>
+                        <button type="button" class="seg-btn" data-filter="active" aria-pressed="false">Active</button>
+                        <button type="button" class="seg-btn" data-filter="inactive" aria-pressed="false">Inactive</button>
+                    </div>
+                </div>
+
+                <div class="cat-scroll">
+                    <table class="cat-table" id="catTable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th class="right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% categories.forEach((category) => {
+                                const shortId = 'C' + String(category._id).slice(-5).toUpperCase();
+                            %>
+                                <tr data-name="<%= String(category.name || '').toLowerCase() %>" data-active="<%= category.isActive ? '1' : '0' %>">
+                                    <td data-label="Id"><span class="cid"><%= shortId %></span></td>
+                                    <td data-label="Category"><span class="cname"><%= category.name %></span></td>
+                                    <td data-label="Status">
+                                        <span class="chip <%= category.isActive ? 'ok' : 'muted' %>"><%= category.isActive ? 'Active' : 'Inactive' %></span>
+                                    </td>
+                                    <td class="act right" data-label="Actions">
+                                        <div class="acts">
+                                            <% if (category.isActive) { %>
+                                                <form action="/admin/deleteCategory" method="POST" data-confirm="Unlist this category?" data-confirm-text="You can list it again at any time." data-confirm-button="Yes, unlist">
+                                                    <input type="hidden" name="categoryId" value="<%= category._id %>">
+                                                    <button type="submit" class="cb cb-warn">Unlist</button>
                                                 </form>
-                                                
-                                              
-                                            
-                                            </td> -->
-                                            <td>
-                                                <% if(category.isActive){%>
-                                                    <form  id="unlistForm-<%= category._id %>" action="/admin/deleteCategory" method="POST" style="display:inline;" onsubmit="return confirmDeleteCategory(event, 'Are you sure you want to unlist this category?', this)">
-                                                        <input type="hidden" name="categoryId" value="<%= category._id %>">
-                                                        <button type="submit" class="btn btn-success">Unlist</button>
-                                                    </form>
-                                                    <%}else{%>
-                                                        <form id="listForm-<%= category._id %>" action="/admin/activeCategory" method="POST" style="display:inline;" onsubmit="return confirmDeleteCategory(event, 'Are you sure you want to List this category?', this)">
-                                                            <input type="hidden" name="categoryId" value="<%= category._id %>">
-                                                            <button type="submit" class="btn btn-danger">List</button>
-                                                        </form>
-                                                       
-                                                    <% } %>
-
-                                                    <a href="/admin/editCategory/<%= category._id %>" class="btn btn-primary btn">Edit</a>
-                                            </td>
-                                        </tr>
-                                <% }) %>
-                               
-                            </tbody>
-
-                            <!-- SweetAlert2 -->
-                            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-                            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
-                             
-                               <script>
-   
-                                    function  confirmDeleteCategory(event, message, form) {
-                                               event.preventDefault(); // Prevent the form from submitting immediately
-                                           
-                                               // Show SweetAlert confirmation dialog
-                                               Swal.fire({
-                                                   title: message,
-                                                   icon: 'warning',
-                                                   showCancelButton: true,
-                                                   confirmButtonColor: 'green',
-                                                   cancelButtonColor: 'red',
-                                                   confirmButtonText: 'Yes',
-                                                   cancelButtonText: 'No',
-                                                   background: '#ffff',  // Black theme background
-                                                   color: 'black'           // Text color white
-                                               }).then((result) => {
-                                                   if (result.isConfirmed) {
-                                                       // Change button color if confirmed
-                                                       const button = form.querySelector('button');
-                                                       button.classList.remove('btn-success', 'btn-danger');
-                                                       button.classList.add('btn-secondary'); // You can adjust this color as needed
-                                           
-                                                       // Submit the form if the user confirms
-                                                       form.submit();
-                                                   }
-                                               });
-                                           
-                                               return false; // Always prevent default form submission
-                                           }
-   
-                             </script>
-
-                        </table>
-                    </div>
-                    <div class="card-footer border-0 py-5">
-                        <span class="text-muted text-sm"></span>
-                    </div>
+                                            <% } else { %>
+                                                <form action="/admin/activeCategory" method="POST" data-confirm="List this category?" data-confirm-text="" data-confirm-button="Yes, list">
+                                                    <input type="hidden" name="categoryId" value="<%= category._id %>">
+                                                    <button type="submit" class="cb cb-ink">List</button>
+                                                </form>
+                                            <% } %>
+                                            <a href="/admin/editCategory/<%= category._id %>" class="cb cb-ghost">Edit</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                            <tr class="no-match" id="noMatch" hidden>
+                                <td colspan="4">No categories match your search.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+                <% } %>
+            </section>
+
         </main>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    /* ---------- dismiss server messages ---------- */
+    document.querySelectorAll('[data-dismiss-notice]').forEach(function (btn) {
+        btn.addEventListener('click', function () { btn.parentElement.remove(); });
+    });
+
+    /* ---------- confirm list / unlist ---------- */
+    document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault(); // wait for the answer
+
+            Swal.fire({
+                title: form.dataset.confirm,
+                text: form.dataset.confirmText || undefined,
+                icon: 'question',
+                showCancelButton: true,
+                reverseButtons: true,
+                confirmButtonText: form.dataset.confirmButton || 'Yes',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#0F1B33',
+                cancelButtonColor: '#8A93A5'
+            }).then(function (result) {
+                if (!result.isConfirmed) return;
+                var button = form.querySelector('button[type="submit"]');
+                if (button) button.disabled = true; // no double submits
+                form.submit();
+            });
+        });
+    });
+
+    /* ---------- search + status filter (every category is on this page) ---------- */
+    (function () {
+        var table = document.getElementById('catTable');
+        if (!table) return;
+
+        var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr[data-name]'));
+        var noMatch = document.getElementById('noMatch');
+        var search = document.getElementById('catSearch');
+        var filterBtns = document.querySelectorAll('.seg-btn');
+        var query = '';
+        var filter = 'all';
+
+        function apply() {
+            var shown = 0;
+            rows.forEach(function (row) {
+                var matchesText = !query || row.dataset.name.indexOf(query) !== -1;
+                var matchesStatus =
+                    filter === 'all' ||
+                    (filter === 'active' && row.dataset.active === '1') ||
+                    (filter === 'inactive' && row.dataset.active === '0');
+                var visible = matchesText && matchesStatus;
+                row.hidden = !visible;
+                if (visible) shown++;
+            });
+            noMatch.hidden = shown !== 0;
+        }
+
+        search.addEventListener('input', function () {
+            query = search.value.trim().toLowerCase();
+            apply();
+        });
+
+        filterBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                filter = btn.dataset.filter;
+                filterBtns.forEach(function (b) {
+                    var on = b === btn;
+                    b.classList.toggle('is-active', on);
+                    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+                apply();
+            });
+        });
+    })();
+</script>

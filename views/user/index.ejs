@@ -1,0 +1,148 @@
+<script>
+
+
+
+
+document.querySelector("#checkoutForm").addEventListener("submit", handlePayment);
+
+    async function handlePayment(e) {
+        e.preventDefault();
+
+        const formData = new FormData(document.querySelector("#checkoutForm"));
+        const formDataObject = Object.fromEntries(formData.entries());
+        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+        formDataObject.paymentMethod = selectedPaymentMethod;
+
+        if (selectedPaymentMethod === 'razorpay'){
+            try {
+                const response = await fetch('/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formDataObject),
+            });
+
+             if (!response.ok) {
+                const errorMessage = await response.text();
+                throw new Error(errorMessage || 'Failed to create order');
+            }
+
+             const data = await response.json();
+
+             const options ={
+                key:'rzp_test_R62uQRDG1HyxmG',
+                amount: data.amount, // Amount from backend in the smallest currency unit
+                currency: data.currency,
+                name:'SAF BOOKS',
+                description: 'Order Payment',
+                order_id: data.orderId,
+
+                handler: async function (response) {
+                    try {
+                        const verifyResponse = await fetch('/verify-razorpay-payment', {
+                             method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                            }),
+
+
+                        })
+                        if (verifyResponse.ok){
+                             const data = await response.json()
+                             window.location.href = `/orderSuccess?orderId=${data.orderId}`;
+                        }else{
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Payment Verification Failed',
+                                text: 'Please contact support for assistance.',
+                            });
+                            console.error('Payment verification failed:', verificationData);
+                            window.location.href = '/failed';
+                        }
+
+                    } catch (error) {
+                         console.error('Error during payment verification:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred while verifying your payment.',
+                        });
+                        window.location.href = '/failed';
+                    }
+                },
+                theme :{
+                    color:'#F37254'
+                }
+            }  
+            // Open Razorpay payment modal
+            const rzp = new Razorpay(options);
+
+            rzp.on('payment.failed', function (response) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Payment Failed',
+                    text: 'Please try again or use a different method.',
+                });
+                console.error('Payment failed:', response.error);
+                window.location.href = '/failed';
+            });
+
+            rzp.open();
+            
+            } catch (error) {
+                console.error('Error during Razorpay checkout:', error);
+                    Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while processing your payment. Please try again.',
+                });
+                window.location.href = '/failed';
+            }
+            
+             
+        }else{
+            try {
+                const response = await fetch('/checkout',{
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json',},
+                    body: JSON.stringify(formDataObject),
+                })
+                if (!response.ok) {
+                    const errorMessage = await response.text(); // Get detailed error message from backend
+                    throw new Error(errorMessage || 'Failed to process non-Razorpay payment');
+                }
+                const data = await response.json()
+                const orderId = data.orderId;
+
+                window.location.href = `/orderSuccess?orderId=${orderId}`
+            } catch (error) {
+                console.error('Error during non-Razorpay payment processing:', error);
+
+                // Handle specific error messages
+                let errorMessage = 'An error occurred while processing your payment. Please try again.';
+                if (error.message.includes('Insufficient wallet balance')) {
+                    errorMessage = 'Your wallet balance is insufficient to complete this payment.';
+                } else if (error.message.includes('Network error')) {
+                    errorMessage = 'A network error occurred. Please check your internet connection and try again.';
+                } else if (error.message.includes('Server error')) {
+                    errorMessage = 'A server error occurred. Please try again later.';
+                }
+
+                // Display the appropriate error message to the user
+                Swal.fire({
+                   icon: 'error',
+                   title: 'Error',
+                   text: errorMessage,
+                });
+
+            }
+        }
+    }
+
+    </script>

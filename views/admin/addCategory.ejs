@@ -1,84 +1,232 @@
+<%- include('partials/header.ejs') %>
 
+<!-- Same typefaces as the other admin pages -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 
+<%
+    const flashMessage = locals.message || '';
+    const flashError = locals.error || '';
+%>
 
+<style>
+    /* =====================================================
+       Add category (same tokens as the other admin pages)
+       ===================================================== */
+    .pm {
+        --ink: #0F1B33;
+        --ink-2: #2A3F6B;
+        --line: #E3E7EE;
+        --slate: #5B6578;
+        --mute: #8A93A5;
+        --brass: #B8935A;
+        font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        color: var(--ink);
+        font-size: 14px;
+        padding: 36px 40px 56px;
+        max-width: 1360px;
+        margin: 0 auto;
+    }
 
+    .pm-head { margin-bottom: 26px; }
+    .pm-title {
+        font-family: 'Newsreader', Georgia, serif;
+        font-weight: 500;
+        font-size: 2.25rem;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+        margin: 0;
+    }
+    .pm-sub { margin: 8px 0 0; color: var(--slate); font-size: 14px; }
 
-<%-include('partials/header.ejs')%>
-    <!-- Main content -->
-    <div class="h-screen flex-grow-1 overflow-y-lg-auto">
-        <!-- Header -->
-        <header class="bg-surface-primary border-bottom pt-6">
-            <div class="container-fluid">
-                <div class="mb-npx">
-                    <div class="row align-items-center">
-                        <div class="col-sm-6 col-12 mb-4 mb-sm-0">
-                            <!-- Title -->
-                            <h1 class="h2 mb-0 ls-tight">Category Management</h1>
-                        </div>
+    /* ---------- buttons ---------- */
+    .cb {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font: inherit;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 10px 18px;
+        border-radius: 10px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color .15s, border-color .15s, color .15s;
+    }
+    .cb:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    .cb[disabled] { opacity: .6; cursor: not-allowed; }
+    .cb-ink { background: var(--ink); color: #fff; border: 1px solid var(--ink); }
+    .cb-ink:hover:not([disabled]) { background: var(--ink-2); border-color: var(--ink-2); color: #fff; text-decoration: none; }
+    .cb-ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .cb-ghost:hover { border-color: #C9D0DC; color: var(--ink); text-decoration: none; }
 
-                        <div class="col-sm-6 col-12 text-sm-end">
-                            <div class="mx-n1">
-                               
-                            </div>
-                        </div>
-                    </div>
-                   <br>
-                </div>
+    /* ---------- notices ---------- */
+    .notice {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        max-width: 560px;
+        margin-bottom: 18px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .notice.ok { background: #E8F6EE; border: 1px solid #BFE3CF; color: #146C43; }
+    .notice.bad { background: #FDECEA; border: 1px solid #F3C9C2; color: #A32A1F; }
+    .notice button {
+        appearance: none; border: 0; background: none; color: inherit;
+        font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px; opacity: .7;
+    }
+    .notice button:hover { opacity: 1; }
+
+    /* ---------- form card ---------- */
+    .pm-card {
+        max-width: 560px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 1px 2px rgba(15, 27, 51, .04), 0 10px 28px -20px rgba(15, 27, 51, .18);
+        overflow: hidden;
+    }
+    .pm-card-body { padding: 24px; }
+
+    .fld { margin: 0; }
+    .fld > label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--slate);
+    }
+    .inp {
+        width: 100%;
+        height: auto;
+        padding: 10px 12px;
+        font: inherit;
+        font-size: 14px;
+        color: var(--ink);
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        transition: border-color .15s;
+    }
+    .inp::placeholder { color: var(--mute); }
+    .inp:hover { border-color: #C9D0DC; }
+    .inp:focus { outline: 2px solid var(--brass); outline-offset: 1px; border-color: transparent; box-shadow: none; }
+    .inp.is-invalid { border-color: #E5A9A0; }
+    .hint { margin: 6px 0 0; font-size: 12.5px; color: var(--mute); }
+    .err { display: block; margin-top: 6px; font-size: 12.5px; font-weight: 600; color: #B3261E; }
+    .err:empty { display: none; }
+
+    .pm-card-foot {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 24px;
+        border-top: 1px solid var(--line);
+        background: #FAFBFC;
+    }
+
+    @media (max-width: 991.98px) {
+        .pm { padding: 28px 24px 48px; }
+    }
+    @media (max-width: 575.98px) {
+        .pm { padding: 22px 14px 40px; }
+        .pm-title { font-size: 1.9rem; }
+        .pm-card-body { padding: 18px 16px; }
+        .pm-card-foot { flex-direction: column-reverse; padding: 12px 16px; }
+        .pm-card-foot .cb { width: 100%; padding: 12px 16px; }
+        .inp { font-size: 16px; }              /* 16px stops iOS zooming into fields */
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .cb { transition: none; }
+    }
+</style>
+
+<div class="container-fluid vh-100 d-flex flex-column p-0">
+    <div class="flex-grow-1 overflow-auto">
+        <main class="pm">
+
+            <!-- Page head -->
+            <div class="pm-head">
+                <h1 class="pm-title">Add category</h1>
+                <p class="pm-sub">Categories group your products in the store and in offers.</p>
             </div>
-        </header>
-        <!-- Main -->
-        <main class="py-6 bg-surface-secondary">
-            <div class="container-fluid">
-                <!-- Card stats -->
-                <div class="card shadow border-0 mb-7">
-                    <div class="card-header">
-                        <h5 class="mb-0">Add new Category</h5>
-                    </div>
-                    <div class="table-responsive">
-                        <form action="/admin/addCategory" method="POST">
-                            <div class="form mb-3">
-                                <label for="categoryName" class="form-label">Category Name</label>
-                                <input type="text" class="form-control" id="categoryName" name="name" required>
-                            </div>
-                            <button type="submit" class="btn btn-success">Add Category</button>
-                            <a type="button" href="/admin/categoryManagement" class="btn btn-primary">Back to Categories</a>
-                        </form>
-                    </div>
-                    <div class="card-footer border-0 py-5">
-                        <span class="text-muted text-sm"></span>
+
+            <!-- Messages from the server -->
+            <% if (flashMessage) { %>
+                <div class="notice ok" role="status">
+                    <span><%= flashMessage %></span>
+                    <button type="button" aria-label="Dismiss" data-dismiss-notice>&times;</button>
+                </div>
+            <% } %>
+            <% if (flashError) { %>
+                <div class="notice bad" role="alert">
+                    <span><%= flashError %></span>
+                    <button type="button" aria-label="Dismiss" data-dismiss-notice>&times;</button>
+                </div>
+            <% } %>
+
+            <!-- Form -->
+            <form class="pm-card" id="addCategoryForm" action="/admin/addCategory" method="POST" novalidate>
+                <div class="pm-card-body">
+                    <div class="fld">
+                        <label for="categoryName">Category name</label>
+                        <input type="text" class="inp" id="categoryName" name="name" autocomplete="off" autofocus required>
+                        <small class="err" id="categoryNameError" role="alert"></small>
                     </div>
                 </div>
-            </div>
+
+                <div class="pm-card-foot">
+                    <a href="/admin/categoryManagement" class="cb cb-ghost">Back to categories</a>
+                    <button type="submit" class="cb cb-ink" id="submitBtn">Add category</button>
+                </div>
+            </form>
+
         </main>
     </div>
 </div>
 
-               
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-<!-- Bootstrap JS (including Popper.js for modals) -->
+<script>
+    (function () {
+        var form = document.getElementById('addCategoryForm');
+        var input = document.getElementById('categoryName');
+        var error = document.getElementById('categoryNameError');
+        var submitBtn = document.getElementById('submitBtn');
+
+        document.querySelectorAll('[data-dismiss-notice]').forEach(function (btn) {
+            btn.addEventListener('click', function () { btn.parentElement.remove(); });
+        });
+
+        input.addEventListener('input', function () {
+            input.classList.remove('is-invalid');
+            error.textContent = '';
+        });
+
+        form.addEventListener('submit', function (event) {
+            // a name made only of spaces counts as empty
+            if (input.value.trim() === '') {
+                event.preventDefault();
+                input.classList.add('is-invalid');
+                error.textContent = 'Enter a category name.';
+                input.focus();
+                return;
+            }
+            submitBtn.disabled = true;            // no double submits
+            submitBtn.textContent = 'Adding…';
+        });
+    })();
+</script>
+
+<!-- Admin template scripts (sidebar behaviour) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- plugins:js -->
 <script src="/assets/vendors/js/vendor.bundle.base.js"></script>
-<!-- endinject -->
-
-<!-- Plugin js for this page -->
-<script src="/assets/vendors/chart.js/Chart.min.js"></script>
-<script src="/assets/vendors/progressbar.js/progressbar.min.js"></script>
-<script src="/assets/vendors/jvectormap/jquery-jvectormap.min.js"></script>
-<script src="/assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js"></script>
-<script src="/assets/vendors/owl-carousel-2/owl.carousel.min.js"></script>
-<!-- End plugin js for this page -->
-
-<!-- inject:js -->
 <script src="/assets/js/off-canvas.js"></script>
 <script src="/assets/js/hoverable-collapse.js"></script>
 <script src="/assets/js/misc.js"></script>
 <script src="/assets/js/settings.js"></script>
-<script src="/assets/js/todolist.js"></script>
-<!-- endinject -->
-
-<!-- Custom js for this page -->
-<script src="/assets/js/dashboard.js"></script>
 </body>
 </html>

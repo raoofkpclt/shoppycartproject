@@ -1,96 +1,135 @@
-
-
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<title>login</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-		<!-- MATERIAL DESIGN ICONIC FONT -->
-		<link rel="stylesheet" href="fonts/material-design-iconic-font/css/material-design-iconic-font.min.css">
-		
-		<!-- STYLE CSS -->
-		<link rel="stylesheet" href="/stylesheet/login.css">
-	</head>
-	<body>
-		<div class="wrapper" style="background-image: url('/image/bg-registration-form-2.jpg');">
-			<div class="inner">
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Log in · ShoppyCart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
 
-				<% if (message) { %>
-					<h4 style="color: rgb(21, 181, 66);"><%=message %></h4>
-					<% } %>
-					<% if (error) { %>
-						<h4 style="color: rgb(181, 21, 21);"><%=error%></h4>
-						<% } %>
-						<br>
+        :root {
+            --pl-bg: #ffffff;
+            --pl-tile: #f4f4f2;
+            --pl-ink: #151517;
+            --pl-muted: #74777d;
+            --pl-line: #e7e7e9;
+            --pl-sale: #1f6b45;
+            --pl-danger: #c2373d;
+            --pl-radius: 6px;
+            --pl-font: 'Manrope', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
 
-				<form action="/user/login" method="post" >
-					<div style="text-align: center;">
-						<a href="/user/">
-							<img style="height: 30px; width: 140px;" src="/image/Shoppycartfinel.png" alt="ShoppyCart Logo">
-						</a>
-					</div>
-					<div class="form-wrapper">
-						<label for="">Email</label>
-						<input name="email" id="email" type="text" class="form-control">
-					</div>
-					<div class="form-wrapper">
-						<label for="">Password</label>
-						<input name="password" id="password" type="password" class="form-control">
-					</div>
-					<button type="submit" class="login-btn">logIn</button>
-					<div  style="padding: 10px; padding-top: 10px;" class="d-flex justify-content-center links">
-                        New to Shoppycart ? <a href="/user/signup">Create an account</a><br>
-						<a href="/user/forgotPassword">Forgot Password</a>
-                    </div>
-					<div class="d-flex justify-content-center links ">
-						<div class="button-group">
-							<button class="google-btn" onclick="handleSignInGoogle()">
-								<img src="/image/Google__G__logo.svg.webp" alt="Google Sign-In">
-								Sign in with Google
-							</button>
-							
-							<button class="google-btn"  onclick="handleSignInGoogle()">
-								<img src="/image/facebook.png" alt="Facebook Sign-In">
-								Sign in with Facebook
-							</button>
-						</div>	
-					</div>
-				</form>
-			</div>
-		</div>
-		<script>
-			const handleSignInGoogle = () => {
-    			// window.open("http://localhost:3000/user/auth/google", "_id");
-				window.open("https://shopycartonline.shop/user/auth/google", "_id");
-			};
-		</script>
-		
-		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-		<% if (message) { %>
-			<script>
-				Swal.fire({
-					icon: 'success',
-					title: '<%=message %>',
-					showConfirmButton: false,
-					timer: 1500
-				})
-			</script>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 32px 16px;
+            font-family: var(--pl-font);
+            color: var(--pl-ink);
+            background: var(--pl-tile);
+            -webkit-font-smoothing: antialiased;
+        }
 
+        .lg-card {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            background: var(--pl-bg);
+            border-radius: 10px;
+        }
+        .lg-logo { display: block; margin-bottom: 32px; }
+        .lg-logo img { height: 28px; width: auto; display: block; }
+        .lg-title { margin: 0 0 8px; font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+        .lg-lead { margin: 0 0 28px; font-size: 15px; color: var(--pl-muted); }
 
-		<% } %>
-		<% if (error) { %>
-			<script>
-				Swal.fire({
-					icon: 'error',
-					title: '<%=error%>',
-					showConfirmButton: false,
-					timer: 1500
-				})
-			</script>
-		<% } %>
-		
-		
-	</body>
+        .lg-notice { margin: 0 0 20px; padding: 12px 14px; font-size: 14px; line-height: 1.5; border-radius: var(--pl-radius); }
+        .lg-notice--ok { color: var(--pl-sale); background: #e9f3ed; }
+        .lg-notice--error { color: var(--pl-danger); background: #fbeaeb; }
+
+        .lg-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+        .lg-field label { font-size: 13px; font-weight: 500; color: var(--pl-muted); }
+        .lg-field input {
+            height: 48px; padding: 0 14px;
+            font: inherit; font-size: 15px; color: var(--pl-ink);
+            background: #fff; border: 1px solid var(--pl-line); border-radius: var(--pl-radius);
+            transition: border-color .2s;
+        }
+        .lg-field input:focus { outline: none; border-color: var(--pl-ink); }
+        .lg-label-row { display: flex; justify-content: space-between; align-items: baseline; }
+
+        .lg-link { font-size: 13px; color: var(--pl-muted); text-decoration: underline; text-underline-offset: 3px; }
+        .lg-link:hover { color: var(--pl-ink); }
+
+        .lg-btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; height: 52px; padding: 0 24px;
+            font: inherit; font-size: 15px; font-weight: 600;
+            color: #fff; background: var(--pl-ink);
+            border: 1px solid var(--pl-ink); border-radius: var(--pl-radius);
+            cursor: pointer; transition: background .2s, border-color .2s;
+        }
+        .lg-btn:hover { background: #2c2c30; }
+        .lg-btn--ghost { color: var(--pl-ink); background: transparent; border-color: var(--pl-line); }
+        .lg-btn--ghost:hover { background: transparent; border-color: var(--pl-ink); }
+        .lg-btn img { height: 18px; width: 18px; object-fit: contain; }
+
+        .lg-or { display: flex; align-items: center; gap: 16px; margin: 24px 0; font-size: 13px; color: var(--pl-muted); }
+        .lg-or::before, .lg-or::after { content: ''; flex: 1; height: 1px; background: var(--pl-line); }
+
+        .lg-foot { margin: 28px 0 0; font-size: 14px; text-align: center; color: var(--pl-muted); }
+        .lg-foot a { color: var(--pl-ink); font-weight: 600; text-underline-offset: 3px; }
+
+        a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--pl-ink); outline-offset: 3px; }
+
+        @media (max-width: 480px) { .lg-card { padding: 28px 20px; } .lg-title { font-size: 24px; } }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+    <main class="lg-card">
+        <a class="lg-logo" href="/user/"><img src="/image/Shoppycartfinel.png" alt="ShoppyCart"></a>
+
+        <h1 class="lg-title">Welcome back</h1>
+        <p class="lg-lead">Log in to continue shopping.</p>
+
+        <% if (typeof message !== 'undefined' && message) { %>
+            <div class="lg-notice lg-notice--ok" role="status"><%= message %></div>
+        <% } %>
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="lg-notice lg-notice--error" role="alert"><%= error %></div>
+        <% } %>
+
+        <form action="/user/login" method="post">
+            <div class="lg-field">
+                <label for="email">Email</label>
+                <input name="email" id="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="lg-field">
+                <div class="lg-label-row">
+                    <label for="password">Password</label>
+                    <a class="lg-link" href="/user/forgotPassword">Forgot password?</a>
+                </div>
+                <input name="password" id="password" type="password" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="lg-btn">Log in</button>
+        </form>
+
+        <div class="lg-or">or</div>
+
+        <button type="button" class="lg-btn lg-btn--ghost" id="googleSignIn">
+            <img src="/image/Google__G__logo.svg.webp" alt="">
+            Continue with Google
+        </button>
+
+        <p class="lg-foot">New to ShoppyCart? <a href="/user/signup">Create an account</a></p>
+    </main>
+
+    <script>
+        document.getElementById('googleSignIn').addEventListener('click', () => {
+            window.location.href = '/user/auth/google';
+        });
+    </script>
+</body>
 </html>

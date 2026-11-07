@@ -1,141 +1,425 @@
+<%- include('partials/header.ejs') %>
 
-<%- include('partials/header.ejs')%>
+<!-- Same typefaces as the products page -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<!-- SweetAlert2 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
+<%
+    /* ---------- view helpers ---------- */
+    const rows = users || [];
+    const limitParam = locals.limit ? '&limit=' + encodeURIComponent(locals.limit) : '';
+    const flashMessage = locals.message || '';
+    const flashError = locals.error || '';
 
-    <!-- Main content -->
-    <div class="h-screen flex-grow-1 overflow-y-lg-auto">
-        <!-- Header -->
-        <header class="bg-surface-primary border-bottom pt-6">
-            <div class="container-fluid">
-                <div class="mb-npx">
-                    <div class="row align-items-center">
-                        <div class="col-sm-6 col-12 mb-4 mb-sm-0">
-                            <!-- Title -->
-                            <h1 class="h2 mb-0 ls-tight">User Management</h1>
-                        </div>
-                    </div>
-                   <br>
+    /* ---------- compact pagination: 1 … 4 5 6 … 20 ---------- */
+    const pageNo = Number(currentPage) || 1;
+    const pageCount = Number(totalPages) || 1;
+    const pageList = [];
+    for (let p = 1; p <= pageCount; p++) {
+        if (p === 1 || p === pageCount || Math.abs(p - pageNo) <= 1) {
+            pageList.push(p);
+        } else if (pageList[pageList.length - 1] !== '…') {
+            pageList.push('…');
+        }
+    }
+%>
+
+<style>
+    /* =====================================================
+       Users page theme (same tokens as the Products page)
+       ===================================================== */
+    .pm {
+        --ink: #0F1B33;
+        --ink-2: #2A3F6B;
+        --line: #E3E7EE;
+        --slate: #5B6578;
+        --mute: #8A93A5;
+        --brass: #B8935A;
+        font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        color: var(--ink);
+        font-size: 14px;
+        padding: 36px 40px 56px;
+        max-width: 1360px;
+        margin: 0 auto;
+    }
+
+    /* ---------- page head ---------- */
+    .pm-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 26px;
+    }
+    .pm-title {
+        font-family: 'Newsreader', Georgia, serif;
+        font-weight: 500;
+        font-size: 2.25rem;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+        margin: 0;
+    }
+    .pm-sub { margin: 8px 0 0; color: var(--slate); font-size: 14px; }
+
+    /* ---------- buttons ---------- */
+    .cb {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font: inherit;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 9px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color .15s, border-color .15s, color .15s;
+    }
+    .cb:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    .cb[disabled] { opacity: .55; cursor: not-allowed; }
+    .cb-warn { background: #fff; color: #B3261E; border: 1px solid #F0C4BE; }
+    .cb-warn:hover { background: #FFF1EF; border-color: #E5A9A0; }
+    .cb-ok { background: #fff; color: #146C43; border: 1px solid #BFE3CF; }
+    .cb-ok:hover { background: #E8F6EE; border-color: #9CD3B6; }
+
+    /* ---------- notices ---------- */
+    .notice {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .notice.ok { background: #E8F6EE; border: 1px solid #BFE3CF; color: #146C43; }
+    .notice.bad { background: #FDECEA; border: 1px solid #F3C9C2; color: #A32A1F; }
+    .notice button {
+        appearance: none; border: 0; background: none; color: inherit;
+        font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px; opacity: .7;
+    }
+    .notice button:hover { opacity: 1; }
+
+    /* ---------- table card ---------- */
+    .pm-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 1px 2px rgba(15, 27, 51, .04), 0 10px 28px -20px rgba(15, 27, 51, .18);
+        overflow: hidden;
+    }
+    .pm-scroll { overflow-x: auto; }
+    .pm-table { width: 100%; margin: 0; border-collapse: collapse; }
+    .pm-table th {
+        padding: 14px 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--mute);
+        text-align: left;
+        white-space: nowrap;
+        background: #FAFBFC;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    .pm-table th.right, .pm-table td.right { text-align: right; }
+    .pm-table td {
+        padding: 14px 20px;
+        vertical-align: middle;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    .pm-table tbody tr:last-child td { border-bottom: 0; }
+    .pm-table tbody tr { transition: background-color .15s; }
+    .pm-table tbody tr:hover { background: #FAFBFD; }
+
+    .prod { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .avatar {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: #EEF1F5;
+        color: var(--ink-2);
+        font-weight: 800;
+        font-size: 16px;
+    }
+    .avatar.is-blocked { color: var(--mute); background: #F4F5F8; }
+    .pname { font-weight: 700; font-size: 14.5px; word-break: break-word; }
+    .sub { font-size: 12.5px; color: var(--mute); margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .mail { color: var(--slate); word-break: break-all; }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 4px 11px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .chip.ok  { background: #E8F6EE; color: #146C43; }
+    .chip.bad { background: #FDECEA; color: #A32A1F; }
+
+    .acts { display: inline-flex; align-items: center; gap: 8px; }
+    .acts form { margin: 0; }
+
+    .pm-empty { padding: 56px 20px; text-align: center; color: var(--mute); font-size: 14px; }
+
+    /* ---------- pagination ---------- */
+    .pager {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 24px 0 0;
+        padding: 0;
+        list-style: none;
+    }
+    .pg {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--slate);
+        font-weight: 600;
+        font-size: 13px;
+        text-decoration: none;
+        transition: border-color .15s, color .15s;
+    }
+    a.pg:hover { color: var(--ink); border-color: #C9D0DC; text-decoration: none; }
+    a.pg:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    .pg.is-active { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .pg.is-gap { border-color: transparent; background: none; color: var(--mute); }
+
+    /* ---------- tablet ---------- */
+    @media (min-width: 768px) {
+        .pm-table { min-width: 720px; }
+    }
+    @media (max-width: 991.98px) {
+        .pm { padding: 28px 24px 48px; }
+    }
+
+    /* ---------- mobile: every user becomes a card ---------- */
+    @media (max-width: 767.98px) {
+        .pm { padding: 22px 14px 40px; }
+        .pm-title { font-size: 1.9rem; }
+
+        .pm-table thead { display: none; }
+        .pm-table, .pm-table tbody, .pm-table tr, .pm-table td { display: block; width: 100%; }
+        .pm-table tbody tr { padding: 14px 16px 16px; border-bottom: 1px solid var(--line); }
+        .pm-table tbody tr:hover { background: none; }
+        .pm-table tbody tr:last-child { border-bottom: 0; }
+        .pm-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 7px 0;
+            border: 0;
+            text-align: right;
+        }
+        .pm-table td::before {
+            content: attr(data-label);
+            flex-shrink: 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--mute);
+            text-align: left;
+        }
+        .pm-table td.name-cell { padding-top: 0; padding-bottom: 10px; text-align: left; justify-content: flex-start; }
+        .pm-table td.name-cell::before { display: none; }
+        .pm-table td.act {
+            display: block;
+            margin-top: 8px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--line);
+        }
+        .pm-table td.act::before { display: none; }
+        .acts { display: flex; width: 100%; }
+        .acts form { flex: 1; }
+        .acts form .cb { width: 100%; }
+        .cb { padding: 11px 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .cb, .pg, .pm-table tbody tr { transition: none; }
+    }
+</style>
+
+<div class="container-fluid vh-100 d-flex flex-column p-0">
+    <div class="flex-grow-1 overflow-auto">
+        <main class="pm">
+
+            <!-- Page head -->
+            <div class="pm-head">
+                <div>
+                    <h1 class="pm-title">Users</h1>
+                    <p class="pm-sub">Page <%= pageNo %> of <%= pageCount %>.</p>
                 </div>
             </div>
-        </header>
-        <!-- Main -->
-        <main class="py-6 bg-surface-secondary">
-            <div class="container-fluid">
-                <!-- Card stats -->
-                <div class="card shadow border-0 mb-7">
-                    <div class="card-header">
-                        <h5 class="mb-0">Users</h5>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-nowrap  table-bordered">
-                            <thead class="thead-light text-center">
+
+            <!-- Messages from the server -->
+            <% if (flashMessage) { %>
+                <div class="notice ok" role="status">
+                    <span><%= flashMessage %></span>
+                    <button type="button" aria-label="Dismiss" data-dismiss-notice>&times;</button>
+                </div>
+            <% } %>
+            <% if (flashError) { %>
+                <div class="notice bad" role="alert">
+                    <span><%= flashError %></span>
+                    <button type="button" aria-label="Dismiss" data-dismiss-notice>&times;</button>
+                </div>
+            <% } %>
+
+            <!-- Users -->
+            <section class="pm-card" aria-label="Users">
+                <% if (rows.length === 0) { %>
+                    <div class="pm-empty">No users yet. New accounts will appear here once people sign up.</div>
+                <% } else { %>
+                <div class="pm-scroll">
+                    <table class="pm-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th class="right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% rows.forEach((user) => {
+                                const shortId = user._id.toString().slice(-5).toUpperCase();
+                                const initial = (user.name || '?').trim().charAt(0).toUpperCase();
+                            %>
                                 <tr>
-                                    <th scope="col">User Name</th>
-                                    <th scope="col">Email Id</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Actions</th>
+                                    <td class="name-cell" data-label="User">
+                                        <div class="prod">
+                                            <span class="avatar <%= user.isBlocked ? 'is-blocked' : '' %>" aria-hidden="true"><%= initial %></span>
+                                            <div>
+                                                <div class="pname"><%= user.name %></div>
+                                                <div class="sub">#<%= shortId %></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td data-label="Email"><span class="mail"><%= user.email %></span></td>
+                                    <td data-label="Status">
+                                        <% if (user.isBlocked) { %>
+                                            <span class="chip bad">Inactive</span>
+                                        <% } else { %>
+                                            <span class="chip ok">Active</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="act right" data-label="Actions">
+                                        <div class="acts">
+                                            <% if (user.isBlocked) { %>
+                                                <form id="unblockForm-<%= user._id %>" action="/admin/unblockUser" method="POST"
+                                                      data-confirm="Unblock this user?"
+                                                      data-confirm-text="They will be able to sign in again."
+                                                      data-confirm-button="Yes, unblock"
+                                                      data-confirm-color="#146C43">
+                                                    <input type="hidden" name="userId" value="<%= user._id %>">
+                                                    <button type="submit" class="cb cb-ok">Unblock</button>
+                                                </form>
+                                            <% } else { %>
+                                                <form id="blockForm-<%= user._id %>" action="/admin/blockUser" method="POST"
+                                                      data-confirm="Block this user?"
+                                                      data-confirm-text="They will no longer be able to sign in."
+                                                      data-confirm-button="Yes, block"
+                                                      data-confirm-color="#B3261E">
+                                                    <input type="hidden" name="userId" value="<%= user._id %>">
+                                                    <button type="submit" class="cb cb-warn">Block</button>
+                                                </form>
+                                            <% } %>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <% if(users.length>0){%>
-                                    <%users.forEach(user=>{%>
-                                        <tr>
-                                            <td><%= user.name %></td>
-                                            <td><%= user.email %></td>
-                                            <td>
-                                                <div class="btn badge-<%= user.isBlocked ? 'danger' : 'success' %>">
-                                                    <%= user.isBlocked ? 'Inactive' : 'Active' %>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <% if(user.isBlocked){%>
-                                                    <form  id="unblockForm-<%= user._id %>" action="/admin/unblockUser" method="POST" style="display:inline;" onsubmit="return confirmAction(event, 'Are you sure you want to unblock this user?', this)">
-                                                        <input type="hidden" name="userId" value="<%= user._id %>">
-                                                        <button type="submit" class="btn btn-success">Unblock</button>
-                                                    </form>
-                                                    <%}else{%>
-                                                        <form id="blockForm-<%= user._id %>" action="/admin/blockUser" method="POST" style="display:inline;" onsubmit="return confirmAction(event, 'Are you sure you want to block this user?', this)">
-                                                            <input type="hidden" name="userId" value="<%= user._id %>">
-                                                            <button type="submit" class="btn btn-danger">Block</button>
-                                                        </form>
-                                                    <% } %>
-                                            </td>
-                                        </tr>
-                                        <%})%>
-                                    <%} else {%>
-                                        <tr>
-                                            <td colspan="4" class="text-center">No users found.</td>
-                                        </tr>
-                                        <%}%>
-                            </tbody>
-
-                            <!-- SweetAlert2 -->
-                            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-                            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-                            <script>
-
-                                 function confirmAction(event, message, form) {
-                                            event.preventDefault(); // Prevent the form from submitting immediately
-                                        
-                                            // Show SweetAlert confirmation dialog
-                                            Swal.fire({
-                                                title: message,
-                                                icon: 'warning',
-                                                showCancelButton: true,
-                                                confirmButtonColor: 'green',
-                                                cancelButtonColor: 'red',
-                                                confirmButtonText: 'Yes',
-                                                cancelButtonText: 'No',
-                                                background: '#ffff',  // Black theme background
-                                                color: 'black'           // Text color white
-                                            }).then((result) => {
-                                                if (result.isConfirmed) {
-                                                    // Change button color if confirmed
-                                                    const button = form.querySelector('button');
-                                                    button.classList.remove('btn-success', 'btn-danger');
-                                                    button.classList.add('btn-secondary'); // You can adjust this color as needed
-                                        
-                                                    // Submit the form if the user confirms
-                                                    form.submit();
-                                                }
-                                            });
-                                        
-                                            return false; // Always prevent default form submission
-                                        }
-
-                            </script>
-                        </table>
-
-                        <!-- Pagination Controls -->
-                    <nav aria-label="User pagination">
-                        <ul class="pagination justify-content-center">
-                            <% if (currentPage > 1) { %>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
-                                </li>
-                            <% } %>
-                            <% for (let i = 1; i <= totalPages; i++) { %>
-                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                                </li>
-                            <% } %>
-                            <% if (currentPage < totalPages) { %>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
-                                </li>
-                            <% } %>
-                        </ul>
-                    </nav>
-                    </div>
-                    <div class="card-footer border-0 py-5">
-                        <span class="text-muted text-sm"></span>
-                    </div>
+                            <% }); %>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+                <% } %>
+            </section>
+
+            <!-- Pagination -->
+            <% if (pageCount > 1) { %>
+            <nav aria-label="User pagination">
+                <ul class="pager">
+                    <% if (pageNo > 1) { %>
+                        <li><a class="pg" href="?page=<%= pageNo - 1 %><%= limitParam %>">Previous</a></li>
+                    <% } %>
+                    <% pageList.forEach((p) => { %>
+                        <% if (p === '…') { %>
+                            <li><span class="pg is-gap" aria-hidden="true">…</span></li>
+                        <% } else { %>
+                            <li>
+                                <a class="pg <%= p === pageNo ? 'is-active' : '' %>" href="?page=<%= p %><%= limitParam %>" <%- p === pageNo ? 'aria-current="page"' : '' %>><%= p %></a>
+                            </li>
+                        <% } %>
+                    <% }); %>
+                    <% if (pageNo < pageCount) { %>
+                        <li><a class="pg" href="?page=<%= pageNo + 1 %><%= limitParam %>">Next</a></li>
+                    <% } %>
+                </ul>
+            </nav>
+            <% } %>
+
         </main>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    (function () {
+        /* ---------- dismiss server messages ---------- */
+        document.querySelectorAll('[data-dismiss-notice]').forEach(function (btn) {
+            btn.addEventListener('click', function () { btn.parentElement.remove(); });
+        });
+
+        /* ---------- confirm before block / unblock ---------- */
+        document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                Swal.fire({
+                    title: form.dataset.confirm,
+                    text: form.dataset.confirmText || undefined,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    reverseButtons: true,
+                    focusCancel: true,
+                    confirmButtonText: form.dataset.confirmButton || 'Yes',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: form.dataset.confirmColor || '#0F1B33',
+                    cancelButtonColor: '#8A93A5'
+                }).then(function (result) {
+                    if (!result.isConfirmed) return;
+                    var button = form.querySelector('button[type="submit"]');
+                    if (button) button.disabled = true; // no double submits
+                    form.submit();
+                });
+            });
+        });
+    })();
+</script>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>

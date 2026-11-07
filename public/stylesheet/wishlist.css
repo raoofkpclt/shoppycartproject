@@ -1,290 +1,209 @@
-.header {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 10;
+/* ShoppyCart – Wishlist (premium / minimal)
+   Replaces /public/stylesheet/wishlist.css
+   Shares the same tokens as the other redesigned pages */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
+:root {
+    --pl-bg: #ffffff;
+    --pl-tile: #f4f4f2;
+    --pl-ink: #151517;
+    --pl-muted: #74777d;
+    --pl-line: #e7e7e9;
+    --pl-danger: #c2373d;
+    --pl-radius: 6px;
+    --pl-font: 'Manrope', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --pl-max: 1240px;
 }
 
-
-.header {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 10;
-}
-
-
-.header {
-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-position: relative;
-z-index: 10;
-}
-/* General Styling */
-.header {
-position: relative;
-z-index: 10;
-background: #fff;
-padding: 10px 0;
-}
-
-/* Flexbox Alignment for Header Content */
-.header__content {
-display: flex;
-align-items: center;
-justify-content: space-between;
-flex-wrap: nowrap; /* Ensure everything stays on one line */
-}
-
-/* Logo Styling */
-.header__logo img {
-max-height: 40px;
-max-width: 150px;
-}
-
-/* Navigation Menu Styling */
-.header__menu ul {
-display: flex;
-list-style: none;
-gap: 20px;
-margin: 0;
-padding: 0;
-}
-
-.header__menu ul li {
-position: relative;
-}
-
-.header__menu ul li a {
-text-decoration: none;
-color: #333;
-padding: 5px 10px;
-font-weight: 600;
-transition: color 0.3s;
-}
-
-.header__menu ul li a:hover {
-color: #007bff; /* Highlight on hover */
-}
-
-/* Dropdown Styling */
-.header__menu ul li .dropdown {
-display: none;
-position: absolute;
-top: 100%;
-left: 0;
-background: #fff;
-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-padding: 10px;
-list-style: none;
-}
-
-.header__menu ul li:hover .dropdown {
-display: block;
-}
-
-/* Right Options Styling */
-.header__nav__option {
-display: flex;
-align-items: center;
-gap: 15px;
-}
-
-.header__nav__option .search-bar {
-padding: 5px;
-border: 1px solid #ddd;
-border-radius: 4px;
-width: 150px;
-}
-
-.header__nav__option a img {
-height: 20px;
-}
-
-/* Responsive Design for Smaller Screens */
-@media (max-width: 768px) {
-.header__content {
-    flex-wrap: wrap; /* Stack items on smaller screens */
-}
-
-.header__menu ul {
-    flex-direction: column;
-    gap: 10px;
-}
-
-.header__nav__option {
-    justify-content: space-between;
-    width: 100%;
-}
-
-.header__nav__option .search-bar {
-    flex-grow: 1;
-}
-}
-/*
-order css sample
-*/
-
-/* General Styles */
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f8f9fa;
-    margin: 0;
-    padding: 0;
+    font-family: var(--pl-font);
+    color: var(--pl-ink);
+    background: var(--pl-bg);
+    -webkit-font-smoothing: antialiased;
 }
 
-.container {
-    max-width: 1200px;
+/* ---------- Top bar ---------- */
+.pl-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--pl-line);
+}
+.pl-nav__inner {
+    max-width: var(--pl-max);
     margin: 0 auto;
-    padding: 20px;
+    padding: 0 24px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
 }
-
-h1, h2, h3 {
-    font-weight: 600;
-    color: #333;
-}
-
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
-button {
-    cursor: pointer;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
+.pl-nav__logo img { height: 28px; width: auto; display: block; }
+.pl-nav__links { display: flex; gap: 32px; list-style: none; margin: 0; padding: 0; }
+.pl-nav__links a {
     font-size: 14px;
-    transition: background-color 0.3s ease;
+    font-weight: 500;
+    color: var(--pl-muted);
+    text-decoration: none;
+    padding: 6px 0;
+    border-bottom: 1.5px solid transparent;
+    transition: color .2s, border-color .2s;
 }
-
-/* Wishlist Section */
-.wishlist {
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-}
-
-.wishlist-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-
-.wishlist-table th,
-.wishlist-table td {
-    padding: 15px;
-    text-align: center;
-    border-bottom: 1px solid #f1f1f1;
-}
-
-.wishlist-table th {
-    background-color: #f7f7f7;
-    font-weight: 600;
-    color: #6c757d;
-}
-
-.wishlist-table td img {
-    max-width: 50px;
-    height: auto;
-    border-radius: 5px;
-}
-
-.table-row {
-    background-color: #fff;
-    transition: background-color 0.3s ease;
-}
-
-.table-row:hover {
-    background-color: #f9f9f9;
-}
-
-.column-2 {
-    text-align: left;
-}
-
-.column-3 {
-    color: #28a745;
-    font-weight: bold;
-}
-
-.column-4 {
-    padding-left: 20px;
-}
-
-/* Action Buttons */
-.btn {
-    display: inline-block;
-    font-weight: 600;
-    text-align: center;
-}
-
-.btn-primary {
-    background-color: #007bff;
-    color: #fff;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    color: #fff;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-}
-
-.btn-danger:hover {
-    background-color: #c82333;
-}
-
-.continue__btn {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.continue__btn a {
-    background-color: #28a745;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 5px;
+.pl-nav__links a:hover { color: var(--pl-ink); }
+.pl-nav__actions { display: flex; align-items: center; gap: 6px; }
+.pl-nav__actions a {
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    color: var(--pl-ink);
     font-size: 16px;
+    text-decoration: none;
+    transition: background .2s;
+}
+.pl-nav__actions a:hover,
+.pl-nav__actions a.is-active { background: var(--pl-tile); }
+
+/* ---------- Page ---------- */
+.ws-page {
+    max-width: var(--pl-max);
+    margin: 0 auto;
+    padding: 40px 24px 112px;
+}
+.ws-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--pl-line);
+    margin-bottom: 40px;
+}
+.ws-title { margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.02em; }
+.ws-count { font-size: 14px; color: var(--pl-muted); }
+
+/* ---------- Grid ---------- */
+.ws-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 48px 24px;
+}
+.ws-card { display: flex; flex-direction: column; }
+.ws-card__media {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    background: var(--pl-tile);
+    border-radius: var(--pl-radius);
+    overflow: hidden;
+}
+.ws-card__media > a { display: block; width: 100%; height: 100%; }
+.ws-card__media img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .5s ease;
+}
+.ws-card:hover .ws-card__media img { transform: scale(1.03); }
+
+.ws-remove {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--pl-ink);
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform .2s, color .2s;
+}
+.ws-remove:hover { transform: scale(1.08); color: var(--pl-danger); }
+
+.ws-card__body { padding-top: 16px; flex: 1; }
+.ws-card__name {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
     font-weight: 600;
-    transition: background-color 0.3s ease;
+    line-height: 1.35;
+    color: var(--pl-ink);
+    text-decoration: none;
+}
+.ws-card__name:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ws-card__price { font-size: 15px; font-weight: 600; }
+
+/* Buttons */
+.ws-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 22px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    color: #fff;
+    background: var(--pl-ink);
+    border: 1px solid var(--pl-ink);
+    border-radius: var(--pl-radius);
+    cursor: pointer;
+    transition: background .2s, color .2s, border-color .2s;
+}
+.ws-btn:hover { background: #2c2c30; color: #fff; }
+.ws-btn--ghost { background: transparent; color: var(--pl-ink); }
+.ws-btn--ghost:hover { background: var(--pl-ink); color: #fff; }
+.ws-add { width: 100%; margin-top: 16px; }
+
+/* Empty state */
+.ws-empty { padding: 96px 24px; text-align: center; }
+.ws-empty h2 { margin: 0 0 8px; font-size: 22px; font-weight: 600; letter-spacing: -0.015em; }
+.ws-empty p { margin: 0 0 24px; font-size: 15px; color: var(--pl-muted); }
+
+/* Footer link */
+.ws-foot { margin-top: 64px; }
+.ws-link {
+    font-size: 14px;
+    color: var(--pl-muted);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+.ws-link:hover { color: var(--pl-ink); }
+
+/* SweetAlert */
+.ws-swal { font-family: var(--pl-font) !important; border-radius: 10px !important; }
+.ws-swal .swal2-title { font-size: 20px; font-weight: 600; color: var(--pl-ink); }
+.ws-swal .swal2-html-container { font-size: 15px; color: var(--pl-muted); }
+.ws-swal .swal2-actions { gap: 12px; }
+
+/* Focus */
+.ws-page a:focus-visible,
+.ws-page button:focus-visible,
+.pl-nav a:focus-visible {
+    outline: 2px solid var(--pl-ink);
+    outline-offset: 3px;
 }
 
-.continue__btn a:hover {
-    background-color: #218838;
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+    .ws-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-
-/* Empty Wishlist Message */
-.wishlist__table tr td {
-    font-style: italic;
-    color: #888;
-}
-
-/* Mobile Responsiveness */
 @media (max-width: 768px) {
-    .wishlist-table td, .wishlist-table th {
-        padding: 10px;
-    }
-
-    .wishlist__table {
-        margin-top: 20px;
-    }
-
-    .btn {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
-    .wishlist__table th, .wishlist__table td {
-        font-size: 14px;
-    }
-
-    .wishlist-table img {
-        max-width: 40px;
-    }
+    .ws-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+    .pl-nav__links { display: none; }
+    .ws-page { padding: 24px 16px 80px; }
+    .ws-title { font-size: 26px; }
+    .ws-head { margin-bottom: 28px; }
+    .ws-grid { gap: 36px 16px; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+    .ws-card:hover .ws-card__media img { transform: none; }
+}

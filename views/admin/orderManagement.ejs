@@ -1,272 +1,532 @@
 <%-include('partials/header.ejs')%>
 
-<div class="h-screen flex-grow-1 overflow-y-lg-auto">
-    <!-- Header -->
-    <header class="bg-surface-primary border-bottom pt-6">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-sm-6 col-12 mb-4 mb-sm-0">
-                    <h1 class="h2 mb-0 ls-tight">Order Management</h1><br>
-                </div>
-                <div class="col-sm-6 col-12 text-sm-end">
-                 
-                </div>
-            </div>
-        </div>
-    </header>
-    <main class="py-6 bg-surface-secondary">
-        <div class="container-fluid">
-            <!-- Card stats -->
-            <div class="card shadow border-0 mb-7">
-                <div class="card-header">
-                    <h5 class="mb-0">Orders</h5>
-                </div>
-
-<div class="table-responsive">
-    <table class="table table-hover table-bordered text-center">
-        <thead class="thead-light">
-            <tr>
-                <th>Order Date</th>
-                <th>Order ID</th>
-                <th>User Name</th>
-                <th>User Email</th>
-                <th>User Address</th>
-                <th>Products</th>
-                <th>Total Amount</th>
-                <th>Payment Method</th>
-                <th>Payment Status</th>
-                <th>Order Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% orders.forEach((order) => { %>
-                <tr>
-                    <td><%= order.createdAt.toLocaleString() %></td>
-                    <td><%= order._id %></td>
-                    <td><%= order.user ? order.user.name : 'N/A' %></td>
-                    <td><%= order.user ? order.user.email : 'N/A' %></td>
-                    <td><%= order.user ? order.shippingAddress : 'N/A' %></td>
-                    <td>
-                        <% order.products.forEach((item) => { %>
-                            <div><%= item.productId ? item.productId.product : 'Unknown Product' %> - ₹<%= item.productId ? item.productId.price.toFixed(2) : '0.00' %> x <%= item.quantity %></div>
-                        <% }); %>
-                    </td>
-                    <td>₹<%= order.totalAmount.toFixed(2) %></td>
-                    <td><%= order.paymentMethod %></td>
-                    <td><%= order.paymentStatus %></td>
-                    <td>
-                        <div class="badge <%= order.status === 'pending' ? 'bg-warning' : order.status === 'shipped' ? 'bg-primary' : order.status === 'delivered' ? 'bg-success' : 'bg-danger' ?' bg-danger':order.status==='returned' %>">
-                            <%= order.status %>
-                        </div>
-                    </td>
-                    <td>
-                        <form action="/admin/changeOrderStatus/<%= order._id %>" method="POST" id="statusForm">
-                            <% if (order.status !== 'cancelled' && order.status !== 'returned' && order.status !== 'returnRequested' && order.status !== 'delivered') { %>
-                              <select name="status" class="form-select" onchange="this.form.submit()">
-                                <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending</option>
-                                <option value="shipped" <%= order.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
-                                <option value="delivered" <%= order.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
-                                <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-                              </select>
-                            <% } else if (order.status === 'returnRequested') { %>
-                              <button class="btn btn-primary" type="button" onclick="confirmReturn('<%= order._id %>')">Accept</button>
-                              <button class="btn btn-danger" type="button" onclick="rejectReturn('<%= order._id %>')">Reject</button>
-                            <% } else { %>
-                              <select name="status" class="form-select" disabled>
-                                <option value="<%= order.status %>" selected><%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %></option>
-                              </select>
-                            <% } %>
-                          </form>
-                    </td>
-                    
-                </tr>
-            <% }); %>
-        </tbody>
-    </table>
-</div>
-
-      <!-- Pagination Controls -->
-      <nav aria-label="User pagination">
-        <ul class="pagination justify-content-center">
-            <% if (currentPage > 1) { %>
-                <li class="page-item">
-                    <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
-                </li>
-            <% } %>
-            <% for (let i = 1; i <= totalPages; i++) { %>
-                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                </li>
-            <% } %>
-            <% if (currentPage < totalPages) { %>
-                <li class="page-item">
-                    <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
-                </li>
-            <% } %>
-        </ul>
-    </nav>
-
+<!-- Same typefaces as the dashboard -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 <!-- SweetAlert2 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<div class="card-footer border-0 py-5">
-    <span class="text-muted text-sm"></span>
-</div>
+<%
+    /* ---------- view helpers ---------- */
+    const money = (n) => Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+    const fmtTime = (d) => d ? new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
 
+    const statusTone = { pending: 'warn', shipped: 'info', delivered: 'ok', cancelled: 'bad', returned: 'muted', returnRequested: 'brass' };
+    const statusText = (s) => s === 'returnRequested' ? 'Return requested' : (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
+    const payTone = (s) => {
+        const v = String(s || '').toLowerCase();
+        if (/(paid|success|complete|captur)/.test(v)) return 'ok';
+        if (/(fail|declin|error)/.test(v)) return 'bad';
+        if (/refund/.test(v)) return 'muted';
+        return 'warn';
+    };
 
-<script>
-    function confirmReturn(orderId) {
-      Swal.fire({
-        title: 'Are you sure?',
-        text: "You want to accept this return request?",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, accept!'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          fetch(`/admin/acceptReturn/${orderId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                Swal.fire('Accepted!', data.message, 'success').then(() => location.reload());
-              } else {
-                Swal.fire('Error!', data.message, 'error');
-              }
-            })
-            .catch((error) => {
-              Swal.fire('Error!', 'Something went wrong!', 'error');
-              console.error('Error:', error);
-            });
+    /* ---------- compact pagination: 1 … 4 5 6 … 20 ---------- */
+    const pageNo = Number(currentPage) || 1;
+    const pageCount = Number(totalPages) || 1;
+    const pageList = [];
+    for (let p = 1; p <= pageCount; p++) {
+        if (p === 1 || p === pageCount || Math.abs(p - pageNo) <= 1) {
+            pageList.push(p);
+        } else if (pageList[pageList.length - 1] !== '…') {
+            pageList.push('…');
         }
-      });
     }
-  
-    function rejectReturn(orderId) {
-      Swal.fire({
-        title: 'Are you sure?',
-        text: "You want to reject this return request?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, reject!'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          fetch(`/admin/rejectReturn/${orderId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                Swal.fire('Rejected!', data.message, 'success').then(() => location.reload());
-              } else {
-                Swal.fire('Error!', data.message, 'error');
-              }
-            })
-            .catch((error) => {
-              Swal.fire('Error!', 'Something went wrong!', 'error');
-              console.error('Error:', error);
-            });
-        }
-      });
-    }
-  </script>
+%>
 
-  
-
-<!-- Include Cropper.js JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<!-- Bootstrap JS (including Popper.js for modals) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Custom CSS -->
 <style>
-    /* Table Styling */
-    table {
-        width: 100%;
-        margin: 30px 0;
-        border-collapse: collapse;
-    }
+    /* =====================================================
+       Orders page theme (scoped to .ord)
+       ===================================================== */
+    .ord {
+        --ink: #0F1B33;
+        --ink-2: #2A3F6B;
+        --line: #E3E7EE;
+        --slate: #5B6578;
+        --mute: #8A93A5;
+        --brass: #B8935A;
 
-    thead {
-        background-color: #f8f9fa;
-        color: #495057;
-    }
-
-    tbody tr:hover {
-        background-color: #f1f1f1;
-    }
-
-    tbody tr {
-        background-color: white;
-    }
-
-    th, td {
-        padding: 12px 20px;
-        text-align: center;
-        border: 1px solid #e0e0e0;
-    }
-
-    th {
-        font-weight: bold;
-    }
-
-    .badge {
-        padding: 5px 10px;
-        font-size: 0.875rem;
-        text-transform: capitalize;
-    }
-
-    .form-select {
-        max-width: 150px;
-        margin: auto;
-    }
-
-    /* Button/Action Styling */
-    .btn {
-        padding: 8px 12px;
+        font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
         font-size: 14px;
+        color: var(--ink);
+        padding: 36px 40px 56px;
+        max-width: 1360px;
+        margin: 0 auto;
+    }
+
+    /* ---------- page head ---------- */
+    .ord-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 26px;
+    }
+    .ord-title {
+        font-family: 'Newsreader', Georgia, serif;
+        font-weight: 500;
+        font-size: 2.25rem;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+        margin: 0;
+    }
+    .ord-sub { margin: 8px 0 0; color: var(--slate); font-size: 14px; }
+    .ord-page {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--slate);
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 14px;
+        white-space: nowrap;
+    }
+
+    /* ---------- table card ---------- */
+    .ord-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 1px 2px rgba(15, 27, 51, .04), 0 10px 28px -20px rgba(15, 27, 51, .18);
+        overflow: hidden;
+    }
+    .ord-scroll { overflow-x: auto; }
+    .ord-table { width: 100%; margin: 0; border-collapse: collapse; }
+    .ord-table th {
+        padding: 14px 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--mute);
+        text-align: left;
+        white-space: nowrap;
+        background: #FAFBFC;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    .ord-table td {
+        padding: 18px 20px;
+        vertical-align: top;
+        text-align: left;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    .ord-table tbody tr:last-child td { border-bottom: 0; }
+    .ord-table tbody tr { transition: background-color .15s; }
+    .ord-table tbody tr:hover { background: #FAFBFD; }
+
+    /* ---------- cell content ---------- */
+    .strong { font-weight: 700; }
+    .sub { font-size: 12.5px; color: var(--slate); margin-top: 2px; word-break: break-word; }
+    .muted { color: var(--mute); font-size: 13px; }
+
+    .oid {
+        appearance: none;
+        border: 0;
+        background: none;
+        padding: 0;
+        font: inherit;
+        font-weight: 800;
+        letter-spacing: .02em;
+        color: var(--ink);
         cursor: pointer;
+        font-variant-numeric: tabular-nums;
+    }
+    .oid:hover { color: var(--brass); }
+    .oid:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: 4px; }
+
+    .addr {
+        margin-top: 6px;
+        max-width: 240px;
+        font-size: 12.5px;
+        line-height: 1.45;
+        color: var(--slate);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
-    .btn-primary {
-        background-color: #007bff;
-        border: none;
-        color: white;
-        border-radius: 4px;
+    .pl + .pl { margin-top: 8px; }
+    .pl-name { font-weight: 600; word-break: break-word; }
+
+    .amt { font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+    /* status chips */
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 4px 11px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .chip.warn  { background: #FFF6E5; color: #8A5A00; }
+    .chip.info  { background: #EAF0FF; color: #1E3A8A; }
+    .chip.ok    { background: #E8F6EE; color: #146C43; }
+    .chip.bad   { background: #FDECEA; color: #A32A1F; }
+    .chip.brass { background: #F7F0E3; color: #7A5A22; }
+    .chip.muted { background: #EEF1F5; color: #475066; }
+    .pay-method { font-weight: 600; margin-bottom: 6px; word-break: break-word; }
+
+    /* controls */
+    .ord-select {
+        appearance: none;
+        -webkit-appearance: none;
+        min-width: 150px;
+        padding: 9px 34px 9px 12px;
+        font: inherit;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--ink);
+        background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235B6578' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: border-color .15s;
+    }
+    .ord-select:hover { border-color: #C9D0DC; }
+    .ord-select:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+    .ob {
+        appearance: none;
+        font: inherit;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 9px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color .15s, border-color .15s;
+    }
+    .ob + .ob { margin-left: 8px; }
+    .ob:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    .ob-accept { background: var(--ink); color: #fff; border: 1px solid var(--ink); }
+    .ob-accept:hover { background: var(--ink-2); border-color: var(--ink-2); }
+    .ob-reject { background: #fff; color: #B3261E; border: 1px solid #F0C4BE; }
+    .ob-reject:hover { background: #FFF1EF; border-color: #E5A9A0; }
+    .ob[disabled] { opacity: .55; cursor: not-allowed; }
+
+    /* empty */
+    .ord-empty { padding: 56px 20px; text-align: center; color: var(--mute); font-size: 14px; }
+
+    /* ---------- pagination ---------- */
+    .pager {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 24px 0 0;
+        padding: 0;
+        list-style: none;
+    }
+    .pg {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--slate);
+        font-weight: 600;
+        font-size: 13px;
+        text-decoration: none;
+        transition: border-color .15s, color .15s;
+    }
+    a.pg:hover { color: var(--ink); border-color: #C9D0DC; text-decoration: none; }
+    a.pg:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    .pg.is-active { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .pg.is-gap { border-color: transparent; background: none; color: var(--mute); }
+
+    /* ---------- tablet ---------- */
+    @media (min-width: 768px) {
+        .ord-table { min-width: 900px; }
+    }
+    @media (max-width: 991.98px) {
+        .ord { padding: 28px 24px 48px; }
     }
 
-    .btn-primary:hover {
-        background-color: #0056b3;
+    /* ---------- mobile: every order becomes a card ---------- */
+    @media (max-width: 767.98px) {
+        .ord { padding: 22px 14px 40px; }
+        .ord-title { font-size: 1.9rem; }
+
+        .ord-table thead { display: none; }
+        .ord-table, .ord-table tbody, .ord-table tr, .ord-table td { display: block; width: 100%; }
+        .ord-table tbody tr { padding: 16px 16px 18px; border-bottom: 1px solid var(--line); }
+        .ord-table tbody tr:hover { background: none; }
+        .ord-table tbody tr:last-child { border-bottom: 0; }
+
+        .ord-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 8px 0;
+            border: 0;
+            text-align: right;
+        }
+        .ord-table td::before {
+            content: attr(data-label);
+            flex-shrink: 0;
+            padding-top: 2px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--mute);
+            text-align: left;
+        }
+        .cell { min-width: 0; text-align: right; }
+        .addr { max-width: none; margin-left: auto; }
+
+        /* the action area gets its own full-width row */
+        .ord-table td.act {
+            display: block;
+            margin-top: 8px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--line);
+            text-align: left;
+        }
+        .ord-table td.act::before { display: none; }
+        .ord-table td.act .cell { text-align: left; }
+        .ord-select { width: 100%; padding-top: 11px; padding-bottom: 11px; }
+        .ob { padding: 11px 16px; }
+        .act-buttons { display: flex; gap: 8px; }
+        .act-buttons .ob { flex: 1; margin: 0; }
     }
 
-    .btn-danger {
-        background-color: #dc3545;
-        border: none;
-        color: white;
-        border-radius: 4px;
-    }
-
-    .btn-danger:hover {
-        background-color: #c82333;
-    }
-
-    /* Footer */
-    .card-footer {
-        background-color: transparent;
-        text-align: right;
-        font-size: 0.875rem;
+    @media (prefers-reduced-motion: reduce) {
+        .ord-table tbody tr, .ob, .ord-select, .pg { transition: none; }
     }
 </style>
+
+<div class="container-fluid vh-100 d-flex flex-column p-0">
+    <div class="flex-grow-1 overflow-auto">
+        <main class="ord">
+
+            <!-- Page head -->
+            <div class="ord-head">
+                <div>
+                    <h1 class="ord-title">Orders</h1>
+                    <p class="ord-sub">Review payments and move orders through delivery.</p>
+                </div>
+                <span class="ord-page">Page <%= pageNo %> of <%= pageCount %></span>
+            </div>
+
+            <!-- Orders -->
+            <section class="ord-card" aria-label="Orders">
+                <% if (!orders || orders.length === 0) { %>
+                    <div class="ord-empty">No orders yet. New orders will appear here.</div>
+                <% } else { %>
+                <div class="ord-scroll">
+                    <table class="ord-table">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Products</th>
+                                <th>Total</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% orders.forEach((order) => {
+                                const shortId = String(order._id).slice(-8).toUpperCase();
+                                const status = order.status;
+                                const editable = !['cancelled', 'returned', 'returnRequested', 'delivered'].includes(status);
+                            %>
+                                <tr>
+                                    <td data-label="Order">
+                                        <div class="cell">
+                                            <button type="button" class="oid" data-id="<%= order._id %>" title="Click to copy the full order ID">#<%= shortId %></button>
+                                            <div class="sub"><%= fmtDate(order.createdAt) %>, <%= fmtTime(order.createdAt) %></div>
+                                        </div>
+                                    </td>
+
+                                    <td data-label="Customer">
+                                        <div class="cell">
+                                            <div class="strong"><%= order.user ? order.user.name : 'N/A' %></div>
+                                            <% if (order.user && order.user.email) { %>
+                                                <div class="sub"><%= order.user.email %></div>
+                                            <% } %>
+                                            <% if (order.shippingAddress) { %>
+                                                <div class="addr" title="<%= order.shippingAddress %>"><%= order.shippingAddress %></div>
+                                            <% } %>
+                                        </div>
+                                    </td>
+
+                                    <td data-label="Products">
+                                        <div class="cell">
+                                            <% order.products.forEach((item) => { %>
+                                                <div class="pl">
+                                                    <div class="pl-name"><%= item.productId ? item.productId.product : 'Unknown product' %></div>
+                                                    <div class="sub">₹<%= money(item.productId ? item.productId.price : 0) %> × <%= item.quantity %></div>
+                                                </div>
+                                            <% }); %>
+                                        </div>
+                                    </td>
+
+                                    <td data-label="Total">
+                                        <div class="cell"><span class="amt">₹<%= money(order.totalAmount) %></span></div>
+                                    </td>
+
+                                    <td data-label="Payment">
+                                        <div class="cell">
+                                            <div class="pay-method"><%= order.paymentMethod %></div>
+                                            <span class="chip <%= payTone(order.paymentStatus) %>"><%= order.paymentStatus %></span>
+                                        </div>
+                                    </td>
+
+                                    <td data-label="Status">
+                                        <div class="cell">
+                                            <span class="chip <%= statusTone[status] || 'muted' %>"><%= statusText(status) %></span>
+                                        </div>
+                                    </td>
+
+                                    <td class="act" data-label="Action">
+                                        <div class="cell">
+                                            <% if (editable) { %>
+                                                <form action="/admin/changeOrderStatus/<%= order._id %>" method="POST">
+                                                    <select name="status" class="ord-select" data-status-select data-current="<%= status %>" aria-label="Change order status">
+                                                        <option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Pending</option>
+                                                        <option value="shipped" <%= status === 'shipped' ? 'selected' : '' %>>Shipped</option>
+                                                        <option value="delivered" <%= status === 'delivered' ? 'selected' : '' %>>Delivered</option>
+                                                        <option value="cancelled" <%= status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                                    </select>
+                                                </form>
+                                            <% } else if (status === 'returnRequested') { %>
+                                                <div class="act-buttons">
+                                                    <button class="ob ob-accept" type="button" data-return="accept" data-id="<%= order._id %>">Accept</button>
+                                                    <button class="ob ob-reject" type="button" data-return="reject" data-id="<%= order._id %>">Reject</button>
+                                                </div>
+                                            <% } else { %>
+                                                <span class="muted">No further actions</span>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+                <% } %>
+            </section>
+
+            <!-- Pagination -->
+            <% if (pageCount > 1) { %>
+            <nav aria-label="Orders pagination">
+                <ul class="pager">
+                    <% if (pageNo > 1) { %>
+                        <li><a class="pg" href="?page=<%= pageNo - 1 %>">Previous</a></li>
+                    <% } %>
+                    <% pageList.forEach((p) => { %>
+                        <% if (p === '…') { %>
+                            <li><span class="pg is-gap" aria-hidden="true">…</span></li>
+                        <% } else { %>
+                            <li>
+                                <a class="pg <%= p === pageNo ? 'is-active' : '' %>" href="?page=<%= p %>" <%- p === pageNo ? 'aria-current="page"' : '' %>><%= p %></a>
+                            </li>
+                        <% } %>
+                    <% }); %>
+                    <% if (pageNo < pageCount) { %>
+                        <li><a class="pg" href="?page=<%= pageNo + 1 %>">Next</a></li>
+                    <% } %>
+                </ul>
+            </nav>
+            <% } %>
+
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    /* ---------- copy the full order ID ---------- */
+    document.querySelectorAll('.oid').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+            var original = btn.textContent;
+            try {
+                await navigator.clipboard.writeText(btn.dataset.id);
+                btn.textContent = 'Copied';
+                setTimeout(function () { btn.textContent = original; }, 1200);
+            } catch (e) {
+                console.error('Copy failed:', e);
+            }
+        });
+    });
+
+    /* ---------- change status (confirm the two that cannot be undone) ---------- */
+    document.querySelectorAll('select[data-status-select]').forEach(function (sel) {
+        sel.addEventListener('change', function () {
+            var next = sel.value;
+            var previous = sel.dataset.current;
+
+            if (next === 'cancelled' || next === 'delivered') {
+                Swal.fire({
+                    title: 'Mark this order as ' + next + '?',
+                    text: "The status can't be changed afterwards.",
+                    icon: next === 'cancelled' ? 'warning' : 'question',
+                    showCancelButton: true,
+                    reverseButtons: true,
+                    confirmButtonText: 'Yes, mark ' + next,
+                    confirmButtonColor: next === 'cancelled' ? '#B3261E' : '#0F1B33',
+                    cancelButtonColor: '#8A93A5'
+                }).then(function (result) {
+                    if (result.isConfirmed) sel.form.submit();
+                    else sel.value = previous;
+                });
+            } else {
+                sel.form.submit();
+            }
+        });
+    });
+
+    /* ---------- accept / reject a return request ---------- */
+    function returnAction(kind, orderId) {
+        var accept = kind === 'accept';
+        Swal.fire({
+            title: 'Are you sure?',
+            text: accept ? 'You want to accept this return request?' : 'You want to reject this return request?',
+            icon: accept ? 'question' : 'warning',
+            showCancelButton: true,
+            reverseButtons: true,
+            confirmButtonText: accept ? 'Yes, accept' : 'Yes, reject',
+            confirmButtonColor: accept ? '#0F1B33' : '#B3261E',
+            cancelButtonColor: '#8A93A5'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            fetch('/admin/' + (accept ? 'acceptReturn/' : 'rejectReturn/') + orderId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (data.success) {
+                        Swal.fire(accept ? 'Accepted!' : 'Rejected!', data.message, 'success').then(function () {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(function (error) {
+                    Swal.fire('Error!', 'Something went wrong!', 'error');
+                    console.error('Error:', error);
+                });
+        });
+    }
+
+    document.querySelectorAll('[data-return]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            returnAction(btn.dataset.return, btn.dataset.id);
+        });
+    });
+</script>

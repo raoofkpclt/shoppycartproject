@@ -122,13 +122,12 @@ const verifyOTP = async (req, res) => {
     // Generate unique referral code
     const referralCode = await userSchema.generateReferralCode();
 
-    const googleId = email;
+
     const newUser = new userSchema({
       name,
       email,
       password: hashedPassword,
       referralCode,
-      googleId: googleId || null,
     });
 
     await newUser.save();

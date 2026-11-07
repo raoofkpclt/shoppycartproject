@@ -2,125 +2,145 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup</title>
-
-    <!-- MATERIAL DESIGN ICONIC FONT -->
-    <link rel="stylesheet" href="/fonts/material-design-iconic-font/css/material-design-iconic-font.min.css">
-
-    <!-- STYLE CSS -->
-    <link rel="stylesheet" href="/stylesheet/signup.css">
+    <title>Create account · ShoppyCart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
 
-    /* Hide the default checkbox */
-input[type="checkbox"] {
-    display: none;
-}
+        :root {
+            --pl-bg: #ffffff;
+            --pl-tile: #f4f4f2;
+            --pl-ink: #151517;
+            --pl-muted: #74777d;
+            --pl-line: #e7e7e9;
+            --pl-sale: #1f6b45;
+            --pl-danger: #c2373d;
+            --pl-radius: 6px;
+            --pl-font: 'Manrope', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
 
-/* Style the checkmark */
-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 32px 16px;
+            font-family: var(--pl-font);
+            color: var(--pl-ink);
+            background: var(--pl-tile);
+            -webkit-font-smoothing: antialiased;
+        }
 
-.checkmark {
-    width: 18px;
-    height: 18px;
-    background-color: #f1f1f1;
-    border: 2px solid #ccc;
-    border-radius: 3px;
-    margin-right: 10px;
-   
-}
+        .lg-card { width: 100%; max-width: 440px; padding: 40px; background: var(--pl-bg); border-radius: 10px; }
+        .lg-logo { display: block; margin-bottom: 32px; }
+        .lg-logo img { height: 28px; width: auto; display: block; }
+        .lg-title { margin: 0 0 8px; font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+        .lg-lead { margin: 0 0 28px; font-size: 15px; color: var(--pl-muted); }
 
-/* When the checkbox is checked, show the tick mark */
-input[type="checkbox"]:checked + .checkmark::after {
-    content: '';
-    position: absolute;
-    left: 6px;
-    top: 2px;
-    width: 6px;
-    height: 12px;
-    border: solid #4CAF50;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
-</style>
+        .lg-notice { margin: 0 0 20px; padding: 12px 14px; font-size: 14px; line-height: 1.5; border-radius: var(--pl-radius); }
+        .lg-notice--ok { color: var(--pl-sale); background: #e9f3ed; }
+        .lg-notice--error { color: var(--pl-danger); background: #fbeaeb; }
 
+        .lg-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+        .lg-field label { font-size: 13px; font-weight: 500; color: var(--pl-muted); }
+        .lg-field input {
+            height: 48px; padding: 0 14px;
+            font: inherit; font-size: 15px; color: var(--pl-ink);
+            background: #fff; border: 1px solid var(--pl-line); border-radius: var(--pl-radius);
+            transition: border-color .2s;
+        }
+        .lg-field input:focus { outline: none; border-color: var(--pl-ink); }
+        .lg-field input.is-invalid { border-color: var(--pl-danger); }
+        .lg-hint { font-size: 13px; color: var(--pl-danger); min-height: 0; }
+
+        .lg-check { display: flex; align-items: flex-start; gap: 10px; margin: 4px 0 24px; font-size: 14px; line-height: 1.5; color: var(--pl-muted); cursor: pointer; }
+        .lg-check input { width: 18px; height: 18px; margin-top: 2px; flex: none; accent-color: var(--pl-ink); }
+
+        .lg-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; height: 52px; padding: 0 24px;
+            font: inherit; font-size: 15px; font-weight: 600;
+            color: #fff; background: var(--pl-ink);
+            border: 1px solid var(--pl-ink); border-radius: var(--pl-radius);
+            cursor: pointer; transition: background .2s;
+        }
+        .lg-btn:hover { background: #2c2c30; }
+
+        .lg-foot { margin: 28px 0 0; font-size: 14px; text-align: center; color: var(--pl-muted); }
+        .lg-foot a { color: var(--pl-ink); font-weight: 600; text-underline-offset: 3px; }
+
+        a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--pl-ink); outline-offset: 3px; }
+
+        @media (max-width: 480px) { .lg-card { padding: 28px 20px; } .lg-title { font-size: 24px; } }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
 </head>
 <body>
-    <div class="wrapper" style="background-image: url('/image/bg-registration-form-2.jpg');">
-        <div class="inner">
+    <main class="lg-card">
+        <a class="lg-logo" href="/user/"><img src="/image/Shoppycartfinel.png" alt="ShoppyCart"></a>
 
-            <% if (message) { %>
-                <h4 style="color: rgb(21, 181, 66);"><%=message %></h4>
-                <% } %>
-                <% if (error) { %>
-                    <h4 style="color: rgb(181, 21, 21);"><%=error%></h4>
-                    <% } %>
-                    <br>
-                    
-            <form action="/user/signup" method="POST">
-                <h3>Now let's make you a Shoppycart Member</h3>
+        <h1 class="lg-title">Create your account</h1>
+        <p class="lg-lead">Join ShoppyCart to save your cart, addresses and orders.</p>
 
-                <div class="form-wrapper">
-                    <label for="text"></label>
-                    <input id="username" name="name" type="text" class="form-control" placeholder="Enter your username" >
-                </div>
-                <div class="form-wrapper">
-                    <label for="email"></label>
-                    <input id="email" name="email" type="email" class="form-control" placeholder="Enter your email" >
-                </div>
-                <div class="form-wrapper">
-                    <label for="password"></label>
-                    <input id="password" name="password" type="password" class="form-control" placeholder="Enter Your Password">
-                </div>
-                <div class="form-wrapper">
-                    <label for="cpassword"></label>
-                    <input id="cpassword" name="cpassword" type="password" class="form-control" placeholder="Confirm Password" >
-                </div>
-                <div class="form-wrapper">
-                    <label for="referrals"></label>
-                    <input id="referrals" name="referrals" type="text" class="form-control" placeholder="Enter your referral code (if any)">
-                    </div>
-                <div class="checkbox">
-                    <label>
-                        <input type="checkbox" required> I accept the Terms of Use & Privacy Policy.
-                        <span class="checkmark"></span>
-                    </label>
-                </div>
-                  <div style="padding: 20px;padding-top: 10px; padding-bottom: 10px; " class="d-flex justify-content-center links">
-                        Do You have an account?<a href="/user/login"> Sign In</a>
-                      </div>
-                <button  type="submit">Signup</button>
-            </form>
-        </div>
-    </div>
+        <% if (typeof message !== 'undefined' && message) { %>
+            <div class="lg-notice lg-notice--ok" role="status"><%= message %></div>
+        <% } %>
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="lg-notice lg-notice--error" role="alert"><%= error %></div>
+        <% } %>
 
+        <form action="/user/signup" method="POST" id="signupForm">
+            <div class="lg-field">
+                <label for="username">Username</label>
+                <input id="username" name="name" type="text" autocomplete="name" required>
+            </div>
+            <div class="lg-field">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="lg-field">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" autocomplete="new-password" required>
+            </div>
+            <div class="lg-field">
+                <label for="cpassword">Confirm password</label>
+                <input id="cpassword" name="cpassword" type="password" autocomplete="new-password" required>
+                <span class="lg-hint" id="matchHint" role="alert"></span>
+            </div>
+            <div class="lg-field">
+                <label for="referrals">Referral code (optional)</label>
+                <input id="referrals" name="referrals" type="text" autocomplete="off">
+            </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <% if (message) { %>
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: '<%=message %>',
-                showConfirmButton: false,
-                timer: 1500
-            })
-        </script>
-    <% } %>
-    <% if (error) { %>
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: '<%=error %>',
-                showConfirmButton: false,
-                timer: 1500
-            })
-        </script>
-    <% } %>
+            <label class="lg-check">
+                <input type="checkbox" required>
+                <span>I accept the Terms of Use and Privacy Policy.</span>
+            </label>
 
+            <button type="submit" class="lg-btn">Create account</button>
+        </form>
 
+        <p class="lg-foot">Already have an account? <a href="/user/login">Log in</a></p>
+    </main>
+
+    <script>
+        const form = document.getElementById('signupForm');
+        const pw = document.getElementById('password');
+        const cpw = document.getElementById('cpassword');
+        const hint = document.getElementById('matchHint');
+
+        function checkMatch() {
+            const bad = cpw.value && pw.value !== cpw.value;
+            cpw.classList.toggle('is-invalid', bad);
+            hint.textContent = bad ? 'Passwords do not match.' : '';
+            return !bad;
+        }
+        pw.addEventListener('input', checkMatch);
+        cpw.addEventListener('input', checkMatch);
+        form.addEventListener('submit', (e) => {
+            if (pw.value !== cpw.value) { e.preventDefault(); checkMatch(); cpw.focus(); }
+        });
+    </script>
 </body>
 </html>

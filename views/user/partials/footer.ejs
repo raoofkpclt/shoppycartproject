@@ -1,68 +1,58 @@
- <!-- Footer Section Begin -->
- <footer class="footer" >
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-3 col-md-6 col-sm-6">
-                <div class="footer__about">
-                    <div class="footer__logo">
-                        <a href="#"><img style="height: 30px;width: 140px;" src="/image/Shoppycartw.png" alt=""></a>
-                    </div>
-                    <p>The customer is at the heart of our unique business model, which includes design.</p>
-                    <a href="#"><img src="img/payment.png" alt=""></a>
-                </div>
+<style>
+    .foot { margin-top: 0; padding: 64px 0 0; background: var(--ink); color: #AEB8CE; font-family: 'Manrope', system-ui, sans-serif; font-size: 14.5px; line-height: 1.6; }
+    .foot-in { max-width: 1280px; margin: 0 auto; padding: 0 28px; }
+    .foot-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1.4fr; gap: 48px; }
+    .foot img { display: block; height: 30px; width: 140px; object-fit: contain; }
+    .foot p { margin: 14px 0 0; max-width: 320px; color: #AEB8CE; }
+    .foot h6 { margin: 0 0 16px; color: #fff; font-size: 15px; font-weight: 700; letter-spacing: 0; text-transform: none; }
+    .foot ul { margin: 0; padding: 0; list-style: none; }
+    .foot li + li { margin-top: 10px; }
+    .foot a { color: #AEB8CE; transition: color .15s; }
+    .foot a:hover { color: #fff; }
+    .foot-rule { margin: 48px 0 0; border: 0; border-top: 1px dashed rgba(184, 147, 90, .55); }
+    .foot-copy { padding: 22px 0 28px; text-align: center; color: #8A93A5; font-size: 13px; }
+    @media (max-width: 991.98px) { .foot-grid { grid-template-columns: 1fr 1fr; gap: 36px; } }
+    @media (max-width: 575.98px) { .foot-in { padding: 0 16px; } .foot-grid { grid-template-columns: 1fr; gap: 28px; } }
+    @media (prefers-reduced-motion: reduce) { .foot a { transition: none; } }
+</style>
+
+<footer class="foot">
+    <div class="foot-in">
+        <div class="foot-grid">
+            <div>
+                <a href="/user/"><img src="/image/Shoppycartw.png" alt="ShoppyCart"></a>
+                <p>The customer is at the heart of our unique business model, which includes design.</p>
             </div>
-            <div class="col-lg-2 offset-lg-1 col-md-3 col-sm-6">
-                <div class="footer__widget">
-                    <h6>Shopping</h6>
-                    <ul>
-                        <li><a href="/user/productList">Footware Store</a></li>
-                        <li><a href="/user/productList">Trending Shoes</a></li>
-                        <li><a href="/user/productList">Sports Shoes</a></li>
-                        <li><a href="/user/productList">Sale</a></li>
-                    </ul>
-                </div>
+            <div>
+                <h6>Shop</h6>
+                <ul>
+                    <li><a href="/user/productList">Footwear store</a></li>
+                    <li><a href="/user/productList">Trending shoes</a></li>
+                    <li><a href="/user/productList">Sports shoes</a></li>
+                    <li><a href="/user/productList">Sale</a></li>
+                </ul>
             </div>
-            <div class="col-lg-2 col-md-3 col-sm-6">
-                <div class="footer__widget">
-                    <h6>Shopping</h6>
-                    <ul>
-                        <li><a href="/user/profile?section=orderDetails">Contact Us</a></li>
-                        <li><a href="/user/profile?section=orderDetails">Payment Methods</a></li>
-                        <li><a href="/user/profile?section=orderDetails">Delivary</a></li>
-                        <li><a href="/user/profile?section=orderDetails">Return & Exchanges</a></li>
-                    </ul>
-                </div>
+            <div>
+                <h6>Help</h6>
+                <ul>
+                    <li><a href="/user/profile?section=orderDetails">Contact us</a></li>
+                    <li><a href="/user/profile?section=orderDetails">Payment methods</a></li>
+                    <li><a href="/user/profile?section=orderDetails">Delivery</a></li>
+                    <li><a href="/user/profile?section=orderDetails">Returns &amp; exchanges</a></li>
+                </ul>
             </div>
-            <div class="col-lg-3 offset-lg-1 col-md-6 col-sm-6">
-                <div class="footer__widget">
-                    <h6>NewLetter</h6>
-                    <div class="footer__newslatter">
-                        <p>Be the first to know about new arrivals, look books, sales & promos!</p>
-                        <!-- <form action="#">
-                            <input type="text" placeholder="Your email">
-                            <button type="submit"><span class="icon_mail_alt"></span></button>
-                        </form> -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-12 text-center">
-                <div class="footer__copyright__text">
-                    <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                    <p>
-                        <i class="fa fa-heart-o"
-                        aria-hidden="true"></i><a href="#" target="_blank">Shoppycart</a>
-                    </p>
-                    <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                </div>
+            <div>
+                <h6>Newsletter</h6>
+                <p style="margin-top:0">Be the first to know about new arrivals, look books, sales &amp; promos.</p>
             </div>
         </div>
+
+        <hr class="foot-rule">
+        <div class="foot-copy">&copy; <%= new Date().getFullYear() %> Shoppycart</div>
     </div>
 </footer>
-<!-- Footer Section End -->
 
-<!-- Search Begin -->
+<!-- Search (opened by the template script) -->
 <div class="search-model">
     <div class="h-100 d-flex align-items-center justify-content-center">
         <div class="search-close-switch">+</div>
@@ -71,18 +61,18 @@
         </form>
     </div>
 </div>
-<!-- Search End -->
-   <!-- Js Plugins -->
-   <script src="/js/jquery-3.3.1.min.js"></script>
-   <script src="/js/bootstrap.min.js"></script>
-   <script src="/js/jquery.nice-select.min.js"></script>
-   <script src="/js/jquery.nicescroll.min.js"></script>
-   <script src="/js/jquery.magnific-popup.min.js"></script>
-   <script src="/js/jquery.countdown.min.js"></script>
-   <script src="/js/jquery.slicknav.js"></script>
-   <script src="/js/mixitup.min.js"></script>
-   <script src="/js/owl.carousel.min.js"></script>
-   <script src="/js/main.js"></script>
+
+<!-- Js Plugins -->
+<script src="/js/jquery-3.3.1.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/jquery.nice-select.min.js"></script>
+<script src="/js/jquery.nicescroll.min.js"></script>
+<script src="/js/jquery.magnific-popup.min.js"></script>
+<script src="/js/jquery.countdown.min.js"></script>
+<script src="/js/jquery.slicknav.js"></script>
+<script src="/js/mixitup.min.js"></script>
+<script src="/js/owl.carousel.min.js"></script>
+<script src="/js/main.js"></script>
 </body>
 
 </html>

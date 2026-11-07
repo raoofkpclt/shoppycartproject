@@ -1,0 +1,50 @@
+<%# Top bar for every storefront page. Include it right after the header partial. %>
+<style>
+    .bar { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); font-family: 'Manrope', system-ui, sans-serif; }
+    .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 20px; max-width: 1280px; min-height: 68px; margin: 0 auto; padding: 0 28px; }
+    .bar-logo { display: block; }
+    .bar-logo img { display: block; height: 30px; width: 140px; object-fit: contain; }
+    .bar-nav { display: flex; gap: 6px; margin: 0 auto 0 28px; padding: 0; list-style: none; }
+    .bar-nav a { display: block; padding: 8px 14px; border-radius: 10px; font-size: 15px; font-weight: 600; color: var(--slate); }
+    .bar-nav a:hover { color: var(--ink); background: var(--soft); }
+    .bar-nav a[aria-current="page"] { color: var(--ink); }
+    .bar-icons { display: flex; gap: 4px; }
+    .bar-icons a { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; color: var(--ink); transition: background-color .15s; }
+    .bar-icons a:hover { background: var(--soft); }
+    .bar-icons svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    @media (max-width: 767.98px) {
+        .bar-in { flex-wrap: wrap; padding: 8px 16px; }
+        .bar-nav { order: 3; width: 100%; margin: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) { .bar-icons a { transition: none; } }
+</style>
+
+<header class="bar">
+    <div class="bar-in">
+        <a class="bar-logo" href="/user/"><img src="/image/Shoppycartfinel.png" alt="ShoppyCart"></a>
+
+        <ul class="bar-nav">
+            <li><a href="/user/">Home</a></li>
+            <li><a href="/user/productList">Shop</a></li>
+        </ul>
+
+        <nav class="bar-icons" aria-label="Account">
+            <a href="/user/profile" aria-label="Profile" title="Profile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+            <a href="/user/wishlist" aria-label="Wishlist" title="Wishlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></a>
+            <a href="/user/cart" aria-label="Cart" title="Cart"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg></a>
+            <a href="/user/wallet" aria-label="Wallet" title="Wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></a>
+            <a href="/user/logout" aria-label="Log out" title="Log out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></a>
+        </nav>
+    </div>
+</header>
+
+<script>
+    // mark the current page in the top bar
+    (function () {
+        var path = location.pathname.replace(/\/+$/, '') || '/';
+        document.querySelectorAll('.bar-nav a').forEach(function (a) {
+            var target = a.getAttribute('href').replace(/\/+$/, '') || '/';
+            if (target === path) a.setAttribute('aria-current', 'page');
+        });
+    })();
+</script>

@@ -1,40 +1,117 @@
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
- 
-  
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css'>
-  <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Arvo'>
-    <link rel="stylesheet" href="/stylesheet/404.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page not found</title>
 
- 
-  </head>
-  
-  <body>
-  
-    <section class="page_404">
-      <div class="container">
-          <div class="row">	
-          <div class="col-sm-12 ">
-          <div class="col-sm-10 col-sm-offset-1  text-center">
-          <div class="four_zero_four_bg">
-              <h1 class="text-center ">404</h1>
-          
-          
-          </div>
-          
-          <div class="contant_box_404">
-          <h3 class="h2">
-          Look like you're lost
-          </h3>
-          
-          <p>the page you are looking for not avaible!</p>
-          
-          <a href="/user/" class="link_404">Go to Home</a>
-      </div>
-          </div>
-          </div>
-          </div>
-      </div>
-  </section>
-  
-  
+    <!-- Same typefaces as the admin pages -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ink: #0F1B33;
+            --ink-2: #2A3F6B;
+            --line: #E3E7EE;
+            --slate: #5B6578;
+            --brass: #B8935A;
+        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 20px;
+            background: #F2F4F8;
+            color: var(--ink);
+            font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .nf { width: 100%; max-width: 520px; text-align: center; }
+
+        /* the 404 is the one memorable element: big serif numerals on a perforated rule */
+        .nf-code {
+            margin: 0;
+            font-family: 'Newsreader', Georgia, serif;
+            font-weight: 500;
+            font-size: clamp(6rem, 26vw, 11rem);
+            line-height: .95;
+            letter-spacing: -0.04em;
+            color: var(--ink);
+        }
+        .nf-rule {
+            width: 120px;
+            margin: 22px auto 28px;
+            border: 0;
+            border-top: 2px dashed var(--brass);
+        }
+
+        .nf-title {
+            margin: 0;
+            font-family: 'Newsreader', Georgia, serif;
+            font-weight: 500;
+            font-size: 1.9rem;
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+        }
+        .nf-text {
+            max-width: 380px;
+            margin: 12px auto 0;
+            color: var(--slate);
+        }
+
+        .nf-actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .cb {
+            appearance: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font: inherit;
+            font-weight: 700;
+            font-size: 13px;
+            padding: 11px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color .15s, border-color .15s;
+        }
+        .cb:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+        .cb-ink { background: var(--ink); color: #fff; border: 1px solid var(--ink); }
+        .cb-ink:hover { background: var(--ink-2); border-color: var(--ink-2); color: #fff; }
+        .cb-ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+        .cb-ghost:hover { border-color: #C9D0DC; }
+
+        @media (max-width: 480px) {
+            .nf-actions .cb { flex: 1 1 100%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .cb { transition: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="nf">
+        <h1 class="nf-code" aria-label="Error 404">404</h1>
+        <hr class="nf-rule">
+        <h2 class="nf-title">Page not found</h2>
+        <p class="nf-text">The page you are looking for doesn't exist or has been moved.</p>
+
+        <div class="nf-actions">
+            <a href="/user/" class="cb cb-ink">Back to Home</a>
+            <button type="button" class="cb cb-ghost" onclick="history.length > 1 ? history.back() : location.assign('/admin/dash')">Go back</button>
+        </div>
+    </main>
+</body>
+</html>

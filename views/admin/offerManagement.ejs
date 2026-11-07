@@ -1,377 +1,775 @@
-<%-include('partials/header.ejs')%>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="/assets/vendors/mdi/css/materialdesignicons.min.css">
-<link rel="stylesheet" href="/assets/vendors/css/vendor.bundle.base.css">
-<link rel="stylesheet" href="/assets/css/style.css">
-<link rel="shortcut icon" href="/assets/images/favicon.png" />
+<%- include('partials/header.ejs') %>
 
-
+<!-- Same typefaces as the Products, Users and Coupons pages -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
 <!-- SweetAlert2 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
- 
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Main content -->
-<div class="h-screen flex-grow-1 overflow-y-lg-auto">
-    <!-- Header -->
-    <header class="bg-surface-primary border-bottom pt-6">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-sm-6 col-12 mb-4 mb-sm-0">
-                    <h1 class="h2 mb-0 ls-tight">Offer Management</h1><br>
+
+<%
+    /* ---------- view helpers ---------- */
+    const day = (d) => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const flashMessage = locals.message || '';
+    const flashError = locals.error || '';
+    const rows = (offers || []).filter((o) => o.isActive);   // only active offers are listed
+    const now = new Date();
+
+    // Active = running now, Scheduled = starts later, Expired = end date passed
+    const stateOf = (o) => {
+        if (new Date(o.startDate) > now) return { cls: 'warn', label: 'Scheduled' };
+        if (new Date(o.endDate) < now) return { cls: 'bad', label: 'Expired' };
+        return { cls: 'ok', label: 'Active' };
+    };
+
+    // Turn the ids stored on an offer into names (unknown ids are flagged)
+    const nameList = (ids, source, field) => (ids || []).map((id) => {
+        const hit = source.find((s) => s._id.toString() === id.toString());
+        return hit ? { text: hit[field], gone: false } : { text: 'Removed item', gone: true };
+    });
+    const MAX_TAGS = 3;
+
+    // The two pickers in the create dialog share one markup
+    const pickers = [
+        { key: 'products',   title: 'Applicable products',   noun: 'products',   name: 'applicableProducts[]',
+          items: (products || []).map((p) => ({ id: p._id, text: p.product })) },
+        { key: 'categories', title: 'Applicable categories', noun: 'categories', name: 'applicableCategories[]',
+          items: (categories || []).map((c) => ({ id: c._id, text: c.name })) }
+    ];
+%>
+
+<style>
+    /* =====================================================
+       Offers page theme (same tokens as the other admin pages)
+       ===================================================== */
+    .pm, .pm-dialog {
+        --ink: #0F1B33;
+        --ink-2: #2A3F6B;
+        --line: #E3E7EE;
+        --slate: #5B6578;
+        --mute: #8A93A5;
+        --brass: #B8935A;
+        font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        color: var(--ink);
+    }
+    .pm {
+        font-size: 14px;
+        padding: 36px 40px 56px;
+        max-width: 1360px;
+        margin: 0 auto;
+    }
+
+    /* ---------- page head ---------- */
+    .pm-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 26px;
+    }
+    .pm-title {
+        font-family: 'Newsreader', Georgia, serif;
+        font-weight: 500;
+        font-size: 2.25rem;
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+        margin: 0;
+    }
+    .pm-sub { margin: 8px 0 0; color: var(--slate); font-size: 14px; }
+
+    /* ---------- buttons ---------- */
+    .cb {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font: inherit;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 9px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color .15s, border-color .15s, color .15s;
+    }
+    .cb:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    .cb[disabled] { opacity: .55; cursor: not-allowed; }
+    .cb i { font-size: 15px; line-height: 1; }
+    .cb-ink { background: var(--ink); color: #fff; border: 1px solid var(--ink); }
+    .cb-ink:hover { background: var(--ink-2); border-color: var(--ink-2); color: #fff; text-decoration: none; }
+    .cb-ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .cb-ghost:hover { border-color: #C9D0DC; }
+    .cb-warn { background: #fff; color: #B3261E; border: 1px solid #F0C4BE; }
+    .cb-warn:hover { background: #FFF1EF; border-color: #E5A9A0; }
+
+    /* ---------- notices ---------- */
+    .notice {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .notice.ok { background: #E8F6EE; border: 1px solid #BFE3CF; color: #146C43; }
+    .notice.bad { background: #FDECEA; border: 1px solid #F3C9C2; color: #A32A1F; }
+    .notice button {
+        appearance: none; border: 0; background: none; color: inherit;
+        font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px; opacity: .7;
+    }
+    .notice button:hover { opacity: 1; }
+
+    /* ---------- table card ---------- */
+    .pm-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 1px 2px rgba(15, 27, 51, .04), 0 10px 28px -20px rgba(15, 27, 51, .18);
+        overflow: hidden;
+    }
+    .pm-scroll { overflow-x: auto; }
+    .pm-table { width: 100%; margin: 0; border-collapse: collapse; }
+    .pm-table th {
+        padding: 14px 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--mute);
+        text-align: left;
+        white-space: nowrap;
+        background: #FAFBFC;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    .pm-table th.right, .pm-table td.right { text-align: right; }
+    .pm-table td {
+        padding: 14px 20px;
+        vertical-align: middle;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    .pm-table tbody tr:last-child td { border-bottom: 0; }
+    .pm-table tbody tr { transition: background-color .15s; }
+    .pm-table tbody tr:hover { background: #FAFBFD; }
+
+    .pname { font-weight: 700; font-size: 14.5px; word-break: break-word; }
+    .sub { font-size: 12.5px; color: var(--mute); margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .off { font-weight: 800; font-size: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .dates { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .none { color: var(--mute); }
+
+    /* what the offer applies to */
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; max-width: 260px; }
+    .tag {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 8px;
+        background: #F2F4F7;
+        color: var(--ink);
+        font-size: 12.5px;
+        font-weight: 600;
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .tag.cat { background: #FBF8F2; color: #6E5527; box-shadow: inset 0 0 0 1px #EADFC8; }
+    .tag.gone { background: #FDECEA; color: #A32A1F; }
+    .tag.more { background: none; color: var(--mute); padding-left: 2px; padding-right: 2px; }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 4px 11px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .chip.ok   { background: #E8F6EE; color: #146C43; }
+    .chip.warn { background: #FFF6E5; color: #8A5A00; }
+    .chip.bad  { background: #FDECEA; color: #A32A1F; }
+
+    .acts { display: inline-flex; align-items: center; gap: 8px; }
+    .acts form { margin: 0; }
+
+    .pm-empty { padding: 56px 20px; text-align: center; color: var(--mute); font-size: 14px; }
+    .pm-empty .cb { margin-top: 16px; }
+
+    /* =====================================================
+       Dialog (native <dialog>: centred, focus trapped,
+       Esc closes, page behind is locked)
+       ===================================================== */
+    .pm-dialog {
+        border: 0;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        max-height: none;
+        background: transparent;
+        box-sizing: border-box;
+    }
+    .pm-dialog[open] {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+    }
+    .pm-dialog::backdrop {
+        background: rgba(15, 27, 51, .55);
+        backdrop-filter: blur(3px);
+    }
+    .pm-panel {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 640px;
+        max-height: 100%;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: 0 30px 60px -20px rgba(15, 27, 51, .45);
+        overflow: hidden;
+        animation: pm-in .22s cubic-bezier(.16, 1, .3, 1);
+    }
+    @keyframes pm-in {
+        from { opacity: 0; transform: translateY(14px) scale(.98); }
+        to   { opacity: 1; transform: none; }
+    }
+    .pm-panel-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid var(--line);
+    }
+    .pm-panel-title {
+        font-family: 'Newsreader', Georgia, serif;
+        font-weight: 500;
+        font-size: 1.55rem;
+        line-height: 1.1;
+        letter-spacing: -0.01em;
+        margin: 0;
+    }
+    .pm-panel-sub { margin: 6px 0 0; font-size: 13px; color: var(--slate); }
+    .pm-x {
+        appearance: none;
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        margin: -4px -8px 0 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 10px;
+        background: none;
+        color: var(--mute);
+        font-size: 18px;
+        cursor: pointer;
+        transition: background-color .15s, color .15s;
+    }
+    .pm-x:hover { background: #F2F4F7; color: var(--ink); }
+    .pm-x:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    .pm-panel-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 20px 24px 8px;
+    }
+    .pm-panel-foot {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 24px;
+        border-top: 1px solid var(--line);
+        background: #FAFBFC;
+    }
+
+    /* ---------- form controls ---------- */
+    .fld { margin-bottom: 16px; }
+    .fld > label, .fld-label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--slate);
+    }
+    .inp {
+        width: 100%;
+        padding: 10px 12px;
+        font: inherit;
+        font-size: 14px;
+        color: var(--ink);
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        transition: border-color .15s;
+    }
+    .inp::placeholder { color: var(--mute); }
+    .inp:hover { border-color: #C9D0DC; }
+    .inp:focus { outline: 2px solid var(--brass); outline-offset: 1px; border-color: transparent; }
+    select.inp { cursor: pointer; }
+    .hint { margin: 6px 0 0; font-size: 12.5px; color: var(--mute); }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* ---------- multi-select (replaces the old select2 dropdowns) ---------- */
+    .ms-btn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        text-align: left;
+        cursor: pointer;
+    }
+    .ms-btn .ms-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ms-btn .ms-label.is-empty { color: var(--mute); }
+    .ms-btn i { flex-shrink: 0; font-size: 13px; color: var(--mute); transition: transform .15s; }
+    .ms-btn[aria-expanded="true"] i { transform: rotate(180deg); }
+    .ms-pop {
+        margin-top: 8px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #FAFBFC;
+    }
+    .ms-pop[hidden] { display: none; }
+    .ms-list { max-height: 188px; overflow-y: auto; margin-top: 8px; }
+    .ms-opt {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ink);
+        cursor: pointer;
+    }
+    .ms-opt:hover { background: #fff; }
+    .ms-opt input { width: 16px; height: 16px; margin: 0; flex-shrink: 0; accent-color: var(--ink); }
+    .ms-opt[hidden] { display: none; }
+    .ms-none { margin: 10px 4px 2px; font-size: 13px; color: var(--mute); }
+    .ms-none[hidden] { display: none; }
+
+    /* ---------- tablet ---------- */
+    @media (min-width: 768px) {
+        .pm-table { min-width: 980px; }
+    }
+    @media (max-width: 991.98px) {
+        .pm { padding: 28px 24px 48px; }
+    }
+
+    /* ---------- mobile: every offer becomes a card ---------- */
+    @media (max-width: 767.98px) {
+        .pm { padding: 22px 14px 40px; }
+        .pm-title { font-size: 1.9rem; }
+        .pm-head .cb { width: 100%; padding: 11px 16px; }
+
+        .pm-table thead { display: none; }
+        .pm-table, .pm-table tbody, .pm-table tr, .pm-table td { display: block; width: 100%; }
+        .pm-table tbody tr { padding: 14px 16px 16px; border-bottom: 1px solid var(--line); }
+        .pm-table tbody tr:hover { background: none; }
+        .pm-table tbody tr:last-child { border-bottom: 0; }
+        .pm-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 7px 0;
+            border: 0;
+            text-align: right;
+        }
+        .pm-table td::before {
+            content: attr(data-label);
+            flex-shrink: 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--mute);
+            text-align: left;
+        }
+        .pm-table td.name-cell { padding-top: 0; padding-bottom: 10px; text-align: left; justify-content: flex-start; }
+        .pm-table td.name-cell::before { display: none; }
+        .pm-table td.act { display: block; margin-top: 8px; padding-top: 14px; border-top: 1px dashed var(--line); }
+        .pm-table td.act::before { display: none; }
+        .tags { justify-content: flex-end; max-width: none; }
+        .acts { display: flex; width: 100%; }
+        .acts form { flex: 1; }
+        .acts form .cb { width: 100%; }
+        .cb { padding: 11px 16px; }
+    }
+
+    /* dialog becomes a bottom sheet on phones */
+    @media (max-width: 575.98px) {
+        .pm-dialog[open] { align-items: flex-end; padding: 0; }
+        .pm-panel {
+            max-width: none;
+            max-height: 94vh;
+            max-height: 94dvh;
+            border-radius: 20px 20px 0 0;
+            border-bottom: 0;
+        }
+        .pm-panel-head { padding: 18px 18px 14px; }
+        .pm-panel-body { padding: 18px 18px 6px; }
+        .pm-panel-foot {
+            flex-direction: column-reverse;
+            padding: 12px 18px max(14px, env(safe-area-inset-bottom));
+        }
+        .pm-panel-foot .cb { width: 100%; padding: 12px 16px; }
+        .inp { font-size: 16px; }              /* 16px stops iOS zooming into fields */
+        .grid2 { grid-template-columns: 1fr; gap: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .pm-panel { animation: none; }
+        .cb, .pm-x, .ms-btn i, .pm-table tbody tr { transition: none; }
+    }
+</style>
+
+<div class="container-fluid vh-100 d-flex flex-column p-0">
+    <div class="flex-grow-1 overflow-auto">
+        <main class="pm">
+
+            <!-- Page head -->
+            <div class="pm-head">
+                <div>
+                    <h1 class="pm-title">Offers</h1>
+                    <p class="pm-sub"><%= rows.length %> active <%= rows.length === 1 ? 'offer' : 'offers' %>.</p>
                 </div>
-                <div class="col-sm-6 col-12 text-sm-end">
-                    <a href="#" 
-                    class="btn btn-sm btn-primary" 
-                    id="createOfferBtn" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#createOfferModal">
-                    <i class="bi bi-plus pe-2"></i>Create Offer
-                 </a>
-                 
-                </div>
+                <button type="button" class="cb cb-ink" id="openCreate">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                    <span>Create offer</span>
+                </button>
             </div>
-        </div>
-    </header>
 
-
-
-    <main class="py-6 bg-surface-secondary">
-        <div class="container-fluid">
-            <!-- Card stats -->
-            <div class="card shadow border-0 mb-7">
-                <div class="card-header">
-                    <h5 class="mb-0">Offers</h5>
+            <!-- Messages from the server -->
+            <% if (flashMessage) { %>
+                <div class="notice ok" role="status">
+                    <span><%= flashMessage %></span>
+                    <button type="button" aria-label="Dismiss" data-dismiss-notice>&times;</button>
                 </div>
+            <% } %>
+            <% if (flashError) { %>
+                <div class="notice bad" role="alert">
+                    <span><%= flashError %></span>
+                    <button type="button" aria-label="Dismiss" data-dismiss-notice>&times;</button>
+                </div>
+            <% } %>
 
-                <% if (message) { %>
-                    <script>
-                        Swal.fire({
-                            title: 'Success!',
-                            text: '<%= message %>',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        });
-                    </script>
-                <% } %>
-                
-                <% if (error) { %>
-                    <script>
-                        Swal.fire({
-                            title: 'Error!',
-                            text: '<%= error %>',
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                    </script>
-                <% } %>
-                
-
-                <!-- Create Offer Modal -->
-<div class="modal fade" id="createOfferModal" tabindex="-1" aria-labelledby="createOfferModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createOfferModalLabel">Create Offer</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addOfferForm" action="/admin/addOffer" method="POST">
-                    <!-- Form Fields -->
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Offer Name</label>
-                        <input type="text" class="form-control" id="code" name="name" required>
+            <!-- Offers -->
+            <section class="pm-card" aria-label="Offers">
+                <% if (rows.length === 0) { %>
+                    <div class="pm-empty">
+                        No active offers. Create one to discount selected products or categories.
+                        <div><button type="button" class="cb cb-ink" data-open-create>Create offer</button></div>
                     </div>
+                <% } else { %>
+                <div class="pm-scroll">
+                    <table class="pm-table">
+                        <thead>
+                            <tr>
+                                <th>Offer</th>
+                                <th>Discount</th>
+                                <th>Products</th>
+                                <th>Categories</th>
+                                <th>Valid</th>
+                                <th>Status</th>
+                                <th class="right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% rows.forEach((offer) => {
+                                const shortId = offer._id.toString().slice(-5).toUpperCase();
+                                const state = stateOf(offer);
+                                const prodTags = nameList(offer.applicableProducts, products || [], 'product');
+                                const catTags = nameList(offer.applicableCategories, categories || [], 'name');
+                            %>
+                                <tr>
+                                    <td class="name-cell" data-label="Offer">
+                                        <div class="pname"><%= offer.name %></div>
+                                        <div class="sub">#<%= shortId %></div>
+                                    </td>
+                                    <td data-label="Discount"><span class="off"><%= offer.discount %>%</span></td>
 
-                                                          <!-- Applicable Products -->
-<div class="form-group">
-    <label>Applicable Products</label>
-    <div class="dropdown">
-        <button type="button" onclick="toggleDropdown('products')" class="btn btn-secondary dropdown-toggle">Select Products</button>
-        <div id="productsDropdown" class="dropdown-content">
-            
-            <% products.forEach((product) => { %>
-                <label><input type="checkbox" name="applicableProducts[]" value="<%= product._id %>"><%= product.product %></label>
-            <% }) %>
-        </div>
+                                    <td data-label="Products">
+                                        <% if (prodTags.length === 0) { %>
+                                            <span class="none">None</span>
+                                        <% } else { %>
+                                            <div class="tags" title="<%= prodTags.map((t) => t.text).join(', ') %>">
+                                                <% prodTags.slice(0, MAX_TAGS).forEach((t) => { %>
+                                                    <span class="tag <%= t.gone ? 'gone' : '' %>"><%= t.text %></span>
+                                                <% }); %>
+                                                <% if (prodTags.length > MAX_TAGS) { %>
+                                                    <span class="tag more">+<%= prodTags.length - MAX_TAGS %> more</span>
+                                                <% } %>
+                                            </div>
+                                        <% } %>
+                                    </td>
+
+                                    <td data-label="Categories">
+                                        <% if (catTags.length === 0) { %>
+                                            <span class="none">None</span>
+                                        <% } else { %>
+                                            <div class="tags" title="<%= catTags.map((t) => t.text).join(', ') %>">
+                                                <% catTags.slice(0, MAX_TAGS).forEach((t) => { %>
+                                                    <span class="tag <%= t.gone ? 'gone' : 'cat' %>"><%= t.text %></span>
+                                                <% }); %>
+                                                <% if (catTags.length > MAX_TAGS) { %>
+                                                    <span class="tag more">+<%= catTags.length - MAX_TAGS %> more</span>
+                                                <% } %>
+                                            </div>
+                                        <% } %>
+                                    </td>
+
+                                    <td data-label="Valid"><div class="dates"><%= day(offer.startDate) %> – <%= day(offer.endDate) %></div></td>
+                                    <td data-label="Status"><span class="chip <%= state.cls %>"><%= state.label %></span></td>
+                                    <td class="act right" data-label="Actions">
+                                        <div class="acts">
+                                            <form action="/admin/deleteOffer/<%= offer._id %>" method="POST"
+                                                  data-confirm="Delete this offer?"
+                                                  data-confirm-text="The discount will be removed from its products and categories.">
+                                                <button type="submit" class="cb cb-warn">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+                <% } %>
+            </section>
+
+        </main>
     </div>
 </div>
 
-<!-- Applicable Categories -->
-<div class="form-group">
-    <label>Applicable Categories</label>
-    <div class="dropdown">
-        <button type="button" onclick="toggleDropdown('categories')" class="btn btn-secondary dropdown-toggle">Select Categories</button>
-        <div id="categoriesDropdown" class="dropdown-content">
-            <input type="text" placeholder="Search categories..." id="categoriesSearch" class="form-control mb-2">
-            <% categories.forEach((category) => { %>
-                <label><input type="checkbox" name="applicableCategories[]" value="<%= category._id %>"><%= category.name %></label>
-            <% }) %>
+<!-- =====================================================
+     Create offer dialog
+     ===================================================== -->
+<dialog class="pm-dialog" id="createDialog" aria-labelledby="createTitle">
+    <div class="pm-panel">
+        <div class="pm-panel-head">
+            <div>
+                <h2 class="pm-panel-title" id="createTitle">Create offer</h2>
+                <p class="pm-panel-sub">Choose what the offer applies to and when it runs.</p>
+            </div>
+            <button type="button" class="pm-x" data-close aria-label="Close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
         </div>
-    </div>
-</div>
 
-    
+        <div class="pm-panel-body">
+            <form id="addOfferForm" action="/admin/addOffer" method="POST">
+                <div class="fld">
+                    <label for="offerName">Offer name</label>
+                    <input type="text" class="inp" id="offerName" name="name" autocomplete="off" required>
+                </div>
 
-                 
-                    <div class="mb-3">
-                        <label for="discountPercentage" class="form-label">Discount Percentage</label>
-                        <input type="number" class="form-control" id="discountPercentage" name="discount" min="0" max="80" required>
+                <% pickers.forEach((picker) => { %>
+                    <div class="fld ms" data-noun="<%= picker.noun %>">
+                        <span class="fld-label" id="<%= picker.key %>Label"><%= picker.title %></span>
+                        <button type="button" class="inp ms-btn" aria-haspopup="true" aria-expanded="false"
+                                aria-labelledby="<%= picker.key %>Label <%= picker.key %>Value">
+                            <span class="ms-label is-empty" id="<%= picker.key %>Value">Select <%= picker.noun %></span>
+                            <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                        </button>
+                        <div class="ms-pop" hidden>
+                            <input type="search" class="inp ms-search" placeholder="Search <%= picker.noun %>" aria-label="Search <%= picker.noun %>" autocomplete="off">
+                            <div class="ms-list">
+                                <% picker.items.forEach((item) => { %>
+                                    <label class="ms-opt">
+                                        <input type="checkbox" name="<%= picker.name %>" value="<%= item.id %>">
+                                        <span><%= item.text %></span>
+                                    </label>
+                                <% }); %>
+                            </div>
+                            <p class="ms-none" hidden>No <%= picker.noun %> match your search.</p>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="startDate" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="startDate" name="startDate" required>
+                <% }); %>
+
+                <div class="grid2">
+                    <div class="fld">
+                        <label for="discountPercentage">Discount (%)</label>
+                        <input type="number" class="inp" id="discountPercentage" name="discount" min="0" max="80" inputmode="decimal" required>
+                        <p class="hint">Up to 80%.</p>
                     </div>
-                    <div class="mb-3">
-                        <label for="endDate" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="endDate" name="endDate" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="isActive" class="form-label">Status</label>
-                        <select class="form-control" id="isActive" name="isActive" required>
+                    <div class="fld">
+                        <label for="isActive">Status</label>
+                        <select class="inp" id="isActive" name="isActive" required>
                             <option value="true">Active</option>
                             <option value="false">Inactive</option>
                         </select>
+                        <p class="hint">Only active offers appear in the list.</p>
                     </div>
-                    <button type="submit" class="btn btn-primary">Add Offer</button>
-                </form>
-            </div>
+                </div>
+
+                <div class="grid2">
+                    <div class="fld">
+                        <label for="startDate">Start date</label>
+                        <input type="date" class="inp" id="startDate" name="startDate" required>
+                    </div>
+                    <div class="fld">
+                        <label for="endDate">End date</label>
+                        <input type="date" class="inp" id="endDate" name="endDate" required>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="pm-panel-foot">
+            <button type="button" class="cb cb-ghost" data-close>Cancel</button>
+            <button type="submit" class="cb cb-ink" id="submitBtn" form="addOfferForm">Add offer</button>
         </div>
     </div>
-</div>
+</dialog>
 
-
-<div class="table-responsive">
-    <table class="table table-hover table-bordered text-center">
-        <thead class="thead-light">
-            <tr>
-                <th>Id</th>
-                <th>Code</th>
-                <th>Discount</th>
-                <th>Products</th>
-                <th>Categories</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% offers.forEach((offer) => { 
-                if (offer.isActive) { %>
-                    <tr>
-                        <td><%= offer._id.toString().slice(-5) %></td>
-                        <td><%= offer.name %></td>
-                        <td>
-                         <%= offer.discount %>%
-                        </td>
-                        <!-- <td>
-                            <% offer.applicableProducts.forEach((productId) => { %>
-                                <% const product = products.find((product) => product._id == productId); %>
-                                <% if (product) { %>
-                                    <span class="badge bg-primary me-1"><%= product.product %></span>
-                                <% } else { %>
-                                    <span class="badge bg-danger me-1">Unknown Product</span>
-                                <% } %>
-                            <% }); %>
-                        </td>
-                        <td>
-                            <% offer.applicableCategories.forEach((categoryId) => { %>
-                                <% const category = categories.find((category) => category._id == categoryId); %>
-                                <% if (category) { %>
-                                    <span class="badge bg-primary me-1"><%= category.name %></span>
-                                <% } else { %>
-                                    <span class="badge bg-danger me-1">Unknown Category</span>
-                                <% } %>
-                            <% }); %>
-                        </td>
-                      -->
-
-                      <td>
-                        <% offer.applicableProducts.forEach((productId) => { %>
-                            <% const product = products.find((product) => product._id.toString() === productId.toString()); %>
-                            <% if (product) { %>
-                                <span class="badge bg-primary me-1"><%= product.product %></span>
-                            <% } else { %>
-                                <span class="badge bg-danger me-1">Unknown Product (ID: <%= productId %>)</span>
-                            <% } %>
-                        <% }); %>
-                    </td>
-                    <td>
-                        <% offer.applicableCategories.forEach((categoryId) => { %>
-                            <% const category = categories.find((category) => category._id.toString() === categoryId.toString()); %>
-                            <% if (category) { %>
-                                <span class="badge bg-primary me-1"><%= category.name %></span>
-                            <% } else { %>
-                                <span class="badge bg-danger me-1">Unknown Category (ID: <%= categoryId %>)</span>
-                            <% } %>
-                        <% }); %>
-                    </td>
-                    
-                        
-                       
-                        <td><%= offer.startDate.toLocaleString() %></td>
-                        <td><%= offer.endDate.toLocaleString() %></td>
-                        <td> <div class="btn badge-<%= offer.isActive ?   'success':'danger' %>">
-                            <%= offer.isActive ? 'Active':'Inactive' %>
-                        </div></td>
-                       
-                        <td>
-                            <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editOfferModal"
-                                data-id="<%= offer._id %>" 
-                                data-code="<%= offer.code %>" 
-                                data-description="<%= offer.description %>" 
-                                data-minPurchase="<%= offer.minPurchase %>" 
-                                data-startDate="<%= offer.startDate.toISOString().slice(0, 10) %>" 
-                                data-endDate="<%= offer.endDate.toISOString().slice(0, 10) %>"
-                                data-isActive="<%= offer.isActive %>">
-                                Edit
-                            </button> -->
-
-                            <form name="delete" id="deleteForm-<%= offer._id %>" action="/admin/deleteOffer/<%= offer._id %>" method="POST" style="display:inline;" onsubmit="return confirmDeleteOffer(event, this)">
-                                <button type="submit" class="btn btn-danger">Delete</button>
-                            </form>
-                            
-                        </td>
-                    </tr>
-            <% }}); %>
-        </tbody>
-    </table>
-</div>
-
-
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function confirmDeleteOffer(event, form) {
-        event.preventDefault(); 
-    
-       
-        Swal.fire({
-            title: 'Are you sure you want to delete this Offer?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel',
-            background: '#fffff',  
-            color: 'black'         
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
-            }
-        });
-    
-        return false; 
-    }
-    </script>
+    (function () {
+        var dialog = document.getElementById('createDialog');
+        var form = document.getElementById('addOfferForm');
+        var submitBtn = document.getElementById('submitBtn');
+        var startDate = document.getElementById('startDate');
+        var endDate = document.getElementById('endDate');
 
+        /* ---------- dismiss server messages ---------- */
+        document.querySelectorAll('[data-dismiss-notice]').forEach(function (btn) {
+            btn.addEventListener('click', function () { btn.parentElement.remove(); });
+        });
 
-<style>
-    .dropdown {
-        position: relative;
-        display: inline-block;
-    }
-    
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #ffffff;
-        min-width: 160px;
-        overflow-y: auto;
-        max-height: 200px;
-        border: 1px solid #ddd;
-        z-index: 1;
-    }
-    
-    .dropdown-content label {
-        display: block;
-        padding: 5px 10px;
-        cursor: pointer;
-    }
-    
-    .dropdown-content label:hover {
-        background-color: #c8c8c8;
-    }
-    
-    .show {
-        display: block;
-    }
-    
-    .selected-items {
-        width:100px;
-        margin-top: 5px;
-        padding: 5px;
-        border: 1px solid #000000;
-    }
-    
-    .selected-items div {
-        margin-bottom: 5px;
-    }
-    </style>
-    
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        $('#productsDropdown').select2({
-            placeholder: 'Select products',
-            closeOnSelect: false,
+        /* ---------- lock the page behind the open dialog ---------- */
+        var saved = { overflow: '', paddingRight: '' };
+        function lockPage() {
+            saved.overflow = document.body.style.overflow;
+            saved.paddingRight = document.body.style.paddingRight;
+            var scrollbar = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.overflow = 'hidden';
+            if (scrollbar > 0) document.body.style.paddingRight = scrollbar + 'px';
+        }
+        function unlockPage() {
+            document.body.style.overflow = saved.overflow;
+            document.body.style.paddingRight = saved.paddingRight;
+        }
+
+        function openCreate() { dialog.showModal(); lockPage(); }
+        document.getElementById('openCreate').addEventListener('click', openCreate);
+        document.querySelectorAll('[data-open-create]').forEach(function (b) { b.addEventListener('click', openCreate); });
+        document.querySelectorAll('[data-close]').forEach(function (btn) {
+            btn.addEventListener('click', function () { dialog.close(); });
         });
-    
-        $('#categoriesDropdown').select2({
-            placeholder: 'Select categories',
-            closeOnSelect: false,
-        });
-    });
-    
-    function toggleDropdown(id) {
-        document.getElementById(`${id}Dropdown`).classList.toggle("show");
-    }
-    
-    window.onclick = function(event) {
-        if (!event.target.matches('.dropdown button')) {
-            let dropdowns = document.getElementsByClassName("dropdown-content");
-            for (let i = 0; i < dropdowns.length; i++) {
-                let openDropdown = dropdowns[i];
-                if (openDropdown.classList.contains('show')) {
-                    openDropdown.classList.remove('show');
+
+        /* ---------- multi-select pickers ---------- */
+        var pickers = Array.prototype.map.call(form.querySelectorAll('.ms'), function (root) {
+            var btn = root.querySelector('.ms-btn');
+            var label = root.querySelector('.ms-label');
+            var pop = root.querySelector('.ms-pop');
+            var search = root.querySelector('.ms-search');
+            var none = root.querySelector('.ms-none');
+            var opts = Array.prototype.slice.call(root.querySelectorAll('.ms-opt'));
+            var noun = root.dataset.noun;
+
+            function refresh() {
+                var checked = opts.filter(function (o) { return o.querySelector('input').checked; });
+                if (checked.length === 0) {
+                    label.textContent = 'Select ' + noun;
+                    label.classList.add('is-empty');
+                } else if (checked.length === 1) {
+                    label.textContent = checked[0].querySelector('span').textContent;
+                    label.classList.remove('is-empty');
+                } else {
+                    label.textContent = checked.length + ' ' + noun + ' selected';
+                    label.classList.remove('is-empty');
                 }
+            }
+            function setOpen(open) {
+                pop.hidden = !open;
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                if (open) search.focus();
+            }
+            function filter() {
+                var q = search.value.trim().toLowerCase();
+                var shown = 0;
+                opts.forEach(function (o) {
+                    var match = o.textContent.toLowerCase().indexOf(q) !== -1;
+                    o.hidden = !match;
+                    if (match) shown++;
+                });
+                none.hidden = shown !== 0;
+            }
+
+            btn.addEventListener('click', function () { setOpen(pop.hidden); });
+            search.addEventListener('input', filter);
+            // Enter inside the search box must not submit the form
+            search.addEventListener('keydown', function (e) { if (e.key === 'Enter') e.preventDefault(); });
+            opts.forEach(function (o) { o.querySelector('input').addEventListener('change', refresh); });
+
+            return {
+                reset: function () { search.value = ''; filter(); setOpen(false); refresh(); }
+            };
+        });
+
+        /* ---------- start fresh every time the dialog is closed ---------- */
+        dialog.addEventListener('close', function () {
+            unlockPage();
+            form.reset();
+            endDate.setCustomValidity('');
+            pickers.forEach(function (p) { p.reset(); });
+        });
+
+        /* ---------- validation ---------- */
+        function checkDates() {
+            if (startDate.value && endDate.value && endDate.value < startDate.value) {
+                endDate.setCustomValidity('End date must be on or after the start date.');
+            } else {
+                endDate.setCustomValidity('');
             }
         }
-    }
-    
-    document.querySelectorAll('.dropdown-content input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const text = this.value;
-            const selectedItems = document.querySelector(`.${this.name.split('[')[0]}Selected`);
-            const existingItem = selectedItems.querySelector(`[data-value="${text}"]`);
-    
-            if (this.checked) {
-                if (!existingItem) {
-                    const selectedItem = document.createElement('div');
-                    selectedItem.setAttribute('data-value', text);
-                    selectedItem.innerText = text;
-                    selectedItems.appendChild(selectedItem);
-                }
-            } else {
-                if (existingItem) {
-                    existingItem.remove();
-                }
-            }
-        });
-    });
-    </script>
+        startDate.addEventListener('input', checkDates);
+        endDate.addEventListener('input', checkDates);
 
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    
-    <!-- SweetAlert2 for Confirmation Dialog -->
-    <script src="/assets/vendors/js/vendor.bundle.base.js"></script>
-    <script src="/assets/js/off-canvas.js"></script>
-    <script src="/assets/js/hoverable-collapse.js"></script>
-    <script src="/assets/js/misc.js"></script>
-    <script src="/assets/js/settings.js"></script>
-    <script src="/assets/js/todolist.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- Bootstrap Bundle with Popper.js -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        form.addEventListener('submit', function (event) {
+            checkDates();
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                form.reportValidity();
+                return;
+            }
+            submitBtn.disabled = true;           // no double submits
+            submitBtn.textContent = 'Adding…';
+        });
+
+        /* ---------- delete (confirm first) ---------- */
+        document.querySelectorAll('form[data-confirm]').forEach(function (f) {
+            f.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                Swal.fire({
+                    title: f.dataset.confirm,
+                    text: f.dataset.confirmText || undefined,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    reverseButtons: true,
+                    focusCancel: true,
+                    confirmButtonText: 'Yes, delete',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#B3261E',
+                    cancelButtonColor: '#8A93A5'
+                }).then(function (result) {
+                    if (!result.isConfirmed) return;
+                    var button = f.querySelector('button[type="submit"]');
+                    if (button) button.disabled = true;
+                    f.submit();
+                });
+            });
+        });
+    })();
+</script>
