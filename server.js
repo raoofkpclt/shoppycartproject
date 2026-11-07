@@ -1,82 +1,79 @@
+
 const express = require("express");
-const app = express();
-
 const path = require("path");
-
 const session = require("express-session");
 const nocache = require("nocache");
+const cors = require("cors");
+const passport = require("passport");
 
 require("dotenv").config();
-const passport = require("passport");
 require("./config/passport");
 
 const connectDb = require("./db/connectDb");
-const cors = require("cors");
 
 const adminRoutes = require("./routes/admin");
 const userRoutes = require("./routes/user");
 
-//session use
+const app = express();
+
+// View engine
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+
+// Static files
+app.use(express.static(path.join(__dirname, "public")));
+
+// Middleware
 app.use(nocache());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(cors());
+
+// Session
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false },
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000
+    }
   })
 );
 
-//view engine configaration
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "ejs");
-
-//static file configaration
-app.use(express.static(path.join(__dirname, "public")));
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-
-
-//conect db
-connectDb();
-
-//cors
-app.use(cors());
-
-//use passport
+// Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-//router middleware
+// MongoDB connection
+app.use(async (req, res, next) => {
+  try {
+    await connectDb();
+    next();
+  } catch (error) {
+    console.error("Database connection error:", error);
+    res.status(500).send("Database connection failed");
+  }
+});
+
+// Routes
 app.use("/user", userRoutes);
 app.use("/admin", adminRoutes);
 
+// 404 handler
+app.use((req, res) => {
+  const isAdmin = req.originalUrl.startsWith("/admin");
 
-app.use('/user', (req, res, next) => {
-  if (!req.route) {
-    return res.status(404).render('user/404', { title: 'Page Not Found' });
-  }
-  next();
+  res.status(404).render(
+    isAdmin ? "admin/404" : "user/404",
+    {
+      title: "Page Not Found"
+    }
+  );
 });
 
-// Catch-all route for undefined admin routes
-app.use('/admin', (req, res, next) => {
-  if (!req.route) {
-    return res.status(404).render('admin/404', { title: 'Admin Page Not Found' });
-  }
-  next();
-});
-
-  // General 404 fallback for other unexpected routes
-  app.use((req, res) => {
-    res.status(404).render('user/404', { title: 'Page Not Found' });
-  });
-  
-
-//server port configaration 3000
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Your server running ${PORT} succesfully`);
-});
+// Export Express app for Vercel
+module.exports = app;
